@@ -1,0 +1,314 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens — the ONLY place colours, font sizes and radii are defined (CLAUDE.md §5).
+ * Tailwind's default palette, type scale and radii are reset, so a stray `bg-red-500` or
+ * `text-[13px]`-style shortcut to an off-system value fails loudly instead of slipping in.
+ * Brand values below are placeholders for the owner to replace.
+ */
+@theme {
+  --color-*: initial;
+  /* Palette: violet, white and ink black. Contrast ratios are WCAG 2 against the pair noted. */
+  --color-bg: #ffffff;
+  --color-fg: #120d1a; /* ink: black with a violet undertone — 19.1:1 on bg */
+  --color-muted: #645c70; /* secondary text — 6.4:1 on bg, 5.8:1 on surface */
+  --color-surface: #f6f3fb; /* lavender mist: section / card backgrounds */
+  --color-primary: #6c2bd9; /* royal violet: CTAs, links, focus — 7.0:1 with primary-fg and on bg */
+  --color-primary-fg: #ffffff;
+  --color-accent: #c8a6ff; /* lilac: badges, highlights, and accents on dark — 9.4:1 with accent-fg */
+  --color-accent-fg: #120d1a;
+  --color-sale: #c4124f; /* berry: savings, errors — 5.9:1 on bg */
+  --color-sold: #a49cb3; /* SOLD badge fill only; text on it uses fg (7.3:1) */
+  --color-border: #e7e1f0;
+  --color-overlay: rgb(18 13 26 / 0.55);
+  --color-white: #ffffff; /* text on photos / video */
+  /* Violet on ink is only 2.7:1, so on dark sections use accent (lilac, 9.4:1) instead of primary. */
+
+  /* Type scale: 12 / 14 / 16 / 18 / 24 / 32 / 48 / 64 */
+  --text-*: initial;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.5rem;
+  --text-xl--line-height: 2rem;
+  --text-2xl: 2rem;
+  --text-2xl--line-height: 2.5rem;
+  --text-3xl: 3rem;
+  --text-3xl--line-height: 1.05;
+  --text-4xl: 4rem;
+  --text-4xl--line-height: 1;
+
+  --radius-*: initial;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+
+  --container-site: 90rem; /* 1440px */
+}
+
+/* Font families come from next/font variables set on <html> in app/layout.tsx. */
+@theme inline {
+  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-body);
+}
+
+/* Dark sections (bg-fg): lilac focus ring, since violet on ink is too low-contrast. */
+@utility surface-dark {
+  --focus-ring: var(--color-accent);
+}
+
+/* Site container: 1440px max, 16px gutters on mobile, 32px from lg up. */
+@utility site-container {
+  width: 100%;
+  max-width: var(--container-site);
+  margin-inline: auto;
+  padding-inline: --spacing(4);
+
+  @media (width >= 64rem) {
+    padding-inline: --spacing(8);
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    /* Anchor jumps land below the sticky header. */
+    scroll-padding-top: --spacing(16);
+    /* Reserve the scrollbar's space so locking scroll for a drawer doesn't shift the page. */
+    scrollbar-gutter: stable;
+  }
+
+  /* Lock page scroll while a drawer is open. */
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-body);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  /* Visible focus ring for keyboard users on every interactive element. */
+  :focus-visible {
+    outline: 2px solid var(--focus-ring, var(--color-primary));
+    outline-offset: 2px;
+  }
+}
+
+/* Above-the-fold reveals stay hidden until their start state is set (see lib/motion/init-script.ts). */
+html.reveal-pending [data-reveal="load"]:not([data-reveal-ready]) {
+  visibility: hidden;
+}
+
+/* RevealText line masks clip at the line box, which cuts off descenders (g, y) in tight headings.
+   Extend the clip area without changing the layout. */
+.reveal-line-mask {
+  padding-block: 0.12em;
+  margin-block: -0.12em;
+}
+
+/* Lenis (SmoothScroll) — the library's recommended base styles. */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+
+.lenis [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+/* Motion off (prefers-reduced-motion or the "Pause animations" toggle) — MOTION.md §3. */
+html.no-motion *,
+html.no-motion *::before,
+html.no-motion *::after {
+  animation: none !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* ---------- Sheet: slide-out drawer on <dialog> (components/ui/Sheet.tsx) ---------- */
+@layer components {
+  .sheet {
+    /* Where the drawer slides in from (x y). */
+    --sheet-from: -100% 0;
+    position: fixed;
+    inset-block: 0;
+    inset-inline: 0 auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    width: min(85vw, 24rem);
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    translate: var(--sheet-from);
+    /* display + overlay transition discretely so the drawer can also slide out when closing. */
+    transition:
+      translate 300ms cubic-bezier(0.22, 1, 0.36, 1),
+      display 300ms allow-discrete,
+      overlay 300ms allow-discrete;
+  }
+
+  .sheet[data-side="right"] {
+    --sheet-from: 100% 0;
+    inset-inline: auto 0;
+  }
+
+  /* Bottom sheet (mobile filters): full width, up to 85% of the screen tall. */
+  .sheet[data-side="bottom"] {
+    --sheet-from: 0 100%;
+    inset: auto 0 0;
+    width: 100%;
+    height: auto;
+    max-height: 85dvh;
+    border-start-start-radius: var(--radius-lg);
+    border-start-end-radius: var(--radius-lg);
+  }
+
+  .sheet[open] {
+    translate: 0 0;
+  }
+
+  .sheet::backdrop {
+    background-color: var(--color-overlay);
+    opacity: 0;
+    transition:
+      opacity 300ms ease,
+      display 300ms allow-discrete,
+      overlay 300ms allow-discrete;
+  }
+
+  .sheet[open]::backdrop {
+    opacity: 1;
+  }
+
+  @starting-style {
+    .sheet[open] {
+      translate: var(--sheet-from);
+    }
+
+    .sheet[open]::backdrop {
+      opacity: 0;
+    }
+  }
+}
+
+/* ---------- Marquee (components/motion/Marquee.tsx, MOTION.md §5.2) ---------- */
+@layer components {
+  .marquee {
+    container-type: inline-size;
+    overflow: hidden;
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee var(--speed, 30s) linear infinite;
+  }
+
+  .marquee[data-dir="right"] .marquee-track {
+    animation-direction: reverse;
+  }
+
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+
+  /* Each copy is at least as wide as the strip, so short lists still loop without a gap. */
+  .marquee-copy {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-around;
+    min-width: 100cqi;
+  }
+
+  .marquee-separator {
+    padding-inline: 0.75em;
+  }
+}
+
+/* ---------- HoverMarquee (components/motion/HoverMarquee.tsx, MOTION.md §5.3) ---------- */
+@layer components {
+  .hover-marquee {
+    --hover-marquee-pad: --spacing(6);
+    position: relative;
+    overflow: hidden;
+    padding-inline: var(--hover-marquee-pad);
+  }
+
+  /* Starts exactly on top of the label, so the swap is seamless. */
+  .hover-marquee-track {
+    position: absolute;
+    inset-block: 0;
+    left: var(--hover-marquee-pad);
+    display: flex;
+    align-items: center;
+    width: max-content;
+    opacity: 0;
+  }
+
+  .hover-marquee-item::after {
+    content: "·";
+    padding-inline: 0.75em;
+  }
+
+  .hover-marquee:focus-visible .hover-marquee-label {
+    opacity: 0;
+  }
+
+  .hover-marquee:focus-visible .hover-marquee-track {
+    opacity: 1;
+    animation: marquee 6s linear infinite;
+  }
+
+  @media (hover: hover) {
+    .hover-marquee:hover .hover-marquee-label {
+      opacity: 0;
+    }
+
+    .hover-marquee:hover .hover-marquee-track {
+      opacity: 1;
+      animation: marquee 6s linear infinite;
+    }
+  }
+
+  /* Motion off: keep the plain label instead of a frozen strip. */
+  html.no-motion .hover-marquee .hover-marquee-label {
+    opacity: 1;
+  }
+
+  html.no-motion .hover-marquee .hover-marquee-track {
+    opacity: 0;
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
