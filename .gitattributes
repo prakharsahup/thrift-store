@@ -1,0 +1,6 @@
+# Keep LF line endings in the repo and on checkout (Prettier expects LF), on every OS.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.mp4 binary
+*.webm binary
