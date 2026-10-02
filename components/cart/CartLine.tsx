@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { X } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import type { CartLine as CartLineData } from "@/lib/cart/types";
 import { useCartStore } from "@/lib/stores/cart";
 import { cn } from "@/lib/utils/cn";
@@ -54,14 +55,15 @@ export function CartLine({ line }: Props) {
           </p>
         ) : null}
       </div>
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="icon-sm"
         onClick={() => void remove(line.productId)}
-        className="-mt-1 -mr-2 inline-flex size-9 shrink-0 items-center justify-center rounded-md text-muted hover:bg-surface hover:text-fg"
+        className="-mt-1 -mr-2"
       >
-        <X aria-hidden className="size-4" />
+        <X aria-hidden />
         <span className="sr-only">Remove {line.title}</span>
-      </button>
+      </Button>
     </li>
   );
 }

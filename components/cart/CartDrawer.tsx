@@ -1,6 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { useCartStore } from "@/lib/stores/cart";
 import { CartContents } from "./CartContents";
@@ -24,15 +25,10 @@ export function CartDrawer() {
           <p className="font-display text-lg font-bold">
             Your cart{count > 0 ? ` (${count})` : ""}
           </p>
-          <button
-            type="button"
-            onClick={closeCart}
-            autoFocus
-            className="-mr-2 inline-flex size-10 items-center justify-center rounded-md hover:bg-surface"
-          >
-            <X aria-hidden className="size-5" />
+          <Button variant="ghost" size="icon" onClick={closeCart} autoFocus className="-mr-2">
+            <X aria-hidden />
             <span className="sr-only">Close cart</span>
-          </button>
+          </Button>
         </div>
         {open ? <CartContents variant="drawer" /> : null}
       </div>

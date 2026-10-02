@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { ProductCard } from "@/components/product/ProductCard";
+import { Button } from "@/components/ui/Button";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 import { removeFromWishlistForm } from "@/lib/actions/wishlist";
 import { requireUser } from "@/lib/server/auth";
 import { getCartProducts } from "@/lib/server/catalogue";
@@ -38,15 +39,10 @@ export default async function WishlistPage() {
       {products.length === 0 ? (
         <div className="py-16 text-center">
           <p className="font-display text-xl font-bold">Nothing saved yet</p>
-          <p className="mt-2 text-sm text-muted">
-            Tap &ldquo;Save to wishlist&rdquo; on any piece to keep it here.
-          </p>
-          <Link
-            href="/search?sort=newest"
-            className="mt-6 inline-flex h-11 items-center rounded-md bg-primary px-5 text-sm font-semibold text-primary-fg"
-          >
+          <p className="mt-2 text-sm text-muted">Tap the heart on any piece to keep it here.</p>
+          <ButtonLink href="/search?sort=newest" className="mt-6">
             Browse new pieces
-          </Link>
+          </ButtonLink>
         </div>
       ) : (
         <ul className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 xl:grid-cols-4">
@@ -55,12 +51,9 @@ export default async function WishlistPage() {
               <ProductCard product={product} sizes={CARD_SIZES} />
               <form action={removeFromWishlistForm} className="mt-2">
                 <input type="hidden" name="productId" value={product.id} />
-                <button
-                  type="submit"
-                  className="text-xs font-semibold text-muted underline hover:text-fg"
-                >
+                <Button type="submit" variant="link" className="text-xs">
                   Remove<span className="sr-only"> {product.title} from wishlist</span>
-                </button>
+                </Button>
               </form>
             </li>
           ))}

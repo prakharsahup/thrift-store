@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { cn } from "@/lib/utils/cn";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 
 type Props = {
   href: string;
@@ -11,15 +10,9 @@ type Props = {
 
 export function IconLink({ href, label, className, children }: Props) {
   return (
-    <Link
-      href={href}
-      className={cn(
-        "inline-flex size-10 items-center justify-center rounded-md hover:bg-surface [&_svg]:size-5",
-        className,
-      )}
-    >
+    <ButtonLink href={href} variant="ghost" size="icon" className={className}>
       {children}
       <span className="sr-only">{label}</span>
-    </Link>
+    </ButtonLink>
   );
 }

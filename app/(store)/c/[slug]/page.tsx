@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ListingView } from "@/components/catalogue/ListingView";
+import { ChipLink } from "@/components/ui/ChipLink";
 import { PAGE_SIZE, parseFilters } from "@/lib/catalogue/filters";
 import { getCategoryPage, getFacets, listProducts } from "@/lib/server/catalogue";
-import { cn } from "@/lib/utils/cn";
 
 const ROOT_LANDINGS = new Set(["men", "women", "unisex"]);
 
@@ -55,18 +54,9 @@ export default async function CategoryListingPage({
             const current = link.slug === category.slug;
             return (
               <li key={link.slug}>
-                <Link
-                  href={`/c/${link.slug}`}
-                  aria-current={current ? "page" : undefined}
-                  className={cn(
-                    "inline-flex h-9 items-center rounded-full border px-4 text-sm whitespace-nowrap",
-                    current
-                      ? "border-fg bg-fg font-semibold text-bg"
-                      : "border-border hover:border-fg",
-                  )}
-                >
+                <ChipLink href={`/c/${link.slug}`} aria-current={current ? "page" : undefined}>
                   {link.name}
-                </Link>
+                </ChipLink>
               </li>
             );
           },

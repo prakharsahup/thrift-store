@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { createClient } from "@/lib/supabase/client";
 import { emailSchema, otpSchema } from "@/lib/validators/auth";
 
@@ -108,7 +110,7 @@ export function LoginForm({ next, googleEnabled }: Props) {
             <label htmlFor="login-email" className="mb-1 block text-sm font-semibold">
               Email address
             </label>
-            <input
+            <Input
               id="login-email"
               type="email"
               autoComplete="email"
@@ -116,16 +118,11 @@ export function LoginForm({ next, googleEnabled }: Props) {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-12 w-full rounded-md border border-border bg-bg px-3 text-base"
             />
           </div>
-          <button
-            type="submit"
-            disabled={busy}
-            className="h-12 w-full rounded-md bg-primary text-sm font-semibold text-primary-fg hover:bg-fg disabled:opacity-60"
-          >
+          <Button type="submit" disabled={busy} fullWidth>
             {busy ? "Sending…" : "Email me a sign-in code"}
-          </button>
+          </Button>
         </form>
       ) : (
         <form onSubmit={(e) => void verifyCode(e)} noValidate className="space-y-4">
@@ -133,7 +130,7 @@ export function LoginForm({ next, googleEnabled }: Props) {
             <label htmlFor="login-code" className="mb-1 block text-sm font-semibold">
               6-digit code
             </label>
-            <input
+            <Input
               id="login-code"
               type="text"
               inputMode="numeric"
@@ -143,37 +140,28 @@ export function LoginForm({ next, googleEnabled }: Props) {
               autoFocus
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-              className="h-12 w-full rounded-md border border-border bg-bg px-3 text-center font-display text-xl tracking-widest"
+              fieldSize="lg"
+              className="text-center font-display text-xl tracking-widest"
             />
           </div>
-          <button
-            type="submit"
-            disabled={busy}
-            className="h-12 w-full rounded-md bg-primary text-sm font-semibold text-primary-fg hover:bg-fg disabled:opacity-60"
-          >
+          <Button type="submit" disabled={busy} fullWidth>
             {busy ? "Checking…" : "Sign in"}
-          </button>
-          <div className="flex justify-between text-sm">
-            <button
-              type="button"
+          </Button>
+          <div className="flex justify-between gap-4">
+            <Button
+              variant="link"
               onClick={() => {
                 setStep("email");
                 setCode("");
                 setNotice(null);
                 setError(null);
               }}
-              className="font-semibold text-primary underline"
             >
               Use a different email
-            </button>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => void sendCode()}
-              className="font-semibold text-primary underline disabled:opacity-60"
-            >
+            </Button>
+            <Button variant="link" disabled={busy} onClick={() => void sendCode()}>
               Send a new code
-            </button>
+            </Button>
           </div>
         </form>
       )}
@@ -183,14 +171,14 @@ export function LoginForm({ next, googleEnabled }: Props) {
           <p className="my-6 flex items-center gap-3 text-xs text-muted before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
             or
           </p>
-          <button
-            type="button"
+          <Button
+            variant="outline"
             onClick={() => void signInWithGoogle()}
             disabled={busy}
-            className="h-12 w-full rounded-md border border-fg text-sm font-semibold hover:bg-surface disabled:opacity-60"
+            fullWidth
           >
             Continue with Google
-          </button>
+          </Button>
         </>
       ) : null}
     </div>

@@ -10,6 +10,7 @@ import { ConditionBadge } from "@/components/product/ConditionBadge";
 import { Gallery } from "@/components/product/Gallery";
 import { MeasurementsTable } from "@/components/product/MeasurementsTable";
 import { ProductCard } from "@/components/product/ProductCard";
+import { ChipLink } from "@/components/ui/ChipLink";
 import { styleTags } from "@/lib/config/navigation";
 import { getProductBySlug, getRelatedProducts } from "@/lib/server/catalogue";
 import { formatINR, savingPercent } from "@/lib/utils/money";
@@ -72,20 +73,25 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
         <Gallery images={product.images} title={product.title} />
 
         <div className="lg:sticky lg:top-24 lg:self-start">
+          {/* Hierarchy: brand 12 caps → title 24/32 → price 18/24 → meta 14. */}
           {product.brand ? (
             <Link
               href={`/search?brand=${encodeURIComponent(product.brand)}`}
-              className="text-sm font-semibold text-primary hover:underline"
+              className="text-xs font-semibold tracking-wider text-primary uppercase hover:underline"
             >
               {product.brand}
             </Link>
           ) : (
-            <p className="text-sm text-muted">Unbranded</p>
+            <p className="text-xs font-semibold tracking-wider text-muted uppercase">Unbranded</p>
           )}
-          <h1 className="mt-1 text-2xl font-bold md:text-3xl">{product.title}</h1>
+          <h1 className="mt-2 text-xl font-semibold tracking-tight font-stretch-normal lg:text-2xl">
+            {product.title}
+          </h1>
 
-          <div className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <p className="text-2xl font-bold">{formatINR(product.pricePaise)}</p>
+          <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <p className="font-body text-lg font-bold tabular-nums lg:text-xl">
+              {formatINR(product.pricePaise)}
+            </p>
             {product.originalPricePaise ? (
               <p className="text-sm text-muted">
                 est. retail <s>{formatINR(product.originalPricePaise)}</s>
@@ -96,7 +102,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
             ) : null}
           </div>
 
-          <dl className="mt-6 grid grid-cols-2 gap-4 border-y border-border py-4 text-sm">
+          <dl className="mt-5 grid grid-cols-2 gap-4 border-y border-border py-4 text-sm">
             <div>
               <dt className="text-muted">Tagged size</dt>
               <dd className="mt-0.5 font-semibold">{product.taggedSize ?? "—"}</dd>
@@ -139,7 +145,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
           </p>
 
           <section aria-labelledby="pdp-measurements" className="mt-8">
-            <h2 id="pdp-measurements" className="text-base font-bold">
+            <h2 id="pdp-measurements" className="text-base font-bold font-stretch-normal">
               Measurements
             </h2>
             <div className="mt-3">
@@ -151,7 +157,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
           </section>
 
           <section aria-labelledby="pdp-flaws" className="mt-8">
-            <h2 id="pdp-flaws" className="text-base font-bold">
+            <h2 id="pdp-flaws" className="text-base font-bold font-stretch-normal">
               Flaws
             </h2>
             <p className="mt-2 text-sm text-muted">
@@ -161,7 +167,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
           </section>
 
           <section aria-labelledby="pdp-description" className="mt-8">
-            <h2 id="pdp-description" className="text-base font-bold">
+            <h2 id="pdp-description" className="text-base font-bold font-stretch-normal">
               Description
             </h2>
             <p className="mt-2 text-sm leading-relaxed">{product.description}</p>
@@ -169,12 +175,9 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
               <ul className="mt-4 flex flex-wrap gap-2" aria-label="Styles">
                 {product.styleTags.map((tag) => (
                   <li key={tag}>
-                    <Link
-                      href={`/search?style=${tag}`}
-                      className="inline-flex h-8 items-center rounded-full bg-surface px-3 text-xs font-medium hover:bg-border"
-                    >
+                    <ChipLink href={`/search?style=${tag}`} size="sm">
                       {styleLabel.get(tag) ?? tag}
-                    </Link>
+                    </ChipLink>
                   </li>
                 ))}
               </ul>
@@ -197,7 +200,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
 
       {related.length > 0 ? (
         <section aria-labelledby="pdp-related" className="mt-16 md:mt-24">
-          <h2 id="pdp-related" className="mb-6 text-xl font-bold md:text-2xl">
+          <h2 id="pdp-related" className="mb-6 text-xl font-bold lg:text-2xl">
             You may also like
           </h2>
           <ProductRail label="You may also like">

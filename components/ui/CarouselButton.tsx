@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils/cn";
+import { Button } from "./Button";
 
 type Props = {
   label: string;
@@ -10,7 +10,7 @@ type Props = {
   children: React.ReactNode;
 };
 
-// Round icon button for carousel controls (prev / next / pause).
+// Round icon button for carousel controls (prev / next / pause), built on Button.
 export function CarouselButton({
   label,
   onClick,
@@ -20,20 +20,21 @@ export function CarouselButton({
   children,
 }: Props) {
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      size="icon"
+      shape="round"
       onClick={onClick}
       disabled={disabled}
       aria-pressed={pressed}
-      className={cn(
-        "inline-flex size-10 items-center justify-center rounded-full border transition-colors disabled:cursor-not-allowed disabled:opacity-40 [&_svg]:size-4",
+      className={
         tone === "light"
-          ? "border-border bg-bg text-fg hover:border-fg"
-          : "border-bg/30 text-bg hover:border-bg",
-      )}
+          ? "border border-input bg-bg [&_svg]:size-4"
+          : "border border-bg/40 text-bg not-disabled:hover:bg-bg not-disabled:hover:text-fg [&_svg]:size-4"
+      }
     >
       {children}
       <span className="sr-only">{label}</span>
-    </button>
+    </Button>
   );
 }

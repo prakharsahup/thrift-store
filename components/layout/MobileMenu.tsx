@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ChevronDown, X } from "lucide-react";
-import { MotionToggle } from "@/components/motion/MotionToggle";
+import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { accountLinks, brandLinks, genderNav } from "@/lib/config/navigation";
 import { site } from "@/lib/config/site";
@@ -24,15 +24,10 @@ export function MobileMenu() {
       >
         <div className="flex h-14 shrink-0 items-center justify-between border-b border-border px-4">
           <span className="font-display text-lg font-bold">{site.name}</span>
-          <button
-            type="button"
-            onClick={close}
-            autoFocus
-            className="-mr-2 inline-flex size-10 items-center justify-center rounded-md hover:bg-surface"
-          >
-            <X aria-hidden className="size-6" />
+          <Button variant="ghost" size="icon" onClick={close} autoFocus className="-mr-2">
+            <X aria-hidden />
             <span className="sr-only">Close menu</span>
-          </button>
+          </Button>
         </div>
 
         <nav aria-label="Mobile" className="flex-1 overflow-y-auto overscroll-contain">
@@ -92,10 +87,6 @@ export function MobileMenu() {
             ))}
           </ul>
         </nav>
-
-        <div className="shrink-0 border-t border-border p-4">
-          <MotionToggle />
-        </div>
       </div>
     </Sheet>
   );

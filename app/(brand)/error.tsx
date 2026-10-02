@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { Button } from "@/components/ui/Button";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 
 type Props = { error: Error & { digest?: string }; reset: () => void };
 
@@ -14,19 +15,10 @@ export default function BrandError({ reset }: Props) {
         minutes.
       </p>
       <div className="mt-8 flex flex-wrap gap-3">
-        <button
-          type="button"
-          onClick={reset}
-          className="inline-flex h-11 items-center rounded-md bg-primary px-5 text-sm font-semibold text-primary-fg"
-        >
-          Try again
-        </button>
-        <Link
-          href="/"
-          className="inline-flex h-11 items-center rounded-md border border-fg px-5 text-sm font-semibold"
-        >
+        <Button onClick={reset}>Try again</Button>
+        <ButtonLink href="/" variant="outline">
           Back to home
-        </Link>
+        </ButtonLink>
       </div>
     </div>
   );

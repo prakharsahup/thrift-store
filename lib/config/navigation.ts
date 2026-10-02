@@ -55,7 +55,7 @@ function feature(gender: Gender, title: string): NavFeature {
     eyebrow: "Just in",
     title,
     href: `/c/${gender}?sort=newest`,
-    image: `https://placehold.co/480x640/F6F3FB/6C2BD9/png?text=${encodeURIComponent(title)}`,
+    image: `https://placehold.co/480x640/F1EBE0/B93A0E/png?text=${encodeURIComponent(title)}`,
   };
 }
 

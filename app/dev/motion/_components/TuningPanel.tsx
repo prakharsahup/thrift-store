@@ -3,6 +3,8 @@
 import { useEffect, useId, useRef, useState } from "react";
 import type { GSDevTools } from "gsap/GSDevTools";
 import { SlidersHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { inputVariants } from "@/components/ui/Input";
 import { gsap } from "@/lib/motion/gsap";
 import { motionTokens, type MotionTokens } from "@/lib/motion/tokens";
 import { TokenSlider } from "./TokenSlider";
@@ -148,7 +150,7 @@ export function TuningPanel({ tokens, onChange }: Props) {
               id={outId}
               value={tokens.ease.out}
               onChange={(event) => setEase("out", event.target.value)}
-              className="rounded-sm border border-border bg-bg px-2 py-1"
+              className={inputVariants({ className: "h-9 px-2 text-xs" })}
             >
               {outEases.map((name) => (
                 <option key={name}>{name}</option>
@@ -161,7 +163,7 @@ export function TuningPanel({ tokens, onChange }: Props) {
               id={inOutId}
               value={tokens.ease.inOut}
               onChange={(event) => setEase("inOut", event.target.value)}
-              className="rounded-sm border border-border bg-bg px-2 py-1"
+              className={inputVariants({ className: "h-9 px-2 text-xs" })}
             >
               {inOutEases.map((name) => (
                 <option key={name}>{name}</option>
@@ -194,28 +196,21 @@ export function TuningPanel({ tokens, onChange }: Props) {
         </fieldset>
 
         <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={copy}
-            className="rounded-md bg-fg px-3 py-2 text-xs font-semibold text-bg"
-          >
+          <Button variant="secondary" size="sm" onClick={copy}>
             Copy values
-          </button>
-          <button
-            type="button"
-            onClick={() => onChange(motionTokens)}
-            className="rounded-md border border-border px-3 py-2 text-xs font-semibold hover:border-fg"
-          >
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => onChange(motionTokens)}>
             Reset
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             aria-pressed={devToolsOn}
             onClick={toggleDevTools}
-            className="rounded-md border border-border px-3 py-2 text-xs font-semibold hover:border-fg aria-pressed:bg-surface"
+            className="aria-pressed:bg-fg aria-pressed:text-bg"
           >
             GSDevTools
-          </button>
+          </Button>
         </div>
         <p role="status" className="min-h-4 text-xs text-muted">
           {copyStatus}

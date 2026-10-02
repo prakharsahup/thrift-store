@@ -10,6 +10,8 @@ import { Parallax } from "@/components/motion/Parallax";
 import { RevealImage } from "@/components/motion/RevealImage";
 import { RevealText } from "@/components/motion/RevealText";
 import { StackCards } from "@/components/motion/StackCards";
+import { Button } from "@/components/ui/Button";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 import { CardHoverDemo } from "./_components/CardHoverDemo";
 import { DemoSection } from "./_components/DemoSection";
 import { MotionCheck } from "./_components/MotionCheck";
@@ -279,12 +281,9 @@ export default function MotionPlaygroundPage() {
           spec="5.9"
           description="Enter-only wipe for brand pages (it will live in app/(brand)/template.tsx). It runs on in-app navigation, not on a full page load."
         >
-          <Link
-            href="/dev/transition"
-            className="inline-flex h-12 items-center rounded-md bg-primary px-6 text-sm font-semibold text-primary-fg"
-          >
+          <ButtonLink href="/dev/transition" size="lg">
             Open the transition demo
-          </Link>
+          </ButtonLink>
         </DemoSection>
 
         <DemoSection
@@ -298,12 +297,9 @@ export default function MotionPlaygroundPage() {
               <HoverMarquee href="/dev/motion#signature" label="Shop the drop" />
             </Magnetic>
             <Magnetic>
-              <button
-                type="button"
-                className="h-12 rounded-md border border-fg px-6 text-sm font-semibold"
-              >
+              <Button variant="outline" size="lg">
                 Magnetic button
-              </button>
+              </Button>
             </Magnetic>
           </div>
 

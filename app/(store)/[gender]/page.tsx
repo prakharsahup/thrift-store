@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { ProductGrid } from "@/components/catalogue/ProductGrid";
@@ -7,6 +6,8 @@ import { ProductRail } from "@/components/home/ProductRail";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { HoverMarquee } from "@/components/motion/HoverMarquee";
 import { ProductCard } from "@/components/product/ProductCard";
+import { ButtonLink } from "@/components/ui/ButtonLink";
+import { ChipLink } from "@/components/ui/ChipLink";
 import { stealsMaxPaise } from "@/lib/config/home";
 import { genders, styleTags, type Gender } from "@/lib/config/navigation";
 import { getCategoryPage, listProducts, type ProductQuery } from "@/lib/server/catalogue";
@@ -69,7 +70,8 @@ export default async function GenderLandingPage({ params }: PageProps<"/[gender]
   if (!root) notFound();
 
   const [newest, steals] = await Promise.all([
-    listProducts(browse(root.ids, { limit: 8 })),
+    // 12 fills whole rows at 2, 3 and 4 columns; ProductGrid trims if fewer come back.
+    listProducts(browse(root.ids, { limit: 12 })),
     listProducts(browse(root.ids, { maxRupees: stealsMaxPaise / 100, limit: 12 })),
   ]);
   const buyableSteals = steals.products.filter((p) => p.status !== "sold");
@@ -90,12 +92,7 @@ export default async function GenderLandingPage({ params }: PageProps<"/[gender]
         <ul className="flex flex-wrap gap-2">
           {root.children.map((child) => (
             <li key={child.slug}>
-              <Link
-                href={`/c/${child.slug}`}
-                className="inline-flex h-10 items-center rounded-full border border-border px-4 text-sm font-medium hover:border-fg"
-              >
-                {child.name}
-              </Link>
+              <ChipLink href={`/c/${child.slug}`}>{child.name}</ChipLink>
             </li>
           ))}
         </ul>
@@ -106,18 +103,16 @@ export default async function GenderLandingPage({ params }: PageProps<"/[gender]
           <h2 id="landing-new" className="text-xl font-bold md:text-2xl">
             New in {root.name.toLowerCase()}
           </h2>
-          <Link
-            href={`/c/${root.slug}?sort=newest`}
-            className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
-          >
-            See everything <ArrowRight aria-hidden className="size-4" />
-          </Link>
+          <ButtonLink href={`/c/${root.slug}?sort=newest`} variant="link">
+            See everything <ArrowRight aria-hidden />
+          </ButtonLink>
         </div>
         <ProductGrid
           products={newest.products}
           total={newest.products.length}
           loadMoreHref={null}
           emptyState={GRID_EMPTY}
+          fullRowsOnly
         />
       </section>
 
@@ -128,12 +123,7 @@ export default async function GenderLandingPage({ params }: PageProps<"/[gender]
         <ul className="flex flex-wrap gap-2">
           {styleTags.map(([label, tag]) => (
             <li key={tag}>
-              <Link
-                href={`/c/${root.slug}?style=${tag}`}
-                className="inline-flex h-10 items-center rounded-full bg-surface px-4 text-sm font-medium hover:bg-border"
-              >
-                {label}
-              </Link>
+              <ChipLink href={`/c/${root.slug}?style=${tag}`}>{label}</ChipLink>
             </li>
           ))}
         </ul>

@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 import { shipping, shippingFor } from "@/lib/config/shipping";
 import { useCartStore } from "@/lib/stores/cart";
 import { cn } from "@/lib/utils/cn";
@@ -52,13 +54,9 @@ export function CartContents({ variant }: Props) {
         <p className="max-w-xs text-sm text-muted">
           Every piece here is one of one. When you find yours, add it before someone else does.
         </p>
-        <Link
-          href="/search?sort=newest"
-          onClick={closeCart}
-          className="inline-flex h-11 items-center rounded-md bg-primary px-5 text-sm font-semibold text-primary-fg"
-        >
+        <ButtonLink href="/search?sort=newest" onClick={closeCart}>
           See what&rsquo;s new
-        </Link>
+        </ButtonLink>
       </div>
     );
   }
@@ -115,14 +113,9 @@ export function CartContents({ variant }: Props) {
           minutes.
         </p>
         {/* Checkout arrives in the next phase. */}
-        <button
-          type="button"
-          disabled
-          aria-describedby="checkout-note"
-          className="mt-4 h-12 w-full rounded-md bg-primary text-sm font-semibold tracking-wide text-primary-fg uppercase disabled:cursor-not-allowed disabled:opacity-60"
-        >
+        <Button size="lg" fullWidth disabled aria-describedby="checkout-note" className="mt-4">
           Checkout
-        </button>
+        </Button>
         <p id="checkout-note" className="mt-2 text-center text-xs text-muted">
           {blocked ? "Remove unavailable pieces to check out. " : ""}Online checkout opens soon.
         </p>

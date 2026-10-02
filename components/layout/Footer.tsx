@@ -23,7 +23,7 @@ export function Footer() {
               <div key={column.title}>
                 <h2
                   id={headingId}
-                  className="mb-3 text-xs font-semibold tracking-wider text-muted uppercase"
+                  className="mb-3 font-body text-xs font-semibold tracking-wider text-muted uppercase"
                 >
                   {column.title}
                 </h2>

@@ -16,11 +16,14 @@ import { cn } from "@/lib/utils/cn";
 
 type Props = { banners: Banner[] };
 
-const IMAGE_SIZES = "(min-width: 1024px) 58vw, 100vw";
+// Banner artwork is 16:7 (1600×700, see supabase/seed.sql); the frame uses the same ratio, so
+// object-cover never crops it. On desktop the image takes 7/12 of the container.
+const IMAGE_SIZES = "(min-width: 1440px) 800px, (min-width: 1280px) 56vw, 100vw";
 
-// Home hero: admin-managed banners in an Embla carousel (CLAUDE.md §8). The first slide is the page's
-// h1 and gets the load reveals (MOTION.md §6). Autoplays every 6s with motion on; pauses on hover
-// or focus, and has a visible pause button.
+// Home hero: admin-managed banners in an Embla carousel (CLAUDE.md §8), inside the page container
+// so its edges line up with every section below. The first slide is the page's h1 and gets the
+// load reveals (MOTION.md §6). Autoplays every 6s with motion on; pauses on hover or focus, and
+// has a visible pause button.
 export function HeroCarousel({ banners }: Props) {
   const motionEnabled = useMotionEnabled();
   const [viewportRef, api] = useEmblaCarousel({ loop: banners.length > 1 });
@@ -31,10 +34,10 @@ export function HeroCarousel({ banners }: Props) {
     <section
       aria-roledescription="carousel"
       aria-label="Featured"
-      className="surface-dark bg-fg text-bg"
+      className="site-container pt-4 md:pt-6"
       {...autoplay.interactionProps}
     >
-      <div ref={viewportRef} className="overflow-hidden">
+      <div ref={viewportRef} className="surface-dark overflow-hidden rounded-lg bg-fg text-bg">
         <div className="flex">
           {banners.map((banner, i) => (
             <div
@@ -44,33 +47,33 @@ export function HeroCarousel({ banners }: Props) {
               aria-label={`${i + 1} of ${banners.length}`}
               className="min-w-0 shrink-0 grow-0 basis-full"
             >
-              <div className="grid lg:min-h-[34rem] lg:grid-cols-[5fr_7fr]">
-                <div className="order-2 flex flex-col justify-center gap-5 px-4 py-10 lg:order-1 lg:px-12 lg:py-16">
+              <div className="grid h-full xl:grid-cols-[5fr_7fr] xl:items-center">
+                <div className="order-2 flex flex-col gap-4 p-5 sm:p-8 xl:order-1 xl:gap-5 xl:p-10">
                   {i === 0 ? (
-                    <RevealText as="h1" trigger="load" className="text-3xl font-bold md:text-4xl">
+                    <RevealText as="h1" trigger="load" className="text-2xl font-bold md:text-3xl">
                       {banner.title}
                     </RevealText>
                   ) : (
-                    <h2 className="text-3xl font-bold md:text-4xl">{banner.title}</h2>
+                    <h2 className="text-2xl font-bold md:text-3xl">{banner.title}</h2>
                   )}
                   {banner.subtitle ? (
-                    <p className="max-w-md text-base text-bg/80 lg:text-lg">{banner.subtitle}</p>
+                    <p className="max-w-md text-base text-bg/80">{banner.subtitle}</p>
                   ) : null}
                   <Magnetic className="self-start">
                     <HoverMarquee href={banner.linkUrl} label={banner.ctaLabel} />
                   </Magnetic>
                 </div>
-                <div className="relative order-1 aspect-[16/10] lg:order-2 lg:aspect-auto">
-                  {i === 0 ? (
-                    <RevealImage
-                      src={banner.imageUrl}
-                      alt={banner.imageAlt}
-                      sizes={IMAGE_SIZES}
-                      priority
-                      trigger="load"
-                      className="absolute inset-0"
-                    />
-                  ) : (
+                {i === 0 ? (
+                  <RevealImage
+                    src={banner.imageUrl}
+                    alt={banner.imageAlt}
+                    sizes={IMAGE_SIZES}
+                    priority
+                    trigger="load"
+                    className="order-1 aspect-[16/7] w-full xl:order-2"
+                  />
+                ) : (
+                  <div className="relative order-1 aspect-[16/7] w-full xl:order-2">
                     <Image
                       src={banner.imageUrl}
                       alt={banner.imageAlt}
@@ -78,8 +81,8 @@ export function HeroCarousel({ banners }: Props) {
                       sizes={IMAGE_SIZES}
                       className="object-cover"
                     />
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -87,8 +90,8 @@ export function HeroCarousel({ banners }: Props) {
       </div>
 
       {banners.length > 1 ? (
-        <div className="site-container flex items-center justify-between gap-4 py-4">
-          <div className="flex gap-2">
+        <div className="flex items-center justify-between gap-4 pt-3">
+          <div className="flex gap-1">
             {banners.map((banner, i) => (
               <button
                 key={banner.id}
@@ -96,12 +99,12 @@ export function HeroCarousel({ banners }: Props) {
                 aria-label={`Show slide ${i + 1}: ${banner.title}`}
                 aria-current={i === selectedIndex ? "true" : undefined}
                 onClick={() => api?.scrollTo(i)}
-                className="flex h-10 items-center"
+                className="flex h-10 cursor-pointer items-center px-1"
               >
                 <span
                   className={cn(
                     "block h-1 rounded-full transition-all",
-                    i === selectedIndex ? "w-8 bg-accent" : "w-4 bg-bg/40",
+                    i === selectedIndex ? "w-8 bg-primary" : "w-4 bg-input",
                   )}
                 />
               </button>
@@ -110,7 +113,6 @@ export function HeroCarousel({ banners }: Props) {
           <div className="flex gap-2">
             {motionEnabled ? (
               <CarouselButton
-                tone="dark"
                 label="Pause slideshow"
                 pressed={autoplay.userPaused}
                 onClick={autoplay.togglePaused}
@@ -118,10 +120,10 @@ export function HeroCarousel({ banners }: Props) {
                 {autoplay.userPaused ? <Play aria-hidden /> : <Pause aria-hidden />}
               </CarouselButton>
             ) : null}
-            <CarouselButton tone="dark" label="Previous slide" onClick={() => api?.scrollPrev()}>
+            <CarouselButton label="Previous slide" onClick={() => api?.scrollPrev()}>
               <ChevronLeft aria-hidden />
             </CarouselButton>
-            <CarouselButton tone="dark" label="Next slide" onClick={() => api?.scrollNext()}>
+            <CarouselButton label="Next slide" onClick={() => api?.scrollNext()}>
               <ChevronRight aria-hidden />
             </CarouselButton>
           </div>

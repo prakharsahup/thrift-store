@@ -8,21 +8,25 @@
  */
 @theme {
   --color-*: initial;
-  /* Palette: violet, white and ink black. Contrast ratios are WCAG 2 against the pair noted. */
-  --color-bg: #ffffff;
-  --color-fg: #120d1a; /* ink: black with a violet undertone — 19.1:1 on bg */
-  --color-muted: #645c70; /* secondary text — 6.4:1 on bg, 5.8:1 on surface */
-  --color-surface: #f6f3fb; /* lavender mist: section / card backgrounds */
-  --color-primary: #6c2bd9; /* royal violet: CTAs, links, focus — 7.0:1 with primary-fg and on bg */
-  --color-primary-fg: #ffffff;
-  --color-accent: #c8a6ff; /* lilac: badges, highlights, and accents on dark — 9.4:1 with accent-fg */
-  --color-accent-fg: #120d1a;
-  --color-sale: #c4124f; /* berry: savings, errors — 5.9:1 on bg */
-  --color-sold: #a49cb3; /* SOLD badge fill only; text on it uses fg (7.3:1) */
-  --color-border: #e7e1f0;
-  --color-overlay: rgb(18 13 26 / 0.55);
+  /*
+   * Palette "kraft & chilli": unbleached paper, warm ink, a chilli-red signal colour and a volt
+   * accent. Thrift-tag warmth with streetwear punch. Ratios are WCAG 2 contrast for the pair noted.
+   */
+  --color-bg: #fbf8f3; /* paper: page background */
+  --color-fg: #17140f; /* ink: warm near-black, 17.3:1 on bg, 15.5:1 on surface */
+  --color-muted: #675e53; /* secondary text: 6.0:1 on bg, 5.4:1 on surface */
+  --color-surface: #f1ebe0; /* kraft: section and card fills */
+  --color-primary: #b93a0e; /* chilli: CTAs, links, focus. 5.4:1 on bg, 4.8:1 on surface */
+  --color-primary-fg: #ffffff; /* text on chilli: 5.7:1 */
+  --color-accent: #d4f04c; /* volt: badges, stickers, accents on dark: 14.3:1 with ink */
+  --color-accent-fg: #17140f;
+  --color-sale: #b3123a; /* crimson: savings and errors: 6.5:1 on bg, 5.8:1 on surface */
+  --color-sold: #a39a8d; /* SOLD badge fill only; text on it uses fg (6.6:1) */
+  --color-border: #e2d8c8; /* dividers and card outlines (decorative) */
+  --color-input: #857b6d; /* form field outlines: 3.9:1 on bg, 3.5:1 on surface (WCAG 1.4.11) */
+  --color-overlay: rgb(23 20 15 / 0.6);
   --color-white: #ffffff; /* text on photos / video */
-  /* Violet on ink is only 2.7:1, so on dark sections use accent (lilac, 9.4:1) instead of primary. */
+  /* Chilli on ink is only 3.2:1, so dark sections use the volt accent instead (14.3:1). */
 
   /* Type scale: 12 / 14 / 16 / 18 / 24 / 32 / 48 / 64 */
   --text-*: initial;
@@ -35,13 +39,13 @@
   --text-lg: 1.125rem;
   --text-lg--line-height: 1.75rem;
   --text-xl: 1.5rem;
-  --text-xl--line-height: 2rem;
+  --text-xl--line-height: 1.2;
   --text-2xl: 2rem;
-  --text-2xl--line-height: 2.5rem;
+  --text-2xl--line-height: 1.1;
   --text-3xl: 3rem;
-  --text-3xl--line-height: 1.05;
+  --text-3xl--line-height: 1;
   --text-4xl: 4rem;
-  --text-4xl--line-height: 1;
+  --text-4xl--line-height: 0.95;
 
   --radius-*: initial;
   --radius-sm: 4px;
@@ -53,12 +57,12 @@
 
 /* Font families come from next/font variables set on <html> in app/layout.tsx. */
 @theme inline {
-  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
-  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-body);
 }
 
-/* Dark sections (bg-fg): lilac focus ring, since violet on ink is too low-contrast. */
+/* Dark sections (bg-fg): volt focus ring, since chilli on ink is too low-contrast. */
 @utility surface-dark {
   --focus-ring: var(--color-accent);
 }
@@ -95,12 +99,21 @@
     font-family: var(--font-body);
   }
 
+  /* Bricolage Grotesque: the optical-size axis sharpens it at display sizes and the width axis
+     narrows big headings into a poster-like cut. Smaller headings stay at normal width. */
   h1,
   h2,
   h3,
   h4 {
     font-family: var(--font-display);
+    font-optical-sizing: auto;
     letter-spacing: -0.02em;
+  }
+
+  h1,
+  h2 {
+    font-stretch: 85%;
+    letter-spacing: -0.03em;
   }
 
   /* Visible focus ring for keyboard users on every interactive element. */

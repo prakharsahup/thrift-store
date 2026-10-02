@@ -1,23 +1,59 @@
 import type { Metadata } from "next";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { formatINR } from "@/lib/utils/money";
 
 export const metadata: Metadata = { title: "Design tokens" };
 
 // Class names are written out in full so Tailwind can detect them.
 const colors = [
-  { token: "--color-bg", swatch: "bg-bg", note: "Page background" },
-  { token: "--color-fg", swatch: "bg-fg", note: "Primary text" },
-  { token: "--color-muted", swatch: "bg-muted", note: "Secondary text" },
-  { token: "--color-surface", swatch: "bg-surface", note: "Section / card fill" },
-  { token: "--color-primary", swatch: "bg-primary", note: "Brand accent, CTAs" },
-  { token: "--color-primary-fg", swatch: "bg-primary-fg", note: "Text on primary" },
-  { token: "--color-accent", swatch: "bg-accent", note: "Badges, highlights" },
-  { token: "--color-accent-fg", swatch: "bg-accent-fg", note: "Text on accent" },
-  { token: "--color-sale", swatch: "bg-sale", note: "Savings, errors" },
-  { token: "--color-sold", swatch: "bg-sold", note: "SOLD badge fill" },
-  { token: "--color-border", swatch: "bg-border", note: "Dividers, inputs" },
-  { token: "--color-overlay", swatch: "bg-overlay", note: "Drawer / modal scrim" },
+  { token: "--color-bg", value: "#fbf8f3", swatch: "bg-bg", note: "Paper · page background" },
+  { token: "--color-fg", value: "#17140f", swatch: "bg-fg", note: "Ink · text, dark sections" },
+  { token: "--color-muted", value: "#675e53", swatch: "bg-muted", note: "Secondary text · 6.0:1" },
+  {
+    token: "--color-surface",
+    value: "#f1ebe0",
+    swatch: "bg-surface",
+    note: "Kraft · section fill",
+  },
+  {
+    token: "--color-primary",
+    value: "#b93a0e",
+    swatch: "bg-primary",
+    note: "Chilli · CTAs, links",
+  },
+  {
+    token: "--color-primary-fg",
+    value: "#ffffff",
+    swatch: "bg-primary-fg",
+    note: "Text on chilli · 5.7:1",
+  },
+  {
+    token: "--color-accent",
+    value: "#d4f04c",
+    swatch: "bg-accent",
+    note: "Volt · stickers, dark focus",
+  },
+  {
+    token: "--color-accent-fg",
+    value: "#17140f",
+    swatch: "bg-accent-fg",
+    note: "Text on volt · 14.3:1",
+  },
+  { token: "--color-sale", value: "#b3123a", swatch: "bg-sale", note: "Crimson · savings, errors" },
+  { token: "--color-sold", value: "#a39a8d", swatch: "bg-sold", note: "SOLD badge fill" },
+  { token: "--color-border", value: "#e2d8c8", swatch: "bg-border", note: "Dividers (decorative)" },
+  { token: "--color-input", value: "#857b6d", swatch: "bg-input", note: "Field outlines · 3.9:1" },
+  {
+    token: "--color-overlay",
+    value: "ink 60%",
+    swatch: "bg-overlay",
+    note: "Drawer / modal scrim",
+  },
 ] as const;
+
+const buttonVariantNames = ["primary", "secondary", "outline", "ghost", "link"] as const;
+const buttonSizes = ["sm", "md", "lg"] as const;
 
 const typeScale = [
   { cls: "text-4xl", px: 64 },
@@ -73,6 +109,7 @@ export default function TokensPage() {
               <div className={`h-20 ${c.swatch}`} />
               <div className="p-3">
                 <p className="font-mono text-xs font-semibold">{c.token}</p>
+                <p className="font-mono text-xs text-muted">{c.value}</p>
                 <p className="text-xs text-muted">{c.note}</p>
               </div>
             </li>
@@ -83,11 +120,13 @@ export default function TokensPage() {
       <Section title="Typography">
         <div className="grid gap-6 md:grid-cols-2">
           <div className="rounded-md bg-surface p-6">
-            <p className="text-xs text-muted">--font-display · Space Grotesk</p>
-            <p className="mt-2 font-display text-2xl font-bold">One of one. Never twice.</p>
+            <p className="text-xs text-muted">
+              --font-display · Bricolage Grotesque (h1/h2 at 85% width)
+            </p>
+            <h2 className="mt-2 text-2xl font-bold">One of one. Never twice.</h2>
           </div>
           <div className="rounded-md bg-surface p-6">
-            <p className="text-xs text-muted">--font-body · Inter</p>
+            <p className="text-xs text-muted">--font-body · Instrument Sans</p>
             <p className="mt-2 font-body text-base">
               Every piece is graded, measured and photographed by hand before it goes live.
             </p>
@@ -129,20 +168,65 @@ export default function TokensPage() {
         </ul>
       </Section>
 
-      <Section title="Components preview">
+      <Section title="Button (components/ui/Button.tsx)">
+        <div className="space-y-4">
+          {buttonSizes.map((size) => (
+            <div key={size} className="flex flex-wrap items-center gap-3">
+              <span className="w-10 font-mono text-xs text-muted">{size}</span>
+              {buttonVariantNames.map((variant) => (
+                <Button key={variant} variant={variant} size={size}>
+                  {variant}
+                </Button>
+              ))}
+              <Button size={size} disabled>
+                disabled
+              </Button>
+            </div>
+          ))}
+        </div>
+        <div className="surface-dark mt-6 flex flex-wrap items-center gap-3 rounded-md bg-fg p-4 text-bg">
+          <Button variant="overlay">overlay</Button>
+          <Button variant="sold" disabled>
+            Sold
+          </Button>
+          <span className="text-xs">Tab here: focus rings turn volt on dark sections.</span>
+        </div>
+        <p className="mt-4 text-xs text-muted">
+          Links styled as buttons use <code>ButtonLink</code>, which shares the same variants.
+        </p>
+      </Section>
+
+      <Section title="Input (components/ui/Input.tsx)">
+        <div className="grid max-w-xl gap-4 sm:grid-cols-2">
+          <div>
+            <label htmlFor="tokens-input-default" className="mb-1 block text-sm font-semibold">
+              Default (md)
+            </label>
+            <Input id="tokens-input-default" placeholder="you@example.com" />
+          </div>
+          <div>
+            <label htmlFor="tokens-input-filled" className="mb-1 block text-sm font-semibold">
+              Filled (search)
+            </label>
+            <Input id="tokens-input-filled" tone="filled" placeholder="Search brands" />
+          </div>
+          <div>
+            <label htmlFor="tokens-input-invalid" className="mb-1 block text-sm font-semibold">
+              Invalid
+            </label>
+            <Input id="tokens-input-invalid" aria-invalid defaultValue="not-an-email" />
+          </div>
+          <div>
+            <label htmlFor="tokens-input-disabled" className="mb-1 block text-sm font-semibold">
+              Disabled
+            </label>
+            <Input id="tokens-input-disabled" disabled defaultValue="Can't edit" />
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Badges and prices">
         <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            className="rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-fg"
-          >
-            Add to cart
-          </button>
-          <button
-            type="button"
-            className="rounded-md border border-fg px-5 py-3 text-sm font-semibold"
-          >
-            Wishlist
-          </button>
           <span className="rounded-sm bg-accent px-2 py-1 text-xs font-bold uppercase text-accent-fg">
             New drop
           </span>
@@ -154,9 +238,6 @@ export default function TokensPage() {
           <span className="text-lg font-bold">{formatINR(49900)}</span>
           <span className="text-sm text-muted line-through">{formatINR(249900)}</span>
           <span className="text-sm font-semibold text-sale">est. retail · save 80%</span>
-        </p>
-        <p className="mt-4 text-xs text-muted">
-          Press Tab to check the focus ring on the buttons above.
         </p>
       </Section>
 

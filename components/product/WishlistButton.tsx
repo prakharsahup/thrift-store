@@ -1,44 +1,28 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
 import { Heart } from "lucide-react";
-import { useWishlistStore } from "@/lib/stores/wishlist";
+import { Button } from "@/components/ui/Button";
+import { useWishlistToggle } from "@/hooks/useWishlistToggle";
 import { cn } from "@/lib/utils/cn";
 
 type Props = { productId: string; className?: string };
 
-// Save / un-save a piece. Signed-out visitors are sent to sign in and brought back here.
+// PDP "Save to wishlist". Signed-out visitors are sent to sign in and brought back here.
 export function WishlistButton({ productId, className }: Props) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const saved = useWishlistStore((s) => s.ids.includes(productId));
-  const session = useWishlistStore((s) => s.session);
-  const toggle = useWishlistStore((s) => s.toggle);
-  const [error, setError] = useState(false);
-
-  async function handleClick() {
-    setError(false);
-    if (session === "guest") {
-      router.push(`/login?next=${encodeURIComponent(pathname)}`);
-      return;
-    }
-    const result = await toggle(productId);
-    if (result === "login") router.push(`/login?next=${encodeURIComponent(pathname)}`);
-    if (result === "error") setError(true);
-  }
+  const { saved, error, toggle } = useWishlistToggle(productId);
 
   return (
     <div className={className}>
-      <button
-        type="button"
+      <Button
+        variant="outline"
+        size="lg"
+        fullWidth
         aria-pressed={saved}
-        onClick={() => void handleClick()}
-        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md border border-border text-sm font-semibold hover:border-fg"
+        onClick={() => void toggle()}
       >
-        <Heart aria-hidden className={cn("size-4", saved && "fill-primary text-primary")} />
+        <Heart aria-hidden className={cn(saved && "fill-primary text-primary")} />
         {saved ? "Saved to wishlist" : "Save to wishlist"}
-      </button>
+      </Button>
       {error ? (
         <p role="alert" className="mt-2 text-xs text-sale">
           That didn&rsquo;t save. Try again.

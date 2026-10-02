@@ -1,6 +1,8 @@
 "use client";
 
 import Form from "next/form";
+import { Button } from "@/components/ui/Button";
+import { inputVariants } from "@/components/ui/Input";
 import { sorts, type Filters, type SortKey } from "@/lib/catalogue/filters";
 
 type Props = { action: string; filters: Filters };
@@ -23,11 +25,12 @@ export function SortSelect({ action, filters }: Props) {
   ];
 
   return (
-    <Form action={action} scroll={false} className="flex items-center gap-2">
+    <Form action={action} scroll={false} className="flex min-w-0 items-center gap-2">
       {keep.map(([name, value], i) => (
         <input key={`${name}-${value}-${i}`} type="hidden" name={name} value={value} />
       ))}
-      <label htmlFor="sort" className="text-sm text-muted">
+      {/* Visually hidden on phones, where the toolbar has room for the select only. */}
+      <label htmlFor="sort" className="sr-only text-sm text-muted sm:not-sr-only">
         Sort
       </label>
       <select
@@ -35,7 +38,7 @@ export function SortSelect({ action, filters }: Props) {
         name="sort"
         defaultValue={filters.sort}
         onChange={(event) => event.currentTarget.form?.requestSubmit()}
-        className="h-10 rounded-md border border-border bg-bg px-2 text-sm font-medium"
+        className={inputVariants({ fieldSize: "md", className: "w-auto pr-8 font-medium" })}
       >
         {(Object.entries(sorts) as [SortKey, string][]).map(([value, label]) => (
           <option key={value} value={value}>
@@ -44,9 +47,9 @@ export function SortSelect({ action, filters }: Props) {
         ))}
       </select>
       <noscript>
-        <button type="submit" className="h-10 rounded-md border border-fg px-3 text-sm">
+        <Button type="submit" variant="outline" size="sm">
           Sort
-        </button>
+        </Button>
       </noscript>
     </Form>
   );

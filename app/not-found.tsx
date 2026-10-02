@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { SiteShell } from "@/components/layout/SiteShell";
 import { SearchForm } from "@/components/layout/SearchForm";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 import { genderNav } from "@/lib/config/navigation";
 
 export const metadata: Metadata = { title: "Page not found" };
@@ -22,21 +22,13 @@ export default function NotFound() {
 
         <ul className="mt-8 flex flex-wrap gap-3">
           <li>
-            <Link
-              href="/"
-              className="inline-flex h-11 items-center rounded-md bg-primary px-5 text-sm font-semibold text-primary-fg"
-            >
-              Back to home
-            </Link>
+            <ButtonLink href="/">Back to home</ButtonLink>
           </li>
           {genderNav.map((item) => (
             <li key={item.gender}>
-              <Link
-                href={item.href}
-                className="inline-flex h-11 items-center rounded-md border border-fg px-5 text-sm font-semibold"
-              >
+              <ButtonLink href={item.href} variant="outline">
                 Shop {item.label.toLowerCase()}
-              </Link>
+              </ButtonLink>
             </li>
           ))}
         </ul>

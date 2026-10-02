@@ -2,6 +2,7 @@
 
 import { SlidersHorizontal, X } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
 import { FilterForm } from "./FilterForm";
 
@@ -15,33 +16,36 @@ export function FiltersSheet({ activeCount, ...formProps }: Props) {
 
   return (
     <>
-      <button
-        type="button"
+      <Button
+        variant="outline"
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => setOpen(true)}
-        className="inline-flex h-10 items-center gap-2 rounded-md border border-border px-3 text-sm font-semibold hover:border-fg lg:hidden"
+        className="lg:hidden"
       >
-        <SlidersHorizontal aria-hidden className="size-4" />
+        <SlidersHorizontal aria-hidden />
         Filters
         {activeCount > 0 ? (
-          <span className="rounded-sm bg-fg px-1.5 text-xs text-bg">{activeCount}</span>
+          <span className="rounded-sm bg-primary px-1.5 text-xs text-primary-fg">
+            {activeCount}
+          </span>
         ) : null}
-      </button>
+      </Button>
 
       <Sheet open={open} onClose={() => setOpen(false)} label="Filters" side="bottom">
         <div className="flex max-h-[85dvh] flex-col">
           <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-2">
             <p className="font-display text-lg font-bold">Filters</p>
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setOpen(false)}
               autoFocus
-              className="-mr-2 inline-flex size-10 items-center justify-center rounded-md hover:bg-surface"
+              className="-mr-2"
             >
-              <X aria-hidden className="size-5" />
+              <X aria-hidden />
               <span className="sr-only">Close filters</span>
-            </button>
+            </Button>
           </div>
           <div className="overflow-y-auto overscroll-contain px-4">
             <FilterForm {...formProps} idPrefix="sheet" onSubmitted={() => setOpen(false)} />

@@ -1,37 +1,36 @@
 "use client";
 
-import { Pause, Play } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils/cn";
 import { useMotionSettings } from "./MotionProvider";
 
-type Props = {
-  /** Icon-only button (header). The label stays available to screen readers and as a tooltip. */
-  compact?: boolean;
-  className?: string;
-};
+type Props = { className?: string };
 
-// The accessible name stays "Pause animations"; aria-pressed carries the state. Changing both the
-// label and the pressed state confuses screen readers, so only the icon swaps visually.
-export function MotionToggle({ compact = false, className }: Props) {
+// A switch, not a pause button: the name stays "Animations" and aria-checked carries on/off, so
+// it never contradicts itself when reduced motion turns animations off by default.
+// Lives in the footer only (it read as a media control in the header).
+export function MotionToggle({ className }: Props) {
   const { enabled, setEnabled } = useMotionSettings();
-  const paused = !enabled;
-  const Icon = paused ? Play : Pause;
 
   return (
-    <button
-      type="button"
-      aria-pressed={paused}
-      title={compact ? "Pause animations" : undefined}
-      onClick={() => setEnabled(paused)}
-      className={cn(
-        compact
-          ? "inline-flex size-10 items-center justify-center rounded-md hover:bg-surface aria-pressed:bg-surface"
-          : "inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-xs font-medium transition-colors hover:border-fg aria-pressed:bg-fg aria-pressed:text-bg",
-        className,
-      )}
+    <Button
+      variant="outline"
+      size="sm"
+      role="switch"
+      aria-checked={enabled}
+      onClick={() => setEnabled(!enabled)}
+      className={cn("gap-2", className)}
     >
-      <Icon aria-hidden className={compact ? "size-5" : "size-4"} />
-      <span className={compact ? "sr-only" : undefined}>Pause animations</span>
-    </button>
+      Animations
+      <span aria-hidden className="relative h-4 w-7 rounded-full border-2 border-current">
+        <span
+          // Thumb right = on. bg-current follows the text colour, so it inverts with the hover state.
+          className={cn(
+            "absolute top-0.5 left-0.5 size-2 rounded-full bg-current transition-transform",
+            enabled ? "translate-x-3" : "opacity-50",
+          )}
+        />
+      </span>
+    </Button>
   );
 }

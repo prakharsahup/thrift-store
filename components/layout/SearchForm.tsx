@@ -1,5 +1,6 @@
 import Form from "next/form";
 import { Search } from "lucide-react";
+import { Input } from "@/components/ui/Input";
 import { cn } from "@/lib/utils/cn";
 
 type Props = {
@@ -21,14 +22,15 @@ export function SearchForm({ id, defaultValue, className }: Props) {
         aria-hidden
         className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted"
       />
-      <input
+      <Input
         id={id}
         name="q"
         type="search"
         defaultValue={defaultValue}
         placeholder="Search brands, styles, pieces"
         autoComplete="off"
-        className="h-10 w-full rounded-md border border-border bg-surface pr-3 pl-9 text-sm placeholder:text-muted focus:border-fg"
+        tone="filled"
+        className="pl-9"
       />
     </Form>
   );

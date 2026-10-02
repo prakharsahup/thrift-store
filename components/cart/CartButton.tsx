@@ -1,6 +1,7 @@
 "use client";
 
 import { ShoppingBag } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { useCartStore } from "@/lib/stores/cart";
 import { cn } from "@/lib/utils/cn";
 
@@ -13,21 +14,19 @@ export function CartButton({ className }: Props) {
   const openCart = useCartStore((s) => s.openCart);
 
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      size="icon"
       onClick={openCart}
       aria-haspopup="dialog"
       aria-expanded={open}
-      className={cn(
-        "relative inline-flex size-10 items-center justify-center rounded-md hover:bg-surface",
-        className,
-      )}
+      className={cn("relative", className)}
     >
-      <ShoppingBag aria-hidden className="size-5" />
+      <ShoppingBag aria-hidden />
       {count > 0 ? (
         <span
           aria-hidden
-          className="absolute top-1 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-xs leading-none font-bold text-primary-fg"
+          className="absolute top-1 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-xs leading-none font-bold tracking-normal text-primary-fg"
         >
           {count}
         </span>
@@ -35,6 +34,6 @@ export function CartButton({ className }: Props) {
       <span className="sr-only">
         Cart, {count} {count === 1 ? "item" : "items"}
       </span>
-    </button>
+    </Button>
   );
 }

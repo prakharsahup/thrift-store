@@ -1,6 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import { updateProfile, type ProfileFormState } from "@/lib/actions/account";
 import { cn } from "@/lib/utils/cn";
 
@@ -22,14 +24,13 @@ export function ProfileForm({ email, fullName, phone }: Props) {
         <label htmlFor="profile-name" className="mb-1 block text-sm font-semibold">
           Full name
         </label>
-        <input
+        <Input
           id="profile-name"
           name="fullName"
           autoComplete="name"
           defaultValue={fullName}
           aria-invalid={errors.fullName ? true : undefined}
           aria-describedby={errors.fullName ? "profile-name-error" : undefined}
-          className="h-11 w-full rounded-md border border-border bg-bg px-3 text-sm aria-invalid:border-sale"
         />
         {errors.fullName ? (
           <p id="profile-name-error" className="mt-1 text-xs text-sale">
@@ -41,7 +42,7 @@ export function ProfileForm({ email, fullName, phone }: Props) {
         <label htmlFor="profile-phone" className="mb-1 block text-sm font-semibold">
           Mobile number
         </label>
-        <input
+        <Input
           id="profile-phone"
           name="phone"
           type="tel"
@@ -50,7 +51,6 @@ export function ProfileForm({ email, fullName, phone }: Props) {
           defaultValue={phone}
           aria-invalid={errors.phone ? true : undefined}
           aria-describedby="profile-phone-hint"
-          className="h-11 w-full rounded-md border border-border bg-bg px-3 text-sm aria-invalid:border-sale"
         />
         <p
           id="profile-phone-hint"
@@ -60,13 +60,9 @@ export function ProfileForm({ email, fullName, phone }: Props) {
         </p>
       </div>
       <div className="flex items-center gap-4">
-        <button
-          type="submit"
-          disabled={pending}
-          className="inline-flex h-11 items-center rounded-md bg-primary px-5 text-sm font-semibold text-primary-fg hover:bg-fg disabled:opacity-60"
-        >
+        <Button type="submit" disabled={pending}>
           {pending ? "Saving…" : "Save changes"}
-        </button>
+        </Button>
         <p
           role="status"
           className={cn("text-sm", state.status === "error" ? "text-sale" : "text-muted")}

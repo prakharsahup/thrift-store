@@ -62,7 +62,7 @@ join public.categories parent on parent.slug = c.parent_slug;
 
 update public.categories
 set image_url = format(
-  'https://placehold.co/480x600/F6F3FB/120D1A/png?text=%s',
+  'https://placehold.co/480x600/F1EBE0/17140F/png?text=%s',
   replace(replace(name, ' & ', '+and+'), ' ', '+')
 );
 
@@ -73,11 +73,11 @@ set image_url = format(
 insert into public.drops (name, slug, description, banner_url, go_live_at, is_published) values
   ('Monsoon Denim', 'monsoon-denim',
    'Broken-in denim for grey skies: straight legs, flares and one very good trucker jacket.',
-   'https://placehold.co/1600x700/6C2BD9/FFFFFF/png?text=Monsoon+Denim',
+   'https://placehold.co/1600x700/B93A0E/FFFFFF/png?text=Monsoon+Denim',
    now() - interval '3 days', true),
   ('Y2K Archive', 'y2k-archive',
    'Slip dresses, tiny bags and pleats, straight out of 2003.',
-   'https://placehold.co/1600x700/C8A6FF/120D1A/png?text=Y2K+Archive',
+   'https://placehold.co/1600x700/D4F04C/17140F/png?text=Y2K+Archive',
    now() + interval '5 days', true),
   ('Winter Knits', 'winter-knits',
    'Still being sorted. Not published yet.',
@@ -285,11 +285,11 @@ update public.products set status = 'reserved', reserved_until = now() - interva
 -- Two images per product: front, then back (the card hover shows the second one).
 insert into public.product_images (product_id, url, alt, sort_order)
 select p.id,
-       format('https://placehold.co/600x800/%s/120D1A/png?text=%s', img.bg, replace(p.title, ' ', '+')),
+       format('https://placehold.co/600x800/%s/17140F/png?text=%s', img.bg, replace(p.title, ' ', '+')),
        format('%s, %s', p.title, img.view),
        img.sort_order
 from public.products p
-cross join (values ('F6F3FB', 'front', 0), ('E7E1F0', 'back', 1)) as img (bg, view, sort_order);
+cross join (values ('F1EBE0', 'front', 0), ('E2D8C8', 'back', 1)) as img (bg, view, sort_order);
 
 -- ---------------------------------------------------------------------------
 -- Banners, coupons
@@ -297,13 +297,13 @@ cross join (values ('F6F3FB', 'front', 0), ('E7E1F0', 'back', 1)) as img (bg, vi
 
 insert into public.banners (title, subtitle, image_url, image_alt, link_url, cta_label, sort_order) values
   ('Monsoon Denim is live', 'Straight legs, flares and one very good trucker jacket.',
-   'https://placehold.co/1600x700/6C2BD9/FFFFFF/png?text=Monsoon+Denim',
+   'https://placehold.co/1600x700/B93A0E/FFFFFF/png?text=Monsoon+Denim',
    'Placeholder banner for the Monsoon Denim drop', '/drops/monsoon-denim', 'Shop the drop', 1),
   ('Under ₹499', 'Graded, measured and cheaper than a pizza night.',
-   'https://placehold.co/1600x700/C8A6FF/120D1A/png?text=Under+499',
+   'https://placehold.co/1600x700/D4F04C/17140F/png?text=Under+499',
    'Placeholder banner for items under 499 rupees', '/c/unisex?max=499', 'Shop steals', 2),
   ('Y2K Archive drops soon', 'Slip dresses, tiny bags and pleats. Get notified.',
-   'https://placehold.co/1600x700/120D1A/FFFFFF/png?text=Y2K+Archive',
+   'https://placehold.co/1600x700/17140F/FBF8F3/png?text=Y2K+Archive',
    'Placeholder banner for the upcoming Y2K Archive drop', '/drops/y2k-archive', 'Notify me', 3);
 
 insert into public.coupons (code, type, value, min_order_paise, max_uses, expires_at) values

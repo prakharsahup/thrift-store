@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { SearchForm } from "@/components/layout/SearchForm";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 import { genderNav } from "@/lib/config/navigation";
 
 // Unknown product links. (Sold pieces never land here — their pages stay up with a SOLD state.)
@@ -16,12 +16,9 @@ export default function ProductNotFound() {
       <ul className="mt-8 flex flex-wrap gap-3">
         {genderNav.map((item) => (
           <li key={item.gender}>
-            <Link
-              href={item.href}
-              className="inline-flex h-11 items-center rounded-md border border-fg px-5 text-sm font-semibold"
-            >
+            <ButtonLink href={item.href} variant="outline">
               Shop {item.label.toLowerCase()}
-            </Link>
+            </ButtonLink>
           </li>
         ))}
       </ul>

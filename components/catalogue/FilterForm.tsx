@@ -1,7 +1,10 @@
 "use client";
 
+import { ChevronDown } from "lucide-react";
 import Form from "next/form";
 import { useRef, useState } from "react";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
 import type { Filters } from "@/lib/catalogue/filters";
 import { conditions } from "@/lib/config/conditions";
 import type { Facets } from "@/lib/server/catalogue";
@@ -110,11 +113,17 @@ export function FilterForm({
           >
             <summary className="flex cursor-pointer list-none items-center justify-between py-3 text-sm font-semibold [&::-webkit-details-marker]:hidden">
               {group.title}
-              {group.selected.length > 0 ? (
-                <span className="rounded-sm bg-surface px-1.5 text-xs">
-                  {group.selected.length}
-                </span>
-              ) : null}
+              <span className="flex items-center gap-2">
+                {group.selected.length > 0 ? (
+                  <span className="rounded-sm bg-surface px-1.5 text-xs">
+                    {group.selected.length}
+                  </span>
+                ) : null}
+                <ChevronDown
+                  aria-hidden
+                  className="size-4 transition-transform group-open:rotate-180"
+                />
+              </span>
             </summary>
             <fieldset className="pb-4">
               <legend className="sr-only">{group.title}</legend>
@@ -165,7 +174,7 @@ export function FilterForm({
             <label htmlFor={`${idPrefix}-min`} className="sr-only">
               Minimum price in rupees
             </label>
-            <input
+            <Input
               id={`${idPrefix}-min`}
               // Empty inputs get no name, so they don't add "min=" to the URL.
               name={min ? "min" : undefined}
@@ -175,7 +184,6 @@ export function FilterForm({
               value={min}
               onChange={(e) => setMin(e.target.value)}
               placeholder={String(facets.priceRangeRupees.min)}
-              className="h-10 w-full min-w-0 rounded-md border border-border bg-bg px-3 text-sm"
             />
             <span aria-hidden className="text-muted">
               –
@@ -183,7 +191,7 @@ export function FilterForm({
             <label htmlFor={`${idPrefix}-max`} className="sr-only">
               Maximum price in rupees
             </label>
-            <input
+            <Input
               id={`${idPrefix}-max`}
               name={max ? "max" : undefined}
               type="number"
@@ -192,19 +200,15 @@ export function FilterForm({
               value={max}
               onChange={(e) => setMax(e.target.value)}
               placeholder={String(facets.priceRangeRupees.max)}
-              className="h-10 w-full min-w-0 rounded-md border border-border bg-bg px-3 text-sm"
             />
           </div>
         </fieldset>
       ) : null}
 
       <div className={cn("pt-4", !autoSubmit && "sticky bottom-0 bg-bg pb-4")}>
-        <button
-          type="submit"
-          className="h-11 w-full rounded-md bg-fg px-4 text-sm font-semibold text-bg hover:bg-primary"
-        >
+        <Button type="submit" variant={autoSubmit ? "outline" : "primary"} fullWidth>
           {autoSubmit ? "Apply price" : "Show results"}
-        </button>
+        </Button>
       </div>
     </Form>
   );

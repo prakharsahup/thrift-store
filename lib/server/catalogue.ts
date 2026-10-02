@@ -211,6 +211,19 @@ export async function getFeaturedDrop(): Promise<FeaturedDrop | null> {
   };
 }
 
+/** A published drop's name, for the placeholder drop page (null if there's no such drop). */
+export async function getDropName(slug: string): Promise<string | null> {
+  const supabase = client();
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from("drops")
+    .select("name")
+    .eq("slug", slug)
+    .maybeSingle();
+  logError("getDropName", error);
+  return data?.name ?? null;
+}
+
 /** Real numbers for the impact counters. */
 export async function getImpactStats(): Promise<ImpactStats | null> {
   const supabase = client();

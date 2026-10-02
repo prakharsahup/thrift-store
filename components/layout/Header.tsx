@@ -1,6 +1,5 @@
 import { Heart, Search, User } from "lucide-react";
 import { CartButton } from "@/components/cart/CartButton";
-import { MotionToggle } from "@/components/motion/MotionToggle";
 import { brandLinks, genderNav } from "@/lib/config/navigation";
 import { IconLink } from "./IconLink";
 import { Logo } from "./Logo";
@@ -10,6 +9,7 @@ import { HeaderSearch } from "./HeaderSearch";
 
 // Sticky site header. Below lg: hamburger + logo + search + cart (the bottom nav covers the rest).
 // From lg: gender tabs with the mega-menu and all account icons; the search box itself from xl.
+// The "Pause animations" toggle lives in the footer only, where it has a visible label.
 export function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-bg">
@@ -25,7 +25,6 @@ export function Header() {
           <IconLink href="/search" label="Search" className="xl:hidden">
             <Search aria-hidden />
           </IconLink>
-          <MotionToggle compact className="hidden lg:inline-flex" />
           <IconLink href="/account/wishlist" label="Wishlist" className="hidden lg:inline-flex">
             <Heart aria-hidden />
           </IconLink>

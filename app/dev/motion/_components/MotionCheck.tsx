@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { useMotionEnabled } from "@/components/motion/MotionProvider";
 import { gsap, useGSAP } from "@/lib/motion/gsap";
 import { useMotionTokens } from "@/components/motion/MotionTokensProvider";
@@ -50,15 +51,15 @@ export function MotionCheck() {
         ))}
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
-        <button
-          type="button"
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => setReplays((n) => n + 1)}
           disabled={!enabled}
-          className="inline-flex items-center gap-2 rounded-md border border-fg px-3 py-2 font-medium disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <RotateCcw aria-hidden className="size-4" />
+          <RotateCcw aria-hidden />
           Replay
-        </button>
+        </Button>
         <p className="text-muted" aria-live="polite">
           Motion is <strong className="text-fg">{enabled ? "on" : "off"}</strong>
           {enabled ? "." : " — showing the final state."}

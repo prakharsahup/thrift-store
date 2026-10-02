@@ -1,20 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Bricolage_Grotesque, Instrument_Sans } from "next/font/google";
 import { MotionProvider } from "@/components/motion/MotionProvider";
 import { motionInitScript } from "@/lib/motion/init-script";
 import { site } from "@/lib/config/site";
 import "./globals.css";
 
 // next/font downloads these at build time and serves them from our own domain.
-const display = Space_Grotesk({
+// Display: Bricolage Grotesque, a grotesk with ink traps and real quirks. The opsz and wdth axes
+// let big headings go tighter and narrower (see h1/h2 in globals.css).
+const display = Bricolage_Grotesque({
   subsets: ["latin"],
-  variable: "--font-space-grotesk",
+  axes: ["opsz", "wdth"],
+  variable: "--font-bricolage",
   display: "swap",
 });
 
-const body = Inter({
+// Body / UI: Instrument Sans, a crisp, slightly narrow grotesk that stays legible at 12–14px.
+const body = Instrument_Sans({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-instrument",
   display: "swap",
 });
 
@@ -25,7 +29,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  // Matches --color-bg in app/globals.css (metadata can't read CSS variables).
+  themeColor: "#fbf8f3",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
