@@ -889,6 +889,10 @@ export type Database = {
       attach_reservations: { Args: { order_id: string }; Returns: string[] };
       cancel_stale_orders: { Args: Record<PropertyKey, never>; Returns: number };
       confirm_notify: { Args: { token: string }; Returns: number };
+      coupon_quote: {
+        Args: { code: string; subtotal_paise: number; user_id: string };
+        Returns: Json;
+      };
       drop_is_live: { Args: { drop_id: string }; Returns: boolean };
       is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_slug: { Args: { value: string }; Returns: boolean };
@@ -941,6 +945,16 @@ export type Database = {
           isOneToOne: false;
           isSetofReturn: true;
         };
+      };
+      start_checkout: {
+        Args: {
+          address: Json;
+          free_shipping_above_paise: number;
+          product_ids: string[];
+          shipping_flat_paise: number;
+          user_id: string;
+        };
+        Returns: Json;
       };
     };
     Enums: {

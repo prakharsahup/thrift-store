@@ -5,6 +5,7 @@ import { ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { shipping, shippingFor } from "@/lib/config/shipping";
+import { useStartCheckout } from "@/components/checkout/useStartCheckout";
 import { useCartStore } from "@/lib/stores/cart";
 import { cn } from "@/lib/utils/cn";
 import { formatINR } from "@/lib/utils/money";
@@ -22,6 +23,7 @@ export function CartContents({ variant }: Props) {
   const error = useCartStore((s) => s.error);
   const closeCart = useCartStore((s) => s.closeCart);
   const ready = useCartStore((s) => s.ready);
+  const checkout = useStartCheckout();
 
   const buyable = lines.filter((l) => l.status === "available");
   const subtotal = buyable.reduce((sum, l) => sum + l.pricePaise, 0);
@@ -112,13 +114,26 @@ export function CartContents({ variant }: Props) {
           Items aren&rsquo;t held until you start checkout — then they&rsquo;re yours for 15
           minutes.
         </p>
-        {/* Checkout arrives in the next phase. */}
-        <Button size="lg" fullWidth disabled aria-describedby="checkout-note" className="mt-4">
-          Checkout
+        {checkout.message ? (
+          <p role="alert" className="mt-3 text-sm text-sale">
+            {checkout.message}
+          </p>
+        ) : null}
+        <Button
+          size="lg"
+          fullWidth
+          disabled={blocked || buyable.length === 0 || checkout.busy}
+          aria-describedby={blocked ? "checkout-note" : undefined}
+          className="mt-4"
+          onClick={() => void checkout.start()}
+        >
+          {checkout.busy ? "Holding your pieces…" : "Checkout"}
         </Button>
-        <p id="checkout-note" className="mt-2 text-center text-xs text-muted">
-          {blocked ? "Remove unavailable pieces to check out. " : ""}Online checkout opens soon.
-        </p>
+        {blocked ? (
+          <p id="checkout-note" className="mt-2 text-center text-xs text-muted">
+            Remove unavailable pieces to check out.
+          </p>
+        ) : null}
         {variant === "drawer" ? (
           <Link
             href="/cart"

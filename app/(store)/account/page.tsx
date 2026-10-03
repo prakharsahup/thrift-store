@@ -27,16 +27,16 @@ export default async function AccountPage() {
     {
       href: "/account/orders",
       label: "Orders",
-      body: "Arrives with online checkout.",
+      body: "Track what you've bought.",
       Icon: Package,
-      ready: false,
+      ready: true,
     },
     {
       href: "/account/addresses",
       label: "Addresses",
-      body: "Arrives with online checkout.",
+      body: "Where we deliver.",
       Icon: MapPin,
-      ready: false,
+      ready: true,
     },
   ];
 

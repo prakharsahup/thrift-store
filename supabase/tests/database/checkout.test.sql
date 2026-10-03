@@ -4,7 +4,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(41);
+select plan(50);
 
 -- Seeded holds are relative to when the seed ran, and cron releases them. Pin them to "now" so
 -- these tests don't depend on when they run.
@@ -217,6 +217,59 @@ select is(
 select is(
   public.mark_order_paid('00000000-0000-0000-0000-0000000000b4', 'pay_late') ->> 'status',
   'cancelled', 'a payment landing after cancellation is reported, so it can be refunded');
+
+-- ---------------------------------------------------------------- start_checkout and coupon_quote
+create temporary table co (n int primary key, result jsonb) on commit drop;
+grant all on co to service_role;
+
+insert into co values (1, public.start_checkout(
+  '00000000-0000-0000-0000-00000000000a',
+  array[(select id from ids where slug = 'chunky-knit-cardigan'),
+        (select id from ids where slug = 'olive-chino-trousers')],
+  '{"name": "Buyer A", "city": "Bengaluru"}', 7900, 99900));
+select is((select (result ->> 'ok')::boolean from co where n = 1), true,
+  'start_checkout holds the cart and creates the order');
+select is(
+  (select (result ->> 'subtotal_paise')::int from co where n = 1),
+  (select sum(price_paise)::int from public.products
+    where slug in ('chunky-knit-cardigan', 'olive-chino-trousers')),
+  'the subtotal comes from database prices');
+select is(
+  (select count(*)::int from public.products
+    where reserved_order_id = (select (result ->> 'order_id')::uuid from co where n = 1)),
+  2, 'both holds are attached to the new order');
+select is(
+  (select count(*)::int from public.order_items
+    where order_id = (select (result ->> 'order_id')::uuid from co where n = 1)
+      and image_snapshot is not null),
+  2, 'order items are snapshotted with an image');
+
+insert into co values (2, public.start_checkout(
+  '00000000-0000-0000-0000-00000000000a',
+  array[(select id from ids where slug = 'chunky-knit-cardigan')],
+  '{"name": "Buyer A"}', 7900, 99900));
+select is(
+  (select status from public.orders where id = (select (result ->> 'order_id')::uuid from co where n = 1)),
+  'cancelled'::public.order_status, 'starting checkout again replaces the earlier unpaid order');
+select is(
+  (select status from public.products where slug = 'olive-chino-trousers'),
+  'available'::public.product_status, '...and frees what the new checkout no longer includes');
+
+insert into co values (3, public.start_checkout(
+  '00000000-0000-0000-0000-00000000000b',
+  array[(select id from ids where slug = 'chunky-knit-cardigan')],
+  '{"name": "Buyer B"}', 7900, 99900));
+select is(
+  (select result from co where n = 3),
+  jsonb_build_object('ok', false, 'unavailable_product_ids',
+                     jsonb_build_array((select id from ids where slug = 'chunky-knit-cardigan'))),
+  'another shopper cannot check out a held piece');
+
+select is(public.coupon_quote('FLAT150', '00000000-0000-0000-0000-00000000000b', 200000),
+  '{"ok": true, "code": "FLAT150", "discount_paise": 15000}'::jsonb,
+  'coupon_quote previews a discount');
+select is((select used_count from public.coupons where code = 'FLAT150'), 0,
+  '...without using the coupon up');
 
 -- ---------------------------------------------------------------- notify-me
 select is(

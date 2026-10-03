@@ -6,14 +6,24 @@ export const emailSchema = z
   .toLowerCase()
   .pipe(z.email({ message: "Enter a valid email address, like name@example.com." }));
 
+/** Strips spaces, dashes and a +91 / 0091 / 91 / 0 prefix: "+91 98765-43210" → "9876543210". */
+export function indianMobileDigits(value: string): string {
+  return value.replace(/[\s()-]/g, "").replace(/^(\+91|0091|91(?=\d{10}$)|0)/, "");
+}
+
+/** A 10-digit Indian mobile number (starts with 6–9). */
+export function isIndianMobile(digits: string): boolean {
+  return /^[6-9]\d{9}$/.test(digits);
+}
+
 /**
  * An Indian mobile number, typed any common way ("98765 43210", "+91 98765-43210", "098765…"),
  * normalised to E.164 ("+919876543210") for Supabase phone sign-in.
  */
 export const phoneSchema = z
   .string()
-  .transform((v) => v.replace(/[\s()-]/g, "").replace(/^(\+91|0091|91(?=\d{10}$)|0)/, ""))
-  .refine((v) => /^[6-9]\d{9}$/.test(v), {
+  .transform(indianMobileDigits)
+  .refine(isIndianMobile, {
     message: "Enter a 10-digit Indian mobile number, like 98765 43210.",
   })
   .transform((v) => `+91${v}`);
