@@ -23,8 +23,8 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
       <div className="w-full max-w-sm">
         <h1 className="text-2xl font-bold md:text-3xl">Sign in to {site.name}</h1>
         <p className="mt-2 text-sm text-muted">
-          No password needed — we&rsquo;ll email you a code. New here? The same code creates your
-          account.
+          No password needed — we&rsquo;ll send you a 6-digit code. New here? The same code creates
+          your account.
         </p>
         {callbackFailed ? (
           <p role="alert" className="mt-4 rounded-md bg-surface p-3 text-sm text-sale">
@@ -35,6 +35,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
           <LoginForm
             next={next}
             googleEnabled={process.env.NEXT_PUBLIC_AUTH_GOOGLE_ENABLED === "true"}
+            phoneEnabled={process.env.NEXT_PUBLIC_AUTH_PHONE_ENABLED === "true"}
           />
         </div>
       </div>

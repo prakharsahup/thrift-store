@@ -67,7 +67,7 @@ schema_paths = []
 enabled = true
 # Specifies an ordered list of seed files to load during db reset.
 # Supports glob patterns relative to supabase directory: "./seeds/*.sql"
-sql_paths = ["./seed.sql"]
+sql_paths = ["./seed.sql", "./dev/*.sql"]
 
 [db.network_restrictions]
 # Enable management of network restrictions.
@@ -265,13 +265,14 @@ content_path = "./supabase/templates/sign-in-code.html"
 
 [auth.sms]
 # Allow/disallow new user signups via SMS to your project.
-enable_signup = false
+# Phone sign-in: a 6-digit code by SMS. New numbers get an account, like email codes.
+enable_signup = true
 # If enabled, users need to confirm their phone number before signing in.
 enable_confirmations = false
 # Template for sending OTP to users
-template = "Your code is {{ .Code }}"
+template = "Your xyz sign-in code is {{ .Code }}"
 # Controls the minimum amount of time that must pass before sending another sms otp.
-max_frequency = "5s"
+max_frequency = "30s"
 
 # Use pre-defined map of phone number to OTP for testing.
 # [auth.sms.test_otp]
@@ -294,13 +295,20 @@ max_frequency = "5s"
 # enabled = true
 # uri = "pg-functions://<database>/<schema>/<hook_name>"
 
+# Local only: no real SMS provider. Codes are written to dev.sms_outbox (supabase/dev/sms_outbox.sql)
+# instead of being sent. Production uses a real provider (or an HTTP send-SMS hook) instead.
+[auth.hook.send_sms]
+enabled = true
+uri = "pg-functions://postgres/dev/send_sms_hook"
+
 # Configure one of the supported SMS providers: `twilio`, `twilio_verify`, `messagebird`, `textlocal`, `vonage`.
+# Locally, a provider must be "enabled" for the CLI to switch phone sign-in on at all, but the
+# send_sms hook above replaces it, so these placeholder values are never used and nothing is sent.
 [auth.sms.twilio]
-enabled = false
-account_sid = ""
-message_service_sid = ""
-# DO NOT commit your Twilio auth token to git. Use environment variable substitution instead:
-auth_token = "env(SUPABASE_AUTH_SMS_TWILIO_AUTH_TOKEN)"
+enabled = true
+account_sid = "local-placeholder-unused"
+message_service_sid = "local-placeholder-unused"
+auth_token = "local-placeholder-unused"
 
 # Multi-factor-authentication is available to Supabase Pro plan.
 [auth.mfa]

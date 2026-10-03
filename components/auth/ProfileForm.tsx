@@ -18,7 +18,9 @@ export function ProfileForm({ email, fullName, phone }: Props) {
     <form action={formAction} noValidate className="max-w-md space-y-5">
       <div>
         <p className="mb-1 text-sm font-semibold">Email</p>
-        <p className="text-sm text-muted">{email}</p>
+        <p className="text-sm text-muted">
+          {email || "None on file — you signed in with your phone number."}
+        </p>
       </div>
       <div>
         <label htmlFor="profile-name" className="mb-1 block text-sm font-semibold">
