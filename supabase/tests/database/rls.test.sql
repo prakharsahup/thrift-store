@@ -3,7 +3,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(29);
+select plan(35);
 
 -- Seeded holds are relative to when the seed ran, and cron releases them. Pin them to "now" so
 -- these tests don't depend on when they run.
@@ -42,10 +42,10 @@ select is((select count(*)::int from public.listed_products), 34,
 select is((select count(*)::int from public.products where slug = 'striped-pique-polo'), 1,
   'but that old sold item is still readable by URL');
 select is(
-  (select public.effective_status(p) from public.products p where slug = 'oversized-washed-tee'),
+  (select effective_status from public.storefront_products where slug = 'oversized-washed-tee'),
   'available'::public.product_status, 'an expired hold reads as available');
 select is(
-  (select public.effective_status(p) from public.products p where slug = 'cream-cable-knit-sweater'),
+  (select effective_status from public.storefront_products where slug = 'cream-cable-knit-sweater'),
   'reserved'::public.product_status, 'an active hold reads as reserved');
 select is((select count(*)::int from public.product_images), 70,
   'anon sees images only for visible products (35 x 2)');
@@ -58,10 +58,29 @@ select throws_ok(
 select throws_ok(
   $$select public.reserve_products(array[gen_random_uuid()], '00000000-0000-0000-0000-00000000000a')$$,
   '42501', null, 'anon cannot reserve products');
-select lives_ok(
+select throws_ok(
   $$insert into public.notify_requests (email, drop_id)
     select 'fan@example.test', id from public.drops where slug = 'y2k-archive'$$,
-  'anon can sign up to be notified about a published drop');
+  '42501', null, 'anon cannot insert notify-me sign-ups directly (request_notify only)');
+select throws_ok(
+  $$select public.request_notify('fan@example.test', (select id from public.drops limit 1))$$,
+  '42501', null, 'anon cannot call request_notify');
+select throws_ok(
+  $$select reserved_by from public.products limit 1$$,
+  '42501', null, 'anon cannot read who holds an item');
+select throws_ok(
+  $$select reserved_order_id from public.products limit 1$$,
+  '42501', null, 'anon cannot read which order holds an item');
+select is((select count(*)::int from public.storefront_products), 35,
+  'the storefront view shows the same 35 products');
+select is_empty(
+  $$select id from public.listed_products where 'sporty' = any (style_tags)
+    except select id from public.search_products('sporty:*')$$,
+  'search finds every listed product tagged sporty (english stemming matches tags)');
+select ok(
+  (select jsonb_array_length(public.product_facets(null, null) -> 'brands') > 0
+      and (public.product_facets(null, null) ->> 'min_price')::int > 0),
+  'anon can read facets');
 
 reset role;
 

@@ -10,11 +10,24 @@ const MAX_PAGE = 20;
 const MAX_VALUES = 20;
 
 export const sorts = {
+  relevance: "Best match",
   newest: "Newest",
   price_asc: "Price: low to high",
   price_desc: "Price: high to low",
 } as const;
 export type SortKey = keyof typeof sorts;
+
+/** Searches rank by best match; everything else lists newest first. */
+export function defaultSort(q: string): SortKey {
+  return q ? "relevance" : "newest";
+}
+
+/** The sorts that make sense for a listing ("Best match" needs a search query). */
+export function sortOptions(q: string): [SortKey, string][] {
+  return (Object.entries(sorts) as [SortKey, string][]).filter(
+    ([key]) => key !== "relevance" || q !== "",
+  );
+}
 
 export type Filters = {
   q: string;
@@ -78,7 +91,7 @@ export function parseFilters(raw: RawSearchParams): Filters {
       .filter((v) => SLUG.test(v)),
     minRupees,
     maxRupees,
-    sort: isSort(sort) ? sort : "newest",
+    sort: isSort(sort) && (sort !== "relevance" || q !== "") ? sort : defaultSort(q),
     page: page && page >= 1 ? Math.min(page, MAX_PAGE) : 1,
   };
 }
@@ -94,7 +107,7 @@ export function filtersHref(pathname: string, filters: Filters): string {
   filters.styles.forEach((v) => params.append("style", v));
   if (filters.minRupees !== null) params.set("min", String(filters.minRupees));
   if (filters.maxRupees !== null) params.set("max", String(filters.maxRupees));
-  if (filters.sort !== "newest") params.set("sort", filters.sort);
+  if (filters.sort !== defaultSort(filters.q)) params.set("sort", filters.sort);
   if (filters.page > 1) params.set("page", String(filters.page));
   const query = params.toString();
   return query ? `${pathname}?${query}` : pathname;

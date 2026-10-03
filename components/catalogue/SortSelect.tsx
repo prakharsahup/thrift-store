@@ -3,7 +3,7 @@
 import Form from "next/form";
 import { Button } from "@/components/ui/Button";
 import { inputVariants } from "@/components/ui/Input";
-import { sorts, type Filters, type SortKey } from "@/lib/catalogue/filters";
+import { sortOptions, type Filters } from "@/lib/catalogue/filters";
 
 type Props = { action: string; filters: Filters };
 
@@ -40,7 +40,7 @@ export function SortSelect({ action, filters }: Props) {
         onChange={(event) => event.currentTarget.form?.requestSubmit()}
         className={inputVariants({ fieldSize: "md", className: "w-auto pr-8 font-medium" })}
       >
-        {(Object.entries(sorts) as [SortKey, string][]).map(([value, label]) => (
+        {sortOptions(filters.q).map(([value, label]) => (
           <option key={value} value={value}>
             {label}
           </option>

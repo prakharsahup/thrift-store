@@ -4,7 +4,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(16);
+select plan(41);
 
 -- Seeded holds are relative to when the seed ran, and cron releases them. Pin them to "now" so
 -- these tests don't depend on when they run.
@@ -18,6 +18,9 @@ update public.products
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000a', 'buyer-a@example.test'),
   ('00000000-0000-0000-0000-00000000000b', 'buyer-b@example.test');
+
+insert into public.coupons (code, type, value, min_order_paise, max_uses)
+values ('ONCE', 'flat', 10000, 0, 1);
 
 create temporary table ids on commit drop as
 select slug, id from public.products;
@@ -76,20 +79,32 @@ select is(
   (select status from public.products where slug = 'ribbed-baby-tee'),
   'available'::public.product_status, 'the released item is available again');
 
--- ---------------------------------------------------------------- mark_order_paid
--- A reserves two items and creates a pending order with a coupon.
+-- ---------------------------------------------------------------- coupons and mark_order_paid
+-- A reserves two items, creates a pending order without a coupon, attaches the holds, then
+-- applies WELCOME10 (10%, min ₹999).
 select public.reserve_products(
   array[(select id from ids where slug = 'ribbed-baby-tee'),
         (select id from ids where slug = 'fuzzy-knit-vest')],
   '00000000-0000-0000-0000-00000000000a');
 
-insert into public.orders (id, user_id, subtotal_paise, shipping_paise, discount_paise, total_paise,
-                           coupon_code, address)
+insert into public.orders (id, user_id, subtotal_paise, shipping_paise, total_paise, address)
 values ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-00000000000a',
-        89800, 7900, 8980, 88720, 'WELCOME10', '{"city": "Bengaluru"}');
+        109800, 0, 109800, '{"city": "Bengaluru"}');
 insert into public.order_items (order_id, product_id, title_snapshot, price_paise_snapshot)
-select '00000000-0000-0000-0000-0000000000a1', id, slug, 44900
+select '00000000-0000-0000-0000-0000000000a1', id, slug, 54900
 from ids where slug in ('ribbed-baby-tee', 'fuzzy-knit-vest');
+
+select is(public.attach_reservations('00000000-0000-0000-0000-0000000000a1'), '{}'::uuid[],
+  'attach_reservations ties both holds to the order');
+select is(
+  public.apply_coupon('00000000-0000-0000-0000-0000000000a1', ' welcome10 '),
+  '{"ok": true, "discount_paise": 10980, "total_paise": 98820}'::jsonb,
+  'apply_coupon applies 10% and returns the new total');
+select is(
+  (select total_paise from public.orders where id = '00000000-0000-0000-0000-0000000000a1'), 98820,
+  'the order total is recomputed on the server');
+select is((select used_count from public.coupons where code = 'WELCOME10'), 1,
+  'the coupon use is claimed at checkout');
 
 select is(
   public.mark_order_paid('00000000-0000-0000-0000-0000000000a1', 'pay_test_1') ->> 'already_processed',
@@ -104,11 +119,41 @@ select is(
 select is(
   public.mark_order_paid('00000000-0000-0000-0000-0000000000a1', 'pay_test_1') ->> 'already_processed',
   'true', 'a second call (webhook after verify) is a no-op');
-select is(
-  (select used_count from public.coupons where code = 'WELCOME10'), 1,
-  'the coupon is counted once, not twice');
+select is((select used_count from public.coupons where code = 'WELCOME10'), 1,
+  'paying does not count the coupon again');
 
--- An order whose hold was lost: B pays for an item that A is holding.
+-- A second order by A: WELCOME10 is once per customer. ONCE has max_uses = 1.
+insert into public.orders (id, user_id, subtotal_paise, total_paise, address)
+values ('00000000-0000-0000-0000-0000000000a2', '00000000-0000-0000-0000-00000000000a',
+        120000, 120000, '{"city": "Bengaluru"}');
+select is(public.apply_coupon('00000000-0000-0000-0000-0000000000a2', 'WELCOME10') ->> 'reason',
+  'already_used', 'a customer cannot use the same coupon twice');
+select is(public.apply_coupon('00000000-0000-0000-0000-0000000000a2', 'EXPIRED20') ->> 'reason',
+  'expired', 'expired coupons are refused');
+select is(public.apply_coupon('00000000-0000-0000-0000-0000000000a2', 'NOPE') ->> 'reason',
+  'invalid', 'unknown coupons are refused');
+select is(public.apply_coupon('00000000-0000-0000-0000-0000000000a2', 'ONCE') ->> 'ok',
+  'true', 'A claims the single-use coupon');
+select throws_ok(
+  $$select public.apply_coupon('00000000-0000-0000-0000-0000000000a2', 'FLAT150')$$,
+  '22023', null, 'an order takes one coupon only');
+
+insert into public.orders (id, user_id, subtotal_paise, total_paise, address)
+values ('00000000-0000-0000-0000-0000000000b0', '00000000-0000-0000-0000-00000000000b',
+        50000, 50000, '{"city": "Pune"}');
+select is(public.apply_coupon('00000000-0000-0000-0000-0000000000b0', 'ONCE') ->> 'reason',
+  'used_up', 'max_uses is enforced across customers');
+select is(public.apply_coupon('00000000-0000-0000-0000-0000000000b0', 'WELCOME10') ->> 'reason',
+  'min_order', 'the minimum order is enforced');
+
+update public.orders set status = 'cancelled' where id = '00000000-0000-0000-0000-0000000000a2';
+select is((select used_count from public.coupons where code = 'ONCE'), 0,
+  'cancelling a pending order gives its coupon use back');
+select is(public.apply_coupon('00000000-0000-0000-0000-0000000000b0', 'ONCE') ->> 'ok',
+  'true', '...so someone else can use it');
+
+-- ---------------------------------------------------------------- oversold orders
+-- B pays for an item that A is holding.
 select public.reserve_products(array[(select id from ids where slug = 'cropped-zip-hoodie')],
                                '00000000-0000-0000-0000-00000000000a');
 insert into public.orders (id, user_id, subtotal_paise, total_paise, address)
@@ -120,22 +165,87 @@ select '00000000-0000-0000-0000-0000000000b1', id, slug, 69900 from ids where sl
 select is(
   public.mark_order_paid('00000000-0000-0000-0000-0000000000b1', 'pay_test_2') -> 'unavailable_product_ids',
   jsonb_build_array((select id from ids where slug = 'cropped-zip-hoodie')),
-  'mark_order_paid reports items it could not sell, so the server can refund them');
+  'mark_order_paid reports items it could not sell');
+select ok(
+  (select unavailable from public.order_items where order_id = '00000000-0000-0000-0000-0000000000b1'),
+  'and flags them on the order, so nobody packs them');
 
--- ---------------------------------------------------------------- release_order_reservations
+-- ---------------------------------------------------------------- holds belong to an order
+-- B starts checkout (order b2), abandons it, and starts again (order b3) for the same item.
 select public.reserve_products(array[(select id from ids where slug = 'nylon-coach-jacket')],
                                '00000000-0000-0000-0000-00000000000b');
-insert into public.orders (id, user_id, subtotal_paise, total_paise, address)
-values ('00000000-0000-0000-0000-0000000000b2', '00000000-0000-0000-0000-00000000000b',
-        99900, 99900, '{"city": "Pune"}');
+insert into public.orders (id, user_id, subtotal_paise, total_paise, address) values
+  ('00000000-0000-0000-0000-0000000000b2', '00000000-0000-0000-0000-00000000000b', 99900, 99900, '{}'),
+  ('00000000-0000-0000-0000-0000000000b3', '00000000-0000-0000-0000-00000000000b', 99900, 99900, '{}');
 insert into public.order_items (order_id, product_id, title_snapshot, price_paise_snapshot)
-select '00000000-0000-0000-0000-0000000000b2', id, slug, 99900 from ids where slug = 'nylon-coach-jacket';
+select o.id, i.id, i.slug, 99900
+  from ids i,
+       (values ('00000000-0000-0000-0000-0000000000b2'::uuid),
+               ('00000000-0000-0000-0000-0000000000b3'::uuid)) as o (id)
+ where i.slug = 'nylon-coach-jacket';
+select public.attach_reservations('00000000-0000-0000-0000-0000000000b2');
+select public.reserve_products(array[(select id from ids where slug = 'nylon-coach-jacket')],
+                               '00000000-0000-0000-0000-00000000000b');
+select is(public.attach_reservations('00000000-0000-0000-0000-0000000000b3'), '{}'::uuid[],
+  'the newer checkout takes over the hold');
 
-select is(public.release_order_reservations('00000000-0000-0000-0000-0000000000b2'), 1,
-  'a failed payment releases the order''s held items');
+select is(public.release_order_reservations('00000000-0000-0000-0000-0000000000b2'), 0,
+  'a failed payment on the old order does not free a hold the newer order depends on');
+select is(public.release_order_reservations('00000000-0000-0000-0000-0000000000b3'), 1,
+  'a failed payment frees the order''s own holds');
 select is(
   (select status from public.products where slug = 'nylon-coach-jacket'),
   'available'::public.product_status, 'the item is available again');
+
+-- ---------------------------------------------------------------- stale pending orders
+select public.reserve_products(array[(select id from ids where slug = 'heavy-canvas-tote')],
+                               '00000000-0000-0000-0000-00000000000b');
+insert into public.orders (id, user_id, subtotal_paise, total_paise, address, created_at)
+values ('00000000-0000-0000-0000-0000000000b4', '00000000-0000-0000-0000-00000000000b',
+        59900, 59900, '{}', now() - interval '1 hour');
+insert into public.order_items (order_id, product_id, title_snapshot, price_paise_snapshot)
+select '00000000-0000-0000-0000-0000000000b4', id, slug, 59900 from ids where slug = 'heavy-canvas-tote';
+select public.attach_reservations('00000000-0000-0000-0000-0000000000b4');
+
+select ok(public.cancel_stale_orders() >= 1, 'cancel_stale_orders cancels abandoned orders');
+select is(
+  (select status from public.orders where id = '00000000-0000-0000-0000-0000000000b4'),
+  'cancelled'::public.order_status, 'the stale order is cancelled');
+select is(
+  (select status from public.products where slug = 'heavy-canvas-tote'),
+  'available'::public.product_status, 'and its hold is released');
+select is(
+  public.mark_order_paid('00000000-0000-0000-0000-0000000000b4', 'pay_late') ->> 'status',
+  'cancelled', 'a payment landing after cancellation is reported, so it can be refunded');
+
+-- ---------------------------------------------------------------- notify-me
+select is(
+  public.request_notify('Fan@Example.test', (select id from public.drops where slug = 'y2k-archive'),
+                        null, 'ip-1') - 'confirm_token',
+  '{"ok": true, "status": "pending", "send_confirmation": true}'::jsonb,
+  'a new address gets one confirmation email');
+select is(
+  public.request_notify('fan@example.test', null, (select id from ids where slug = 'heavy-canvas-tote'),
+                        'ip-1') ->> 'send_confirmation',
+  'false', 'but no second one within 24 hours');
+select is(
+  public.confirm_notify(
+    (select confirm_token from public.notify_requests where email = 'fan@example.test' limit 1)),
+  2, 'confirming the address confirms its pending sign-ups');
+select is(
+  public.request_notify('fan@example.test', null,
+                        (select id from ids where slug = 'canvas-messenger-bag'), 'ip-1') ->> 'status',
+  'subscribed', 'a confirmed address is subscribed straight away');
+
+reset role;
+insert into public.notify_requests (email, product_id, client_key)
+select 'spam' || g || '@example.test', (select id from ids where slug = 'canvas-messenger-bag'), 'ip-2'
+  from generate_series(1, 10) as g;
+set local role service_role;
+select is(
+  public.request_notify('victim@example.test', (select id from public.drops where slug = 'y2k-archive'),
+                        null, 'ip-2') ->> 'reason',
+  'rate_limited', 'more than 10 sign-ups an hour from one client are refused');
 
 reset role;
 

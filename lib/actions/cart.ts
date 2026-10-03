@@ -21,6 +21,9 @@ function toLine(p: ProductCardData): CartLine {
   };
 }
 
+/** Same limit as the cart_items_limit trigger (supabase/migrations/…_cart_items.sql). */
+const CART_LIMIT = 30;
+
 const SIGN_IN_AGAIN = "Your session ended. Sign in again to update your cart.";
 
 /** Fresh prices and availability for a guest cart. Unknown or hidden products are dropped. */
@@ -88,15 +91,23 @@ export async function mergeGuestCart(productIds: string[]): Promise<ActionResult
   const { supabase, user } = await getUser();
   if (!user) return { ok: false, message: SIGN_IN_AGAIN, needsLogin: true };
 
-  const mergeable = (await getCartProducts(parsed.data)).filter((p) => p.status !== "sold");
-  // One at a time: a single failure (e.g. a full cart) shouldn't drop the rest.
-  for (const product of mergeable) {
+  const [products, existing] = await Promise.all([
+    getCartProducts(parsed.data),
+    supabase.from("cart_items").select("product_id"),
+  ]);
+  if (existing.error) return loadAccountCart();
+
+  // One insert for the lot. Only what fits is sent: one row over the cart limit would make the
+  // limit trigger reject the whole batch.
+  const inCart = new Set(existing.data.map((row) => row.product_id));
+  const rows = products
+    .filter((p) => p.status !== "sold" && !inCart.has(p.id))
+    .slice(0, Math.max(0, CART_LIMIT - inCart.size))
+    .map((p) => ({ user_id: user.id, product_id: p.id }));
+  if (rows.length > 0) {
     await supabase
       .from("cart_items")
-      .upsert(
-        { user_id: user.id, product_id: product.id },
-        { onConflict: "user_id,product_id", ignoreDuplicates: true },
-      );
+      .upsert(rows, { onConflict: "user_id,product_id", ignoreDuplicates: true });
   }
   return loadAccountCart();
 }

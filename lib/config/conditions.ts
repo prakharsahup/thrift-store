@@ -1,4 +1,4 @@
-import type { Database } from "@/lib/supabase/database.types";
+import type { Database } from "@/lib/supabase/types";
 
 export type ProductCondition = Database["public"]["Enums"]["product_condition"];
 

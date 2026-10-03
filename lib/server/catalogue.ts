@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { z } from "zod";
 import { compareSizes, type Filters } from "@/lib/catalogue/filters";
 import { conditions as conditionGrades, type ProductCondition } from "@/lib/config/conditions";
 import { styleTags } from "@/lib/config/navigation";
@@ -51,8 +52,6 @@ export type ImpactStats = { listed: number; rehomed: number; averageSavingPercen
 const PRODUCT_CARD_COLUMNS =
   "id, slug, title, brand, tagged_size, condition, price_paise, original_price_paise, status, effective_status, product_images(url, alt, sort_order)";
 
-const SOLD_LISTING_DAYS = 7;
-
 function client() {
   return hasSupabaseEnv() ? createPublicClient() : null;
 }
@@ -63,17 +62,14 @@ function logError(where: string, error: { message: string } | null): void {
 
 type Supabase = NonNullable<ReturnType<typeof client>>;
 
-function soldCutoffIso(): string {
-  return new Date(Date.now() - SOLD_LISTING_DAYS * 86_400_000).toISOString();
-}
+// The listing rules (no drafts, sold items drop out after 7 days, expired holds read as available)
+// live in the storefront_products / listed_products views, not here.
 
-/** Non-draft products, minus items sold more than 7 days ago (CLAUDE.md §4). */
-function listedProducts(supabase: Supabase, options: { count?: boolean } = {}) {
+/** Products that appear in listings (the listed_products view). */
+function listedProducts(supabase: Supabase) {
   return supabase
-    .from("products")
-    .select(PRODUCT_CARD_COLUMNS, { count: options.count ? "exact" : undefined })
-    .neq("status", "draft")
-    .or(`status.neq.sold,sold_at.gt.${soldCutoffIso()}`)
+    .from("listed_products")
+    .select(PRODUCT_CARD_COLUMNS)
     .order("sort_order", { referencedTable: "product_images" });
 }
 
@@ -87,12 +83,12 @@ type ProductRow = {
   price_paise: number;
   original_price_paise: number | null;
   status: string;
-  effective_status: string | null;
+  effective_status: string;
   product_images: { url: string; alt: string; sort_order: number }[];
 };
 
 function toCard(row: ProductRow): ProductCardData | null {
-  const status = row.effective_status ?? row.status;
+  const status = row.effective_status;
   if (status !== "available" && status !== "reserved" && status !== "sold") return null;
   return {
     id: row.id,
@@ -347,10 +343,15 @@ export async function listProducts(
   const supabase = client();
   if (!supabase) return { products: [], total: 0 };
 
-  let q = listedProducts(supabase, { count: true });
-  if (query.categoryIds) q = q.in("category_id", query.categoryIds);
+  // A text query goes through search_products, which ranks matches; otherwise read the view.
   const tsQuery = toPrefixQuery(query.q);
-  if (tsQuery) q = q.textSearch("search", tsQuery, { config: "english" });
+  let q = tsQuery
+    ? supabase
+        .rpc("search_products", { query: tsQuery }, { count: "exact" })
+        .select(PRODUCT_CARD_COLUMNS)
+    : supabase.from("listed_products").select(PRODUCT_CARD_COLUMNS, { count: "exact" });
+  q = q.order("sort_order", { referencedTable: "product_images" });
+  if (query.categoryIds) q = q.in("category_id", query.categoryIds);
   if (query.sizes.length) q = q.in("tagged_size", query.sizes);
   if (query.conditions.length) q = q.in("condition", query.conditions);
   if (query.brands.length) q = q.in("brand", query.brands);
@@ -359,12 +360,16 @@ export async function listProducts(
   if (query.maxRupees !== null) q = q.lte("price_paise", query.maxRupees * 100);
 
   // Available pieces first, then on hold, then recently sold (enum order), then the chosen sort.
-  q = q.order("status");
-  if (query.sort === "price_asc") q = q.order("price_paise", { ascending: true });
-  else if (query.sort === "price_desc") q = q.order("price_paise", { ascending: false });
-  else q = q.order("published_at", { ascending: false });
+  // "Best match" adds no order: search_products already returns rows in that order.
+  if (!(tsQuery && query.sort === "relevance")) {
+    q = q.order("status");
+    if (query.sort === "price_asc") q = q.order("price_paise", { ascending: true });
+    else if (query.sort === "price_desc") q = q.order("price_paise", { ascending: false });
+    else q = q.order("published_at", { ascending: false });
+    q = q.order("id");
+  }
 
-  const { data, count, error } = await q.order("id").range(0, query.limit - 1);
+  const { data, count, error } = await q.range(0, query.limit - 1);
   logError("listProducts", error);
   return { products: toCards(data), total: count ?? 0 };
 }
@@ -377,10 +382,19 @@ export type Facets = {
   priceRangeRupees: { min: number; max: number } | null;
 };
 
+// Shape returned by the product_facets SQL function.
+const facetsSchema = z.object({
+  sizes: z.array(z.string()),
+  brands: z.array(z.string()),
+  conditions: z.array(z.string()),
+  styles: z.array(z.string()),
+  min_price: z.number().int().nullable(),
+  max_price: z.number().int().nullable(),
+});
+
 /**
  * Filter options that actually have products in this scope (category or search query), so the
- * filter panel never offers a dead end.
- * TODO: move to a SQL function once the catalogue grows past a few thousand items.
+ * filter panel never offers a dead end. Aggregated in SQL (product_facets), so nothing is capped.
  */
 export async function getFacets(scope: {
   categoryIds: string[] | null;
@@ -396,44 +410,38 @@ export async function getFacets(scope: {
   const supabase = client();
   if (!supabase) return empty;
 
-  let q = supabase
-    .from("products")
-    .select("tagged_size, brand, condition, style_tags, price_paise")
-    .neq("status", "draft")
-    .or(`status.neq.sold,sold_at.gt.${soldCutoffIso()}`);
-  if (scope.categoryIds) q = q.in("category_id", scope.categoryIds);
   const tsQuery = toPrefixQuery(scope.q);
-  if (tsQuery) q = q.textSearch("search", tsQuery, { config: "english" });
-
-  const { data, error } = await q.limit(2000);
+  const { data, error } = await supabase.rpc("product_facets", {
+    category_ids: scope.categoryIds ?? undefined,
+    query: tsQuery || undefined,
+  });
   logError("getFacets", error);
-  if (!data || data.length === 0) return empty;
+  const parsed = facetsSchema.safeParse(data);
+  if (!parsed.success) {
+    if (!error) logError("getFacets", { message: "unexpected product_facets shape" });
+    return empty;
+  }
+  const facets = parsed.data;
+  if (facets.min_price === null || facets.max_price === null) return empty;
 
-  const sizes = [...new Set(data.flatMap((p) => (p.tagged_size ? [p.tagged_size] : [])))].sort(
-    compareSizes,
-  );
-  const presentConditions = new Set(data.map((p) => p.condition));
-  const brands = [...new Set(data.flatMap((p) => (p.brand ? [p.brand] : [])))].sort((a, b) =>
-    a.localeCompare(b),
-  );
-  const tags = new Set(data.flatMap((p) => p.style_tags));
+  const presentConditions = new Set(facets.conditions);
+  const tags = new Set(facets.styles);
   const known = new Set<string>(styleTags.map(([, tag]) => tag));
   const styles = [
     ...styleTags.filter(([, tag]) => tags.has(tag)).map(([label, tag]) => ({ tag, label })),
     ...[...tags].filter((t) => !known.has(t)).map((tag) => ({ tag, label: tag })),
   ];
-  const prices = data.map((p) => p.price_paise);
 
   return {
-    sizes,
+    sizes: facets.sizes.sort(compareSizes),
     conditions: (Object.keys(conditionGrades) as ProductCondition[]).filter((c) =>
       presentConditions.has(c),
     ),
-    brands,
+    brands: facets.brands.sort((a, b) => a.localeCompare(b)),
     styles,
     priceRangeRupees: {
-      min: Math.floor(Math.min(...prices) / 100),
-      max: Math.ceil(Math.max(...prices) / 100),
+      min: Math.floor(facets.min_price / 100),
+      max: Math.ceil(facets.max_price / 100),
     },
   };
 }
@@ -459,7 +467,7 @@ export async function getSearchSuggestions(text: string, limit = 6): Promise<Sea
     styles: [],
     minRupees: null,
     maxRupees: null,
-    sort: "newest",
+    sort: "relevance",
     limit,
   });
   return products.map((p) => ({
@@ -520,10 +528,10 @@ export const getProductBySlug = cache(async function getProductBySlug(
   const supabase = client();
   if (!supabase) return null;
   const { data, error } = await supabase
-    .from("products")
+    .from("storefront_products")
     .select(
       `${PRODUCT_CARD_COLUMNS}, description, flaws, measurements, style_tags, category_id, sold_at,
-       category:categories(name, slug, parent_id),
+       category:categories(name, slug, parent:parent_id(name, slug)),
        drop:drops(name, slug)`,
     )
     .eq("slug", slug)
@@ -535,10 +543,7 @@ export const getProductBySlug = cache(async function getProductBySlug(
   const card = toCard(data);
   if (!card) return null;
 
-  const parentId = data.category?.parent_id;
-  const parent = parentId
-    ? (await supabase.from("categories").select("name, slug").eq("id", parentId).maybeSingle()).data
-    : null;
+  const parent = data.category?.parent ?? null;
 
   return {
     ...card,
@@ -593,10 +598,9 @@ export async function getCartProducts(ids: string[]): Promise<ProductCardData[]>
   const supabase = client();
   if (!supabase || ids.length === 0) return [];
   const { data, error } = await supabase
-    .from("products")
+    .from("storefront_products")
     .select(PRODUCT_CARD_COLUMNS)
     .in("id", ids)
-    .neq("status", "draft")
     .order("sort_order", { referencedTable: "product_images" });
   logError("getCartProducts", error);
   const byId = new Map(toCards(data).map((p) => [p.id, p]));

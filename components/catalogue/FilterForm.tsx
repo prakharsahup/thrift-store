@@ -5,7 +5,7 @@ import Form from "next/form";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import type { Filters } from "@/lib/catalogue/filters";
+import { defaultSort, type Filters } from "@/lib/catalogue/filters";
 import { conditions } from "@/lib/config/conditions";
 import type { Facets } from "@/lib/server/catalogue";
 import { cn } from "@/lib/utils/cn";
@@ -101,7 +101,9 @@ export function FilterForm({
       className="space-y-1"
     >
       {filters.q ? <input type="hidden" name="q" value={filters.q} /> : null}
-      {filters.sort !== "newest" ? <input type="hidden" name="sort" value={filters.sort} /> : null}
+      {filters.sort !== defaultSort(filters.q) ? (
+        <input type="hidden" name="sort" value={filters.sort} />
+      ) : null}
 
       {groups
         .filter((group) => group.options.length > 0)
