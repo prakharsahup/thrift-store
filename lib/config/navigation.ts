@@ -202,6 +202,7 @@ export const footerNav: readonly NavColumn[] = [
       { label: "Returns & refunds", href: "/returns" },
       { label: "Track an order", href: "/account/orders" },
       { label: "Contact us", href: "/contact" },
+      { label: "Grievance redressal", href: "/contact#grievance-officer" },
     ],
   },
   {
@@ -209,7 +210,7 @@ export const footerNav: readonly NavColumn[] = [
     links: [
       { label: "About", href: "/about" },
       { label: "Lookbook", href: "/lookbook" },
-      { label: "Privacy policy", href: "/privacy" },
+      { label: "Privacy notice", href: "/privacy" },
       { label: "Terms of service", href: "/terms" },
     ],
   },

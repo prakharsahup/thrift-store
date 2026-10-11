@@ -3,7 +3,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(35);
+select plan(39);
 
 -- Seeded holds are relative to when the seed ran, and cron releases them. Pin them to "now" so
 -- these tests don't depend on when they run.
@@ -118,6 +118,14 @@ select throws_ok(
     values ((select id from ids where slug = 'fleece-quarter-zip'))$$,
   '42501', null, 'a user cannot add a draft product to their cart');
 
+select is(
+  (select count(*)::int from public.admin_product_holds(
+     array[(select id from ids where slug = 'cream-cable-knit-sweater')])),
+  0, 'a customer cannot see who holds a piece');
+select throws_ok(
+  $$insert into storage.objects (bucket_id, name) values ('catalogue', 'products/x.jpg')$$,
+  '42501', null, 'a customer cannot upload catalogue images');
+
 reset role;
 
 -- ---------------------------------------------------------------- customer B
@@ -139,6 +147,13 @@ set local request.jwt.claims to '{"sub": "00000000-0000-0000-0000-00000000000c",
 
 select is((select count(*)::int from public.products), 40, 'admins see every product, drafts included');
 select is((select count(*)::int from public.coupons), 3, 'admins see coupons');
+select is(
+  (select count(*)::int from public.admin_product_holds(
+     array[(select id from ids where slug = 'cream-cable-knit-sweater')])),
+  1, 'admins can see who holds a piece');
+select lives_ok(
+  $$insert into storage.objects (bucket_id, name) values ('catalogue', 'products/test.jpg')$$,
+  'admins can upload catalogue images');
 
 reset role;
 

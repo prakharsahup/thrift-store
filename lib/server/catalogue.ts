@@ -499,6 +499,8 @@ export type Measurements = Partial<Record<MeasurementKey, number>>;
 export type ProductDetail = ProductCardData & {
   description: string;
   flaws: string | null;
+  /** As printed on the label; null when it doesn’t say. */
+  countryOfOrigin: string | null;
   measurements: Measurements;
   styleTags: string[];
   categoryId: string;
@@ -530,7 +532,7 @@ export const getProductBySlug = cache(async function getProductBySlug(
   const { data, error } = await supabase
     .from("storefront_products")
     .select(
-      `${PRODUCT_CARD_COLUMNS}, description, flaws, measurements, style_tags, category_id, sold_at,
+      `${PRODUCT_CARD_COLUMNS}, description, flaws, country_of_origin, measurements, style_tags, category_id, sold_at,
        category:categories(name, slug, parent:parent_id(name, slug)),
        drop:drops(name, slug)`,
     )
@@ -549,6 +551,7 @@ export const getProductBySlug = cache(async function getProductBySlug(
     ...card,
     description: data.description,
     flaws: data.flaws,
+    countryOfOrigin: data.country_of_origin,
     measurements: toMeasurements(data.measurements),
     styleTags: data.style_tags,
     categoryId: data.category_id,

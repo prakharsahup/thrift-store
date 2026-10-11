@@ -111,8 +111,8 @@ export function CartContents({ variant }: Props) {
           </div>
         </dl>
         <p className="mt-2 text-xs text-muted">
-          Items aren&rsquo;t held until you start checkout — then they&rsquo;re yours for 15
-          minutes.
+          Prices include all taxes. Items aren&rsquo;t held until you start checkout — then
+          they&rsquo;re yours for 15 minutes.
         </p>
         {checkout.message ? (
           <p role="alert" className="mt-3 text-sm text-sale">

@@ -533,6 +533,7 @@ export type Database = {
           brand: string | null;
           category_id: string;
           condition: Database["public"]["Enums"]["product_condition"];
+          country_of_origin: string | null;
           created_at: string;
           description: string;
           drop_id: string | null;
@@ -559,6 +560,7 @@ export type Database = {
           brand?: string | null;
           category_id: string;
           condition: Database["public"]["Enums"]["product_condition"];
+          country_of_origin?: string | null;
           created_at?: string;
           description?: string;
           drop_id?: string | null;
@@ -585,6 +587,7 @@ export type Database = {
           brand?: string | null;
           category_id?: string;
           condition?: Database["public"]["Enums"]["product_condition"];
+          country_of_origin?: string | null;
           created_at?: string;
           description?: string;
           drop_id?: string | null;
@@ -655,6 +658,63 @@ export type Database = {
         };
         Relationships: [];
       };
+      support_requests: {
+        Row: {
+          acknowledged_at: string | null;
+          client_key: string | null;
+          created_at: string;
+          email: string;
+          id: string;
+          message: string;
+          name: string;
+          order_ref: string | null;
+          phone: string | null;
+          resolution: string | null;
+          resolved_at: string | null;
+          status: Database["public"]["Enums"]["support_status"];
+          ticket: string;
+          topic: Database["public"]["Enums"]["support_topic"];
+          updated_at: string;
+          user_id: string | null;
+        };
+        Insert: {
+          acknowledged_at?: string | null;
+          client_key?: string | null;
+          created_at?: string;
+          email: string;
+          id?: string;
+          message: string;
+          name: string;
+          order_ref?: string | null;
+          phone?: string | null;
+          resolution?: string | null;
+          resolved_at?: string | null;
+          status?: Database["public"]["Enums"]["support_status"];
+          ticket?: string;
+          topic: Database["public"]["Enums"]["support_topic"];
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Update: {
+          acknowledged_at?: string | null;
+          client_key?: string | null;
+          created_at?: string;
+          email?: string;
+          id?: string;
+          message?: string;
+          name?: string;
+          order_ref?: string | null;
+          phone?: string | null;
+          resolution?: string | null;
+          resolved_at?: string | null;
+          status?: Database["public"]["Enums"]["support_status"];
+          ticket?: string;
+          topic?: Database["public"]["Enums"]["support_topic"];
+          updated_at?: string;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
       wishlists: {
         Row: {
           created_at: string;
@@ -702,6 +762,7 @@ export type Database = {
           brand: string | null;
           category_id: string | null;
           condition: Database["public"]["Enums"]["product_condition"] | null;
+          country_of_origin: string | null;
           created_at: string | null;
           description: string | null;
           drop_id: string | null;
@@ -727,6 +788,7 @@ export type Database = {
           brand?: string | null;
           category_id?: string | null;
           condition?: Database["public"]["Enums"]["product_condition"] | null;
+          country_of_origin?: string | null;
           created_at?: string | null;
           description?: string | null;
           drop_id?: string | null;
@@ -752,6 +814,7 @@ export type Database = {
           brand?: string | null;
           category_id?: string | null;
           condition?: Database["public"]["Enums"]["product_condition"] | null;
+          country_of_origin?: string | null;
           created_at?: string | null;
           description?: string | null;
           drop_id?: string | null;
@@ -795,6 +858,7 @@ export type Database = {
           brand: string | null;
           category_id: string | null;
           condition: Database["public"]["Enums"]["product_condition"] | null;
+          country_of_origin: string | null;
           created_at: string | null;
           description: string | null;
           drop_id: string | null;
@@ -820,6 +884,7 @@ export type Database = {
           brand?: string | null;
           category_id?: string | null;
           condition?: Database["public"]["Enums"]["product_condition"] | null;
+          country_of_origin?: string | null;
           created_at?: string | null;
           description?: string | null;
           drop_id?: string | null;
@@ -845,6 +910,7 @@ export type Database = {
           brand?: string | null;
           category_id?: string | null;
           condition?: Database["public"]["Enums"]["product_condition"] | null;
+          country_of_origin?: string | null;
           created_at?: string | null;
           description?: string | null;
           drop_id?: string | null;
@@ -885,6 +951,15 @@ export type Database = {
       };
     };
     Functions: {
+      admin_product_holds: {
+        Args: { product_ids: string[] };
+        Returns: {
+          holder_email: string;
+          product_id: string;
+          reserved_order_id: string;
+          reserved_until: string;
+        }[];
+      };
       apply_coupon: { Args: { code: string; order_id: string }; Returns: Json };
       attach_reservations: { Args: { order_id: string }; Returns: string[] };
       cancel_stale_orders: { Args: Record<PropertyKey, never>; Returns: number };
@@ -904,6 +979,7 @@ export type Database = {
         Args: { brand: string; description: string; style_tags: string[]; title: string };
         Returns: unknown;
       };
+      purge_old_support_requests: { Args: Record<PropertyKey, never>; Returns: number };
       purge_unconfirmed_notify_requests: { Args: Record<PropertyKey, never>; Returns: number };
       release_expired_reservations: { Args: Record<PropertyKey, never>; Returns: number };
       release_order_reservations: { Args: { order_id: string }; Returns: number };
@@ -918,6 +994,7 @@ export type Database = {
           brand: string | null;
           category_id: string | null;
           condition: Database["public"]["Enums"]["product_condition"] | null;
+          country_of_origin: string | null;
           created_at: string | null;
           description: string | null;
           drop_id: string | null;
@@ -956,6 +1033,19 @@ export type Database = {
         };
         Returns: Json;
       };
+      submit_support_request: {
+        Args: {
+          client_key?: string;
+          email: string;
+          message: string;
+          name: string;
+          order_ref?: string;
+          phone?: string;
+          topic: Database["public"]["Enums"]["support_topic"];
+          user_id?: string;
+        };
+        Returns: Json;
+      };
     };
     Enums: {
       coupon_type: "percent" | "flat";
@@ -964,6 +1054,9 @@ export type Database = {
         "pending" | "paid" | "packed" | "shipped" | "delivered" | "cancelled" | "refunded";
       product_condition: "new_with_tags" | "like_new" | "good" | "fair";
       product_status: "draft" | "available" | "reserved" | "sold";
+      support_status: "open" | "in_progress" | "resolved";
+      support_topic:
+        "order" | "cancellation" | "return" | "refund" | "privacy" | "grievance" | "other";
       user_role: "customer" | "admin";
     };
     CompositeTypes: {
@@ -1084,6 +1177,8 @@ export const Constants = {
       order_status: ["pending", "paid", "packed", "shipped", "delivered", "cancelled", "refunded"],
       product_condition: ["new_with_tags", "like_new", "good", "fair"],
       product_status: ["draft", "available", "reserved", "sold"],
+      support_status: ["open", "in_progress", "resolved"],
+      support_topic: ["order", "cancellation", "return", "refund", "privacy", "grievance", "other"],
       user_role: ["customer", "admin"],
     },
   },

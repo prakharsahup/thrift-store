@@ -1,5 +1,4 @@
 import "server-only";
-import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { shipping } from "@/lib/config/shipping";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -7,6 +6,7 @@ import type { Json } from "@/lib/supabase/types";
 import { formatINR } from "@/lib/utils/money";
 import type { AddressInput } from "@/lib/validators/checkout";
 import { orderConfirmationEmail, sendEmail } from "./email";
+import { revalidateStorefront } from "./revalidate";
 
 // Order lifecycle on the server (CLAUDE.md §9). Everything here uses the service-role client and
 // the SQL functions in supabase/migrations (start_checkout, apply_coupon, mark_order_paid…), which
@@ -220,11 +220,7 @@ export async function finalisePaidOrder(
   }
 
   // Sold items must show as sold: refresh their pages and the pages with product rails.
-  for (const item of order.order_items) {
-    if (item.product) revalidatePath(`/p/${item.product.slug}`);
-  }
-  revalidatePath("/");
-  revalidatePath("/[gender]", "page");
+  revalidateStorefront(order.order_items.flatMap((i) => (i.product ? [i.product.slug] : [])));
 
   const email = order.user_id
     ? (await admin.auth.admin.getUserById(order.user_id)).data.user?.email

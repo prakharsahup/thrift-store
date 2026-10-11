@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { site } from "@/lib/config/site";
@@ -38,6 +39,19 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
             phoneEnabled={process.env.NEXT_PUBLIC_AUTH_PHONE_ENABLED === "true"}
           />
         </div>
+        {/* Notice at collection (DPDP Act s. 5) and the 18+ rule (Indian Contract Act; DPDP s. 9). */}
+        <p className="mt-8 text-xs text-muted">
+          By continuing, you confirm you&rsquo;re 18 or older and agree to our{" "}
+          <Link href="/terms" className="underline hover:text-primary">
+            Terms of service
+          </Link>
+          . We use your email or mobile number to sign you in and to handle your orders, as
+          explained in our{" "}
+          <Link href="/privacy" className="underline hover:text-primary">
+            Privacy notice
+          </Link>
+          . You can delete your account at any time.
+        </p>
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -43,6 +44,13 @@ export function NewsletterForm() {
         )}
       >
         {state.message}
+      </p>
+      <p className="text-xs text-muted">
+        Occasional emails about new drops. Unsubscribe any time; see our{" "}
+        <Link href="/privacy" className="underline hover:text-fg">
+          Privacy notice
+        </Link>
+        .
       </p>
     </form>
   );

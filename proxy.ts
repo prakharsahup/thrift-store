@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/session";
 
-// Next 16 renamed middleware → proxy. Admin role-gating is added here in Phase 8.
+// Next 16 renamed middleware → proxy. Refreshes the session and gates /admin (lib/supabase/session.ts).
 export async function proxy(request: NextRequest) {
   return updateSession(request);
 }

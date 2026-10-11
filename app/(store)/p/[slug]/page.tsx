@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Info } from "lucide-react";
+import { Info, RotateCcw, Store, Truck } from "lucide-react";
 import { ProductRail } from "@/components/home/ProductRail";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
@@ -11,7 +11,9 @@ import { Gallery } from "@/components/product/Gallery";
 import { MeasurementsTable } from "@/components/product/MeasurementsTable";
 import { ProductCard } from "@/components/product/ProductCard";
 import { ChipLink } from "@/components/ui/ChipLink";
+import { business, returnsPolicy, shippingPolicy } from "@/lib/config/legal";
 import { styleTags } from "@/lib/config/navigation";
+import { shipping } from "@/lib/config/shipping";
 import { getProductBySlug, getRelatedProducts } from "@/lib/server/catalogue";
 import { formatINR, savingPercent } from "@/lib/utils/money";
 
@@ -101,6 +103,19 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
               </p>
             ) : null}
           </div>
+          <p className="mt-1 text-xs text-muted">
+            Inclusive of all taxes.
+            {product.originalPricePaise ? (
+              <>
+                {" "}
+                &ldquo;est. retail&rdquo; is our estimate of its price when new —{" "}
+                <Link href="/terms#prices" className="underline hover:text-primary">
+                  how we work it out
+                </Link>
+                .
+              </>
+            ) : null}
+          </p>
 
           <dl className="mt-5 grid grid-cols-2 gap-4 border-y border-border py-4 text-sm">
             <div>
@@ -115,6 +130,18 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
                   : product.status === "reserved"
                     ? "On hold"
                     : "Only one available"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">Country of origin</dt>
+              <dd className="mt-0.5 font-semibold">
+                {product.countryOfOrigin ?? "Not stated on the label"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">New or used</dt>
+              <dd className="mt-0.5 font-semibold">
+                {product.condition === "new_with_tags" ? "New, never worn" : "Pre-owned"}
               </dd>
             </div>
           </dl>
@@ -143,6 +170,43 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
             doesn&rsquo;t hold it — it&rsquo;s reserved for you for 15 minutes once you start
             checkout.
           </p>
+
+          {/* Pre-purchase disclosures (E-Commerce Rules 2020 r. 6(5)): delivery, returns, seller. */}
+          <ul className="mt-6 space-y-3 rounded-lg border border-border p-4 text-sm">
+            <li className="flex gap-3">
+              <Truck aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
+              <span>
+                Ships within {shippingPolicy.dispatchDays} business days; usually delivered{" "}
+                {shippingPolicy.deliveryDays} business days later.{" "}
+                {shipping.flatPaise > 0
+                  ? `Free shipping over ${formatINR(shipping.freeAbovePaise)}, otherwise ${formatINR(shipping.flatPaise)}.`
+                  : null}{" "}
+                <Link href="/shipping" className="underline hover:text-primary">
+                  Shipping
+                </Link>
+              </span>
+            </li>
+            <li className="flex gap-3">
+              <RotateCcw aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
+              <span>
+                {returnsPolicy.changeOfMind
+                  ? `Returnable within ${returnsPolicy.windowDays} days of delivery if unworn. Not as described? Full refund.`
+                  : `Not as described? Return within ${returnsPolicy.windowDays} days for a full refund. No change-of-mind returns.`}{" "}
+                <Link href="/returns" className="underline hover:text-primary">
+                  Returns
+                </Link>
+              </span>
+            </li>
+            <li className="flex gap-3">
+              <Store aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
+              <span>
+                Sold by {business.legalName}.{" "}
+                <Link href="/contact" className="underline hover:text-primary">
+                  Contact the seller
+                </Link>
+              </span>
+            </li>
+          </ul>
 
           <section aria-labelledby="pdp-measurements" className="mt-8">
             <h2 id="pdp-measurements" className="text-base font-bold font-stretch-normal">

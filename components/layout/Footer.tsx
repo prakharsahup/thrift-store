@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MotionToggle } from "@/components/motion/MotionToggle";
+import { business, formatAddress } from "@/lib/config/legal";
 import { footerNav } from "@/lib/config/navigation";
 import { site } from "@/lib/config/site";
 import { Logo } from "./Logo";
@@ -69,6 +70,27 @@ export function Footer() {
             </p>
             <MotionToggle />
           </div>
+        </div>
+      </div>
+
+      {/* Seller details (E-Commerce Rules 2020 r. 4(2)) and standing disclosures. */}
+      <div className="border-t border-border">
+        <div className="site-container space-y-1 py-6 text-xs text-muted">
+          <p>
+            {site.name} is operated by{" "}
+            <span className="font-medium text-fg">{business.legalName}</span>,{" "}
+            {formatAddress().join(", ")}.{business.gstin ? ` GSTIN: ${business.gstin}.` : ""}
+            {business.cin ? ` CIN: ${business.cin}.` : ""} Customer care:{" "}
+            <a href={`mailto:${business.email}`} className="underline hover:text-fg">
+              {business.email}
+            </a>{" "}
+            · {business.phone}.
+          </p>
+          <p>
+            All prices are in Indian rupees and include all taxes. Every item is pre-owned unless
+            marked &ldquo;New with tags&rdquo;. Brand names and trademarks belong to their owners;
+            we resell genuine pieces and aren&rsquo;t affiliated with or endorsed by any brand.
+          </p>
         </div>
       </div>
     </footer>

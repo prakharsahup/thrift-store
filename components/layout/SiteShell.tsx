@@ -19,13 +19,19 @@ export function SiteShell({ children }: Props) {
       >
         Skip to content
       </a>
-      <AnnouncementBar />
-      <Header />
+      {/* display: contents keeps the sticky header working; print:hidden leaves printed pages
+          (receipts, policies) without the site chrome. */}
+      <div className="contents print:hidden">
+        <AnnouncementBar />
+        <Header />
+      </div>
       <main id="main" tabIndex={-1} className="outline-none">
         {children}
       </main>
-      <Footer />
-      <MobileNav />
+      <div className="contents print:hidden">
+        <Footer />
+        <MobileNav />
+      </div>
       <MobileMenu />
       <CartDrawer />
       <CartSync />

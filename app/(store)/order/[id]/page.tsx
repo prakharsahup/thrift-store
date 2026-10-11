@@ -6,6 +6,7 @@ import { z } from "zod";
 import { PaymentPending } from "@/components/checkout/PaymentPending";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { ButtonLink } from "@/components/ui/ButtonLink";
+import { returnsPolicy } from "@/lib/config/legal";
 import { formatOrderDate, orderStatuses, shortOrderId } from "@/lib/config/orders";
 import { requireUser } from "@/lib/server/auth";
 import { formatINR } from "@/lib/utils/money";
@@ -191,6 +192,46 @@ export default async function OrderPage({ params }: PageProps<"/order/[id]">) {
               <br />
               +91 {address.data.phone}
             </address>
+          </section>
+        ) : null}
+
+        {order.status !== "pending" && order.status !== "cancelled" ? (
+          <section
+            aria-labelledby="order-help"
+            className="mt-8 rounded-lg bg-surface p-4 text-sm md:p-6"
+          >
+            <h2 id="order-help" className="text-lg font-bold">
+              Need to cancel or return?
+            </h2>
+            <p className="mt-2">
+              {order.status === "paid" || order.status === "packed"
+                ? "You can cancel free of charge until your order ships."
+                : order.status === "shipped"
+                  ? `Once it arrives, you have ${returnsPolicy.windowDays} days to tell us if something's wrong${returnsPolicy.changeOfMind ? " or to return it" : ""}.`
+                  : order.status === "delivered"
+                    ? `You have ${returnsPolicy.windowDays} days from delivery to report a problem${returnsPolicy.changeOfMind ? " or return a piece" : ""}.`
+                    : "This order has been refunded."}{" "}
+              <Link href="/returns" className="underline hover:text-primary">
+                Returns, refunds &amp; cancellation policy
+              </Link>
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <ButtonLink
+                href={`/contact?order=${order.id}&topic=${
+                  order.status === "paid" || order.status === "packed"
+                    ? "cancellation"
+                    : order.status === "refunded"
+                      ? "refund"
+                      : "return"
+                }`}
+                variant="outline"
+              >
+                Cancel or get help
+              </ButtonLink>
+              <ButtonLink href={`/order/${order.id}/receipt`} variant="outline">
+                Receipt
+              </ButtonLink>
+            </div>
           </section>
         ) : null}
 

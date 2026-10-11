@@ -334,6 +334,7 @@ export function CheckoutFlow({
               <dd>{formatINR(total)}</dd>
             </div>
           </dl>
+          <p className="mt-1 text-xs text-muted">Inclusive of all taxes. No other charges.</p>
 
           {error ? (
             <p role="alert" className="mt-4 rounded-md bg-surface p-3 text-sm text-sale">
@@ -366,6 +367,23 @@ export function CheckoutFlow({
                 {paymentsEnabled
                   ? "UPI, cards and netbanking via Razorpay."
                   : "Online payments aren't switched on yet."}
+              </p>
+              {/* Terms shown before payment, never pre-accepted (E-Commerce Rules 2020 r. 4(9)). */}
+              <p className="mt-3 text-xs text-muted">
+                By paying, you agree to our{" "}
+                <Link href="/terms" className="underline hover:text-primary">
+                  Terms
+                </Link>{" "}
+                and{" "}
+                <Link href="/returns" className="underline hover:text-primary">
+                  Returns &amp; cancellation policy
+                </Link>
+                . You can cancel free of charge until your order ships. Your details are used as
+                described in our{" "}
+                <Link href="/privacy" className="underline hover:text-primary">
+                  Privacy notice
+                </Link>
+                .
               </p>
             </>
           )}

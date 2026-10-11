@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Heart, MapPin, Package } from "lucide-react";
+import { Heart, MapPin, Package, ShieldCheck } from "lucide-react";
 import { ProfileForm } from "@/components/auth/ProfileForm";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
@@ -38,6 +38,13 @@ export default async function AccountPage() {
       Icon: MapPin,
       ready: true,
     },
+    {
+      href: "/account/privacy",
+      label: "Privacy & data",
+      body: "Download or delete your data.",
+      Icon: ShieldCheck,
+      ready: true,
+    },
   ];
 
   return (
@@ -50,7 +57,7 @@ export default async function AccountPage() {
         <SignOutButton />
       </div>
 
-      <ul className="mt-8 grid gap-4 sm:grid-cols-3">
+      <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {sections.map(({ href, label, body, Icon, ready }) => (
           <li key={href}>
             {ready ? (

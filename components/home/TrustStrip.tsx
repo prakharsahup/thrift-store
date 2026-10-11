@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BadgeCheck, RotateCcw, Ruler, Truck } from "lucide-react";
+import { returnsPolicy } from "@/lib/config/legal";
 import { shipping } from "@/lib/config/shipping";
 import { formatINR } from "@/lib/utils/money";
 
@@ -18,10 +19,16 @@ export function TrustStrip() {
     },
     {
       Icon: RotateCcw,
-      title: "Easy returns",
+      // Must match the returns policy: no "easy returns" claim without change-of-mind returns.
+      title: returnsPolicy.changeOfMind
+        ? `${returnsPolicy.windowDays}-day returns`
+        : "Honest-or-refunded",
       body: (
         <>
-          Not right? See our{" "}
+          {returnsPolicy.changeOfMind
+            ? "Not right? Send it back unworn. "
+            : "Not as described? Full refund. "}
+          See our{" "}
           <Link href="/returns" className="underline hover:text-primary">
             returns policy
           </Link>
