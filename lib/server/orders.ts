@@ -1,11 +1,17 @@
 import "server-only";
 import { z } from "zod";
+import { site } from "@/lib/config/site";
 import { shipping } from "@/lib/config/shipping";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Json } from "@/lib/supabase/types";
 import { formatINR } from "@/lib/utils/money";
 import type { AddressInput } from "@/lib/validators/checkout";
-import { orderConfirmationEmail, sendEmail } from "./email";
+import {
+  orderConfirmationEmail,
+  orderNotificationEmail,
+  orderNotificationInbox,
+  sendEmail,
+} from "./email";
 import { revalidateStorefront } from "./revalidate";
 
 // Order lifecycle on the server (CLAUDE.md §9). Everything here uses the service-role client and
@@ -153,17 +159,74 @@ const markPaidSchema = z.object({
   order_id: z.string(),
   status: z.string(),
   already_processed: z.boolean(),
+  notify_late_payment: z.boolean(),
   unavailable_product_ids: z.array(z.string()),
 });
 
 const addressSnapshotSchema = z.object({
   name: z.string(),
+  phone: z.string(),
   line1: z.string(),
   line2: z.string().nullable(),
   city: z.string(),
   state: z.string(),
   pincode: z.string(),
 });
+
+/**
+ * A payment landed on an order whose hold already expired and got auto-cancelled (CLAUDE.md §4;
+ * cancel_stale_orders runs every 5 minutes) — it needs a manual refund. The verify route and the
+ * webhook can both land here for the same late payment; mark_order_paid's
+ * notify_late_payment makes this run exactly once per order.
+ */
+async function notifyLatePayment(
+  admin: ReturnType<typeof createAdminClient>,
+  orderId: string,
+  paymentId: string,
+): Promise<void> {
+  const notifyInbox = orderNotificationInbox();
+  if (!notifyInbox) return;
+
+  const { data: order, error } = await admin
+    .from("orders")
+    .select(
+      "id, user_id, subtotal_paise, shipping_paise, discount_paise, total_paise, payment_method, address, order_items(title_snapshot, price_paise_snapshot, unavailable)",
+    )
+    .eq("id", orderId)
+    .single();
+  if (error) {
+    console.error(`[orders] load cancelled order ${orderId} for late-payment alert: ${error.message}`);
+    return;
+  }
+  const address = addressSnapshotSchema.safeParse(order.address);
+  if (!address.success) return;
+
+  const email = order.user_id
+    ? (await admin.auth.admin.getUserById(order.user_id)).data.user?.email
+    : undefined;
+
+  await sendEmail({
+    to: notifyInbox,
+    ...orderNotificationEmail({
+      id: order.id,
+      status: "cancelled",
+      customerEmail: email ?? null,
+      items: order.order_items.map((i) => ({
+        title: i.title_snapshot,
+        pricePaise: i.price_paise_snapshot,
+        unavailable: i.unavailable,
+      })),
+      subtotalPaise: order.subtotal_paise,
+      shippingPaise: order.shipping_paise,
+      discountPaise: order.discount_paise,
+      totalPaise: order.total_paise,
+      paymentMethod: order.payment_method,
+      address: address.data,
+      adminUrl: `${site.url}/admin/orders/${order.id}`,
+      razorpayPaymentId: paymentId,
+    }),
+  });
+}
 
 /**
  * Marks the order paid and its items sold (mark_order_paid, idempotent). Called by both the
@@ -189,6 +252,9 @@ export async function finalisePaidOrder(
     console.error(
       `[orders] payment ${paymentId} landed on cancelled order ${orderId}: refund it in the Razorpay dashboard`,
     );
+    if (result.notify_late_payment) {
+      await notifyLatePayment(admin, orderId, paymentId);
+    }
   }
   // Only the webhook knows the method (UPI, card…), and it usually arrives after verify.
   if (method && result.status !== "cancelled") {
@@ -201,7 +267,7 @@ export async function finalisePaidOrder(
   const { data: order, error: orderError } = await admin
     .from("orders")
     .select(
-      "id, user_id, subtotal_paise, shipping_paise, discount_paise, total_paise, address, order_items(product_id, title_snapshot, price_paise_snapshot, unavailable, product:products(slug))",
+      "id, user_id, subtotal_paise, shipping_paise, discount_paise, total_paise, payment_method, address, order_items(product_id, title_snapshot, price_paise_snapshot, unavailable, product:products(slug))",
     )
     .eq("id", orderId)
     .single();
@@ -226,21 +292,45 @@ export async function finalisePaidOrder(
     ? (await admin.auth.admin.getUserById(order.user_id)).data.user?.email
     : undefined;
   const address = addressSnapshotSchema.safeParse(order.address);
+  const items = order.order_items.map((i) => ({
+    title: i.title_snapshot,
+    pricePaise: i.price_paise_snapshot,
+    unavailable: i.unavailable,
+  }));
+
   if (email && address.success) {
     await sendEmail({
       to: email,
       ...orderConfirmationEmail({
         id: order.id,
-        items: order.order_items.map((i) => ({
-          title: i.title_snapshot,
-          pricePaise: i.price_paise_snapshot,
-          unavailable: i.unavailable,
-        })),
+        items,
         subtotalPaise: order.subtotal_paise,
         shippingPaise: order.shipping_paise,
         discountPaise: order.discount_paise,
         totalPaise: order.total_paise,
         address: address.data,
+      }),
+    });
+  }
+
+  // Owner alert: fires once per order (same already_processed guard as the email above), even if
+  // the buyer has no email on file or the reservation expired before the payment landed.
+  const notifyInbox = orderNotificationInbox();
+  if (notifyInbox && address.success) {
+    await sendEmail({
+      to: notifyInbox,
+      ...orderNotificationEmail({
+        id: order.id,
+        status: result.status,
+        customerEmail: email ?? null,
+        items,
+        subtotalPaise: order.subtotal_paise,
+        shippingPaise: order.shipping_paise,
+        discountPaise: order.discount_paise,
+        totalPaise: order.total_paise,
+        paymentMethod: order.payment_method,
+        address: address.data,
+        adminUrl: `${site.url}/admin/orders/${order.id}`,
       }),
     });
   }

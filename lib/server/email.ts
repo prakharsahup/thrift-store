@@ -262,6 +262,89 @@ export function orderStatusEmail(order: {
 }
 
 // ---------------------------------------------------------------------------
+// Order notifications (internal)
+// ---------------------------------------------------------------------------
+
+/**
+ * Where new-order alerts go: ORDER_NOTIFICATION_EMAIL, else the customer-care address in
+ * lib/config/legal.ts once it's a real address. Null while both are still placeholders.
+ */
+export function orderNotificationInbox(): string | null {
+  const candidate = process.env.ORDER_NOTIFICATION_EMAIL ?? business.email;
+  return /^[^\s@[\]]+@[^\s@[\]]+\.[^\s@[\]]+$/.test(candidate) ? candidate : null;
+}
+
+export type OrderNotification = {
+  id: string;
+  status: string;
+  customerEmail: string | null;
+  items: { title: string; pricePaise: number; unavailable: boolean }[];
+  subtotalPaise: number;
+  shippingPaise: number;
+  discountPaise: number;
+  totalPaise: number;
+  paymentMethod: string | null;
+  address: {
+    name: string;
+    phone: string;
+    line1: string;
+    line2: string | null;
+    city: string;
+    state: string;
+    pincode: string;
+  };
+  adminUrl: string;
+  /** Only set for a late payment (status "cancelled"): the order row never gets one. */
+  razorpayPaymentId?: string;
+};
+
+/** Internal alert sent to the owner every time an order is paid (one per order, see orders.ts). */
+export function orderNotificationEmail(o: OrderNotification): Omit<Email, "to"> {
+  const shortId = o.id.slice(0, 8).toUpperCase();
+  const a = o.address;
+  const addressLines = [a.name, a.phone, a.line1, a.line2, `${a.city}, ${a.state} ${a.pincode}`].filter(
+    (l): l is string => Boolean(l),
+  );
+  const unavailable = o.items.filter((i) => i.unavailable);
+  const needsManualRefund = o.status === "cancelled";
+
+  const lines = [
+    needsManualRefund
+      ? `⚠ Payment landed after this order's reservation expired — refund ${formatINR(o.totalPaise)} by hand in the Razorpay dashboard${o.razorpayPaymentId ? ` (payment ${o.razorpayPaymentId})` : ""}.`
+      : `New order paid — #${shortId}`,
+    "",
+    ...o.items.map(
+      (i) => `- ${i.title}: ${formatINR(i.pricePaise)}${i.unavailable ? " (sold out — refunding)" : ""}`,
+    ),
+    "",
+    `Subtotal: ${formatINR(o.subtotalPaise)}`,
+    `Shipping: ${o.shippingPaise === 0 ? "Free" : formatINR(o.shippingPaise)}`,
+    ...(o.discountPaise > 0 ? [`Discount: -${formatINR(o.discountPaise)}`] : []),
+    `Total: ${formatINR(o.totalPaise)}`,
+    `Payment method: ${o.paymentMethod ?? "unknown"}`,
+    "",
+    `Customer: ${o.customerEmail ?? "no email on file"}`,
+    "",
+    "Ship to:",
+    ...addressLines,
+    "",
+    ...(unavailable.length
+      ? [
+          `Refund due: ${formatINR(unavailable.reduce((sum, i) => sum + i.pricePaise, 0))} for ${unavailable.length} unavailable item(s).`,
+          "",
+        ]
+      : []),
+    `Open in admin: ${o.adminUrl}`,
+  ];
+
+  return {
+    subject: `${needsManualRefund ? "[NEEDS REFUND] " : ""}New order #${shortId} — ${formatINR(o.totalPaise)}`,
+    text: lines.join("\n"),
+    html: `<pre style="font-family:Arial,Helvetica,sans-serif;white-space:pre-wrap">${escapeHtml(lines.join("\n"))}</pre>`,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Support and grievances
 // ---------------------------------------------------------------------------
 

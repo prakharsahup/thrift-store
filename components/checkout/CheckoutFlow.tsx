@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/Input";
 import type { Address } from "@/lib/actions/addresses";
 import { holdCart, previewCoupon } from "@/lib/actions/checkout";
 import type { CheckoutFailed, CheckoutStarted, HeldItem, VerifyResult } from "@/lib/checkout/types";
+import { returnsPolicy } from "@/lib/config/legal";
 import { shippingFor } from "@/lib/config/shipping";
 import { site } from "@/lib/config/site";
 import { useCartStore } from "@/lib/stores/cart";
@@ -368,6 +369,13 @@ export function CheckoutFlow({
                   ? "UPI, cards and netbanking via Razorpay."
                   : "Online payments aren't switched on yet."}
               </p>
+              {!returnsPolicy.changeOfMind ? (
+                <p className="mt-3 rounded-md bg-surface p-3 text-xs leading-relaxed">
+                  <strong>All sales are final.</strong> Please review the photos, condition and
+                  measurements above before paying — we don&rsquo;t accept returns for size, fit,
+                  colour or change of mind.
+                </p>
+              ) : null}
               {/* Terms shown before payment, never pre-accepted (E-Commerce Rules 2020 r. 4(9)). */}
               <p className="mt-3 text-xs text-muted">
                 By paying, you agree to our{" "}

@@ -54,9 +54,10 @@ export const returnsPolicy = {
   windowDays: 7,
   /**
    * Change-of-mind returns. When false, only "not as described" returns are accepted — the law
-   * (E-Commerce Rules r. 6(6)) requires those either way. Owner decision.
+   * (E-Commerce Rules r. 6(6)) requires those either way. Owner decision: set to false 2026-10-14
+   * (all sales final, per the owner's T&C).
    */
-  changeOfMind: true,
+  changeOfMind: false,
   /** Deducted from change-of-mind refunds to cover the reverse pickup. 0 for free returns. */
   changeOfMindFeePaise: 9900,
   /** Measurements may differ by up to this much (cm) and still count as accurate. */

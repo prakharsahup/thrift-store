@@ -103,14 +103,27 @@ const sections: LegalSection[] = [
       }
     : {
         id: "change-of-mind",
-        title: "Change-of-mind returns",
+        title: "All sales are final",
         body: (
-          <p>
-            Because every piece is one of one, graded and measured, we don&rsquo;t accept returns
-            for change of mind or fit. Please check the measurements before you buy, and ask us if
-            anything is unclear. This doesn&rsquo;t affect your right to return a piece that is not
-            as described.
-          </p>
+          <>
+            <p>
+              Because every piece is pre-owned, one of one, graded and measured, we don&rsquo;t
+              accept returns or exchanges for:
+            </p>
+            <ul>
+              <li>incorrect size selection or fit preferences;</li>
+              <li>change of mind after placing an order;</li>
+              <li>colour preferences or minor variations in appearance between screens;</li>
+              <li>disagreement with a style or appearance that was accurately described;</li>
+              <li>minor signs of wear or imperfections that were disclosed in the listing.</li>
+            </ul>
+            <p>
+              Please check the photographs, condition grade, flaws and measurements before you buy,
+              and ask us first if anything is unclear. This doesn&rsquo;t affect your right to
+              return a piece that is not as described (above), or any other remedy a consumer
+              protection law entitles you to.
+            </p>
+          </>
         ),
       },
   {
@@ -205,7 +218,10 @@ export default function ReturnsPage() {
               {fee ? ` (${fee} pickup fee)` : ""}.
             </li>
           ) : (
-            <li>No returns for change of mind or fit — please check the measurements.</li>
+            <li>
+              All sales are final — no returns for size, fit, colour or change of mind. Please check
+              the measurements and photos before you buy.
+            </li>
           )}
           <li>
             Refunds go back to your original payment method; banks take {r.bankDays} working days.
