@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Heart, MapPin, Package, ShieldCheck } from "lucide-react";
+import { LinkIdentityForm } from "@/components/auth/LinkIdentityForm";
 import { ProfileForm } from "@/components/auth/ProfileForm";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
@@ -94,6 +95,20 @@ export default async function AccountPage() {
           phone={profile?.phone ?? ""}
         />
       </section>
+
+      {!user.email || !user.phone ? (
+        <section aria-labelledby="account-signin" className="mt-12 max-w-md">
+          <h2 id="account-signin" className="mb-2 text-xl font-bold">
+            Sign-in methods
+          </h2>
+          <p className="mb-6 text-sm text-muted">
+            You currently sign in with {user.email ? "your email" : "your phone number"} only.
+            Add {user.email ? "a phone number" : "an email"} so you can use either — and so a code
+            sent the other way doesn&rsquo;t accidentally create a second account.
+          </p>
+          <LinkIdentityForm kind={user.email ? "phone" : "email"} />
+        </section>
+      ) : null}
     </div>
   );
 }

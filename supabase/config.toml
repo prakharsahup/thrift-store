@@ -252,6 +252,11 @@ content_path = "./supabase/templates/sign-in-code.html"
 subject = "Your sign-in code"
 content_path = "./supabase/templates/sign-in-code.html"
 
+# Sent when someone on /account links an email to an account they signed into by phone.
+[auth.email.template.email_change]
+subject = "Confirm your email"
+content_path = "./supabase/templates/link-email-code.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"

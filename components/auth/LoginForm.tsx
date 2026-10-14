@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { createClient } from "@/lib/supabase/client";
@@ -16,6 +16,9 @@ type Props = {
 };
 
 type Method = "email" | "phone";
+
+/** Purely a UX cue — the server (Supabase's rate limit) is what actually enforces this. */
+const RESEND_COOLDOWN_SECONDS = 30;
 
 const methodCopy = {
   email: { tab: "Email", send: "Email me a sign-in code", other: "Use a different email" },
@@ -44,6 +47,13 @@ export function LoginForm({ next, googleEnabled, phoneEnabled }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setTimeout(() => setCooldown((seconds) => seconds - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
 
   function chooseMethod(value: Method) {
     setMethod(value);
@@ -82,6 +92,7 @@ export function LoginForm({ next, googleEnabled, phoneEnabled }: Props) {
     }
     setSentTo(parsed.data);
     setStep("code");
+    setCooldown(RESEND_COOLDOWN_SECONDS);
     setNotice(
       method === "email"
         ? `We sent a 6-digit code to ${parsed.data}.`
@@ -244,8 +255,8 @@ export function LoginForm({ next, googleEnabled, phoneEnabled }: Props) {
             >
               {methodCopy[method].other}
             </Button>
-            <Button variant="link" disabled={busy} onClick={() => void sendCode()}>
-              Send a new code
+            <Button variant="link" disabled={busy || cooldown > 0} onClick={() => void sendCode()}>
+              {cooldown > 0 ? `Resend in ${cooldown}s` : "Send a new code"}
             </Button>
           </div>
         </form>
