@@ -1,25 +1,10 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
-  graphql_public: {
-    Tables: {
-      [_ in never]: never;
-    };
-    Views: {
-      [_ in never]: never;
-    };
-    Functions: {
-      graphql: {
-        Args: { extensions?: Json; operationName?: string; query?: string; variables?: Json };
-        Returns: Json;
-      };
-    };
-    Enums: {
-      [_ in never]: never;
-    };
-    CompositeTypes: {
-      [_ in never]: never;
-    };
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.18";
   };
   public: {
     Tables: {
@@ -419,11 +404,12 @@ export type Database = {
       };
       orders: {
         Row: {
-          address: NonNullable<Json>;
+          address: Json;
           coupon_code: string | null;
           created_at: string;
           discount_paise: number;
           id: string;
+          late_payment_notified_at: string | null;
           paid_at: string | null;
           payment_method: string | null;
           razorpay_order_id: string | null;
@@ -437,11 +423,12 @@ export type Database = {
           user_id: string | null;
         };
         Insert: {
-          address: NonNullable<Json>;
+          address: Json;
           coupon_code?: string | null;
           created_at?: string;
           discount_paise?: number;
           id?: string;
+          late_payment_notified_at?: string | null;
           paid_at?: string | null;
           payment_method?: string | null;
           razorpay_order_id?: string | null;
@@ -455,11 +442,12 @@ export type Database = {
           user_id?: string | null;
         };
         Update: {
-          address?: NonNullable<Json>;
+          address?: Json;
           coupon_code?: string | null;
           created_at?: string;
           discount_paise?: number;
           id?: string;
+          late_payment_notified_at?: string | null;
           paid_at?: string | null;
           payment_method?: string | null;
           razorpay_order_id?: string | null;
@@ -535,12 +523,13 @@ export type Database = {
           condition: Database["public"]["Enums"]["product_condition"];
           country_of_origin: string | null;
           created_at: string;
+          currency: string;
           description: string;
           drop_id: string | null;
           flaws: string | null;
           gender: Database["public"]["Enums"]["gender"];
           id: string;
-          measurements: NonNullable<Json>;
+          measurements: Json;
           original_price_paise: number | null;
           price_paise: number;
           published_at: string | null;
@@ -562,19 +551,20 @@ export type Database = {
           condition: Database["public"]["Enums"]["product_condition"];
           country_of_origin?: string | null;
           created_at?: string;
+          currency?: string;
           description?: string;
           drop_id?: string | null;
           flaws?: string | null;
           gender: Database["public"]["Enums"]["gender"];
           id?: string;
-          measurements?: NonNullable<Json>;
+          measurements?: Json;
           original_price_paise?: number | null;
           price_paise: number;
           published_at?: string | null;
           reserved_by?: string | null;
           reserved_order_id?: string | null;
           reserved_until?: string | null;
-          search?: never;
+          search?: unknown;
           slug: string;
           sold_at?: string | null;
           status?: Database["public"]["Enums"]["product_status"];
@@ -589,19 +579,20 @@ export type Database = {
           condition?: Database["public"]["Enums"]["product_condition"];
           country_of_origin?: string | null;
           created_at?: string;
+          currency?: string;
           description?: string;
           drop_id?: string | null;
           flaws?: string | null;
           gender?: Database["public"]["Enums"]["gender"];
           id?: string;
-          measurements?: NonNullable<Json>;
+          measurements?: Json;
           original_price_paise?: number | null;
           price_paise?: number;
           published_at?: string | null;
           reserved_by?: string | null;
           reserved_order_id?: string | null;
           reserved_until?: string | null;
-          search?: never;
+          search?: unknown;
           slug?: string;
           sold_at?: string | null;
           status?: Database["public"]["Enums"]["product_status"];
@@ -764,6 +755,7 @@ export type Database = {
           condition: Database["public"]["Enums"]["product_condition"] | null;
           country_of_origin: string | null;
           created_at: string | null;
+          currency: string | null;
           description: string | null;
           drop_id: string | null;
           effective_status: Database["public"]["Enums"]["product_status"] | null;
@@ -790,6 +782,7 @@ export type Database = {
           condition?: Database["public"]["Enums"]["product_condition"] | null;
           country_of_origin?: string | null;
           created_at?: string | null;
+          currency?: string | null;
           description?: string | null;
           drop_id?: string | null;
           effective_status?: never;
@@ -816,6 +809,7 @@ export type Database = {
           condition?: Database["public"]["Enums"]["product_condition"] | null;
           country_of_origin?: string | null;
           created_at?: string | null;
+          currency?: string | null;
           description?: string | null;
           drop_id?: string | null;
           effective_status?: never;
@@ -860,6 +854,7 @@ export type Database = {
           condition: Database["public"]["Enums"]["product_condition"] | null;
           country_of_origin: string | null;
           created_at: string | null;
+          currency: string | null;
           description: string | null;
           drop_id: string | null;
           effective_status: Database["public"]["Enums"]["product_status"] | null;
@@ -886,6 +881,7 @@ export type Database = {
           condition?: Database["public"]["Enums"]["product_condition"] | null;
           country_of_origin?: string | null;
           created_at?: string | null;
+          currency?: string | null;
           description?: string | null;
           drop_id?: string | null;
           effective_status?: never;
@@ -912,6 +908,7 @@ export type Database = {
           condition?: Database["public"]["Enums"]["product_condition"] | null;
           country_of_origin?: string | null;
           created_at?: string | null;
+          currency?: string | null;
           description?: string | null;
           drop_id?: string | null;
           effective_status?: never;
@@ -962,32 +959,54 @@ export type Database = {
       };
       apply_coupon: { Args: { code: string; order_id: string }; Returns: Json };
       attach_reservations: { Args: { order_id: string }; Returns: string[] };
-      cancel_stale_orders: { Args: Record<PropertyKey, never>; Returns: number };
+      cancel_stale_orders: { Args: never; Returns: number };
       confirm_notify: { Args: { token: string }; Returns: number };
       coupon_quote: {
         Args: { code: string; subtotal_paise: number; user_id: string };
         Returns: Json;
       };
       drop_is_live: { Args: { drop_id: string }; Returns: boolean };
-      is_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
+      is_admin: { Args: never; Returns: boolean };
       is_slug: { Args: { value: string }; Returns: boolean };
-      live_drop_ids: { Args: Record<PropertyKey, never>; Returns: string[] };
-      mark_order_paid: { Args: { order_id: string; payment_id: string }; Returns: Json };
-      measurements_are_valid: { Args: { m: Json }; Returns: boolean };
-      product_facets: { Args: { category_ids?: string[]; query?: string }; Returns: Json };
-      product_search_document: {
-        Args: { brand: string; description: string; style_tags: string[]; title: string };
-        Returns: unknown;
-      };
-      purge_old_support_requests: { Args: Record<PropertyKey, never>; Returns: number };
-      purge_unconfirmed_notify_requests: { Args: Record<PropertyKey, never>; Returns: number };
-      release_expired_reservations: { Args: Record<PropertyKey, never>; Returns: number };
-      release_order_reservations: { Args: { order_id: string }; Returns: number };
-      request_notify: {
-        Args: { client_key?: string; drop_id?: string; email: string; product_id?: string };
+      live_drop_ids: { Args: never; Returns: string[] };
+      mark_order_paid: {
+        Args: { order_id: string; payment_id: string };
         Returns: Json;
       };
-      reserve_products: { Args: { product_ids: string[]; user_id: string }; Returns: string[] };
+      measurements_are_valid: { Args: { m: Json }; Returns: boolean };
+      product_facets: {
+        Args: { category_ids?: string[]; query?: string };
+        Returns: Json;
+      };
+      product_search_document: {
+        Args: {
+          brand: string;
+          description: string;
+          style_tags: string[];
+          title: string;
+        };
+        Returns: unknown;
+      };
+      purge_old_support_requests: { Args: never; Returns: number };
+      purge_unconfirmed_notify_requests: { Args: never; Returns: number };
+      release_expired_reservations: { Args: never; Returns: number };
+      release_order_reservations: {
+        Args: { order_id: string };
+        Returns: number;
+      };
+      request_notify: {
+        Args: {
+          client_key?: string;
+          drop_id?: string;
+          email: string;
+          product_id?: string;
+        };
+        Returns: Json;
+      };
+      reserve_products: {
+        Args: { product_ids: string[]; user_id: string };
+        Returns: string[];
+      };
       search_products: {
         Args: { query: string };
         Returns: {
@@ -996,6 +1015,7 @@ export type Database = {
           condition: Database["public"]["Enums"]["product_condition"] | null;
           country_of_origin: string | null;
           created_at: string | null;
+          currency: string | null;
           description: string | null;
           drop_id: string | null;
           effective_status: Database["public"]["Enums"]["product_status"] | null;
@@ -1079,7 +1099,9 @@ export type Tables<
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never) = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R;
@@ -1102,7 +1124,9 @@ export type TablesInsert<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never) = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I;
     }
@@ -1124,7 +1148,9 @@ export type TablesUpdate<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never) = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U;
     }
@@ -1146,7 +1172,9 @@ export type Enums<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never) = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
@@ -1160,16 +1188,15 @@ export type CompositeTypes<
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never) = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never;
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       coupon_type: ["percent", "flat"],

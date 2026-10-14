@@ -3,7 +3,7 @@ import Link from "next/link";
 import { conditions } from "@/lib/config/conditions";
 import type { ProductCardData } from "@/lib/server/catalogue";
 import { cn } from "@/lib/utils/cn";
-import { formatINR, savingPercent } from "@/lib/utils/money";
+import { formatMoney, savingPercent } from "@/lib/utils/money";
 import { conditionTone } from "./conditionTone";
 import { WishlistHeart } from "./WishlistHeart";
 
@@ -70,11 +70,11 @@ export function ProductCard({ product, sizes, className }: Props) {
           </span>
           <span className="mt-0.5 block truncate text-sm font-medium">{product.title}</span>
           <span className="mt-1 flex items-baseline gap-2 text-sm">
-            <span className="font-bold">{formatINR(product.pricePaise)}</span>
+            <span className="font-bold">{formatMoney(product.pricePaise, product.currency)}</span>
             {product.originalPricePaise ? (
               <span className="text-xs text-muted">
                 <span className="sr-only">Estimated retail </span>
-                <s>{formatINR(product.originalPricePaise)}</s>
+                <s>{formatMoney(product.originalPricePaise, product.currency)}</s>
               </span>
             ) : null}
           </span>

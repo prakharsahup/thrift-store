@@ -15,7 +15,7 @@ import { business, returnsPolicy, shippingPolicy } from "@/lib/config/legal";
 import { styleTags } from "@/lib/config/navigation";
 import { shipping } from "@/lib/config/shipping";
 import { getProductBySlug, getRelatedProducts } from "@/lib/server/catalogue";
-import { formatINR, savingPercent } from "@/lib/utils/money";
+import { formatINR, formatMoney, savingPercent } from "@/lib/utils/money";
 
 // Cached per product and refreshed at most once a minute. The checkout phase also revalidates a
 // product's page the moment it sells.
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: PageProps<"/p/[slug]">): Prom
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) return {};
-  const price = formatINR(product.pricePaise);
+  const price = formatMoney(product.pricePaise, product.currency);
   return {
     title: `${product.title}${product.brand ? ` · ${product.brand}` : ""}`,
     description:
@@ -92,11 +92,11 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
 
           <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <p className="font-body text-lg font-bold tabular-nums lg:text-xl">
-              {formatINR(product.pricePaise)}
+              {formatMoney(product.pricePaise, product.currency)}
             </p>
             {product.originalPricePaise ? (
               <p className="text-sm text-muted">
-                est. retail <s>{formatINR(product.originalPricePaise)}</s>
+                est. retail <s>{formatMoney(product.originalPricePaise, product.currency)}</s>
                 {saving > 0 ? (
                   <span className="ml-2 font-semibold text-sale">You save {saving}%</span>
                 ) : null}
@@ -147,6 +147,19 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
           </dl>
 
           <ConditionBadge condition={product.condition} className="mt-4" />
+
+          {!returnsPolicy.changeOfMind ? (
+            <p className="mt-4 rounded-lg bg-surface p-3 text-xs leading-relaxed">
+              <strong>Please read before buying.</strong> All items are pre-owned unless stated
+              otherwise. Please check the photographs, condition details and measurements before
+              purchasing. All sales are final — we don&rsquo;t accept returns or exchanges for
+              sizing preferences, change of mind, or disclosed imperfections.{" "}
+              <Link href="/returns#change-of-mind" className="underline hover:text-primary">
+                Full policy
+              </Link>
+              .
+            </p>
+          ) : null}
 
           <div className="mt-6 grid gap-3">
             <AddToCartButton

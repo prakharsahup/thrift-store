@@ -14,6 +14,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       // Placeholder product/banner images (CLAUDE.md §2).
       { protocol: "https", hostname: "placehold.co" },
+      // Vendoo-imported catalogue photos, hotlinked for now (CSV import, 2026-10-14).
+      { protocol: "https", hostname: "images.vendoo.co" },
       ...(supabaseUrl
         ? [
             {

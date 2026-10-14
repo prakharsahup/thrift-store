@@ -21,6 +21,8 @@ export type ProductCardData = {
   condition: ProductCondition;
   pricePaise: number;
   originalPricePaise: number | null;
+  /** INR for everything except Vendoo-imported pieces, still priced in USD pending repricing. */
+  currency: "INR" | "USD";
   /** Expired holds already read as "available". */
   status: "available" | "reserved" | "sold";
   images: { url: string; alt: string }[];
@@ -50,7 +52,7 @@ export type FeaturedDrop = {
 export type ImpactStats = { listed: number; rehomed: number; averageSavingPercent: number };
 
 const PRODUCT_CARD_COLUMNS =
-  "id, slug, title, brand, tagged_size, condition, price_paise, original_price_paise, status, effective_status, product_images(url, alt, sort_order)";
+  "id, slug, title, brand, tagged_size, condition, price_paise, original_price_paise, currency, status, effective_status, product_images(url, alt, sort_order)";
 
 function client() {
   return hasSupabaseEnv() ? createPublicClient() : null;
@@ -82,6 +84,8 @@ type ProductRow = {
   condition: ProductCondition;
   price_paise: number;
   original_price_paise: number | null;
+  /** Plain `text` with a CHECK constraint in Postgres, not an enum, so it comes back untyped. */
+  currency: string;
   status: string;
   effective_status: string;
   product_images: { url: string; alt: string; sort_order: number }[];
@@ -99,6 +103,7 @@ function toCard(row: ProductRow): ProductCardData | null {
     condition: row.condition,
     pricePaise: row.price_paise,
     originalPricePaise: row.original_price_paise,
+    currency: row.currency === "USD" ? "USD" : "INR",
     status,
     images: row.product_images.map(({ url, alt }) => ({ url, alt })),
   };
