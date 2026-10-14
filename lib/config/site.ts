@@ -1,6 +1,6 @@
 // Placeholder brand values — the owner will replace these.
 export const site = {
-  name: "xyz",
+  name: "Le.Jao.Bhai",
   tagline: "Pre-loved fashion, graded and measured. One of one.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   locale: "en-IN",

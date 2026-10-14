@@ -1,6 +1,6 @@
-# xyz — pre-loved fashion store
+# Le.Jao.Bhai — pre-loved fashion store
 
-An e-commerce site for **xyz** (working name), a thrift / pre-loved fashion store selling in India.
+An e-commerce site for **Le.Jao.Bhai** (working name), a thrift / pre-loved fashion store selling in India.
 Every product is a single, unique item — one of one — with a condition grade, flat measurements and
 honest flaw notes.
 
@@ -41,8 +41,8 @@ You do **not** need to install the Supabase CLI — the project runs it through 
 
 ```bash
 # 1. Get the code and install dependencies
-git clone <this-repo-url> xyz-store
-cd xyz-store
+git clone <this-repo-url> le-jao-bhai-store
+cd le-jao-bhai-store
 corepack enable          # once per machine: makes the pinned pnpm version available
 pnpm install
 
