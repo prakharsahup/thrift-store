@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { OrderForm } from "@/components/admin/OrderForm";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { StatusBadge, orderStatusBadge } from "@/components/admin/StatusBadge";
+import { ImageWithFallback } from "@/components/ui/ImageWithFallback";
 import { shortOrderId } from "@/lib/config/orders";
 import { requireAdmin } from "@/lib/server/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -86,15 +86,13 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
               {order.order_items.map((item) => (
                 <li key={item.product_id} className="flex items-center gap-4 py-3">
                   <div className="relative aspect-3/4 w-12 shrink-0 overflow-hidden rounded-sm bg-surface">
-                    {item.image_snapshot ? (
-                      <Image
-                        src={item.image_snapshot}
-                        alt={item.title_snapshot}
-                        fill
-                        sizes="48px"
-                        className="object-cover"
-                      />
-                    ) : null}
+                    <ImageWithFallback
+                      src={item.image_snapshot}
+                      alt={item.title_snapshot}
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                    />
                   </div>
                   <div className="min-w-0 flex-1 text-sm">
                     <Link

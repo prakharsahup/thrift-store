@@ -1,7 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 import { conditions } from "@/lib/config/conditions";
 import type { ProductCardData } from "@/lib/server/catalogue";
+import { ImageWithFallback } from "@/components/ui/ImageWithFallback";
 import { cn } from "@/lib/utils/cn";
 import { formatMoney, savingPercent } from "@/lib/utils/money";
 import { conditionTone } from "./conditionTone";
@@ -30,17 +30,15 @@ export function ProductCard({ product, sizes, className }: Props) {
     <div className={cn("relative", className)}>
       <Link href={`/p/${product.slug}`} className="group/card block">
         <span className="relative block aspect-[3/4] overflow-hidden rounded-md bg-surface">
-          {front ? (
-            <Image
-              src={front.url}
-              alt={front.alt || product.title}
-              fill
-              sizes={sizes}
-              className={cn("object-cover", sold && "opacity-60")}
-            />
-          ) : null}
+          <ImageWithFallback
+            src={front?.url}
+            alt={front?.alt || product.title}
+            fill
+            sizes={sizes}
+            className={cn("object-cover", sold && "opacity-60")}
+          />
           {back && !sold ? (
-            <Image
+            <ImageWithFallback
               src={back.url}
               alt=""
               fill

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { StatusBadge, productStatusBadge } from "@/components/admin/StatusBadge";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { Button } from "@/components/ui/Button";
+import { ImageWithFallback } from "@/components/ui/ImageWithFallback";
 import { Input, inputVariants } from "@/components/ui/Input";
 import { requireAdmin } from "@/lib/server/auth";
 import { ADMIN_PAGE_SIZE, getAdminProducts, type ProductStatus } from "@/lib/server/admin";
@@ -99,15 +99,13 @@ export default async function AdminProductsPage({ searchParams }: PageProps<"/ad
                   className="flex items-center gap-4 px-4 py-3 hover:bg-surface"
                 >
                   <div className="relative aspect-3/4 w-12 shrink-0 overflow-hidden rounded-sm bg-surface">
-                    {image ? (
-                      <Image
-                        src={image.url}
-                        alt={image.alt}
-                        fill
-                        sizes="48px"
-                        className="object-cover"
-                      />
-                    ) : null}
+                    <ImageWithFallback
+                      src={image?.url}
+                      alt={image?.alt ?? ""}
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                    />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold">{p.title}</p>

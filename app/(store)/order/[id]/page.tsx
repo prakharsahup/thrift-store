@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { PaymentPending } from "@/components/checkout/PaymentPending";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { ButtonLink } from "@/components/ui/ButtonLink";
+import { ImageWithFallback } from "@/components/ui/ImageWithFallback";
 import { returnsPolicy } from "@/lib/config/legal";
 import { formatOrderDate, orderStatuses, shortOrderId } from "@/lib/config/orders";
 import { requireUser } from "@/lib/server/auth";
@@ -108,15 +108,13 @@ export default async function OrderPage({ params }: PageProps<"/order/[id]">) {
             {order.order_items.map((item) => (
               <li key={item.product_id} className="flex gap-4 py-4">
                 <div className="relative aspect-3/4 w-16 shrink-0 overflow-hidden rounded-md bg-surface">
-                  {item.image_snapshot ? (
-                    <Image
-                      src={item.image_snapshot}
-                      alt={item.title_snapshot}
-                      fill
-                      sizes="64px"
-                      className="object-cover"
-                    />
-                  ) : null}
+                  <ImageWithFallback
+                    src={item.image_snapshot}
+                    alt={item.title_snapshot}
+                    fill
+                    sizes="64px"
+                    className="object-cover"
+                  />
                 </div>
                 <div className="min-w-0 flex-1 text-sm">
                   {item.product ? (

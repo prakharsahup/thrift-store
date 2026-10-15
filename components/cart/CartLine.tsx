@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { ImageWithFallback } from "@/components/ui/ImageWithFallback";
 import type { CartLine as CartLineData } from "@/lib/cart/types";
 import { useCartStore } from "@/lib/stores/cart";
 import { cn } from "@/lib/utils/cn";
@@ -23,15 +23,13 @@ export function CartLine({ line }: Props) {
         onClick={closeCart}
         className="relative block h-24 w-18 shrink-0 overflow-hidden rounded-md bg-surface"
       >
-        {line.imageUrl ? (
-          <Image
-            src={line.imageUrl}
-            alt={line.title}
-            fill
-            sizes="72px"
-            className={cn("object-cover", unavailable && "opacity-50")}
-          />
-        ) : null}
+        <ImageWithFallback
+          src={line.imageUrl}
+          alt={line.title}
+          fill
+          sizes="72px"
+          className={cn("object-cover", unavailable && "opacity-50")}
+        />
       </Link>
       <div className="min-w-0 flex-1">
         <Link

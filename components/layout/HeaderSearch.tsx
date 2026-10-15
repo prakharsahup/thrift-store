@@ -1,11 +1,11 @@
 "use client";
 
 import Form from "next/form";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { Search } from "lucide-react";
+import { ImageWithFallback } from "@/components/ui/ImageWithFallback";
 import { Input } from "@/components/ui/Input";
 import type { SearchSuggestion } from "@/lib/server/catalogue";
 import { cn } from "@/lib/utils/cn";
@@ -166,15 +166,13 @@ export function HeaderSearch({ className }: Props) {
                   )}
                 >
                   <span className="relative block h-14 w-10 shrink-0 overflow-hidden rounded-sm bg-surface">
-                    {result.imageUrl ? (
-                      <Image
-                        src={result.imageUrl}
-                        alt=""
-                        fill
-                        sizes="40px"
-                        className="object-cover"
-                      />
-                    ) : null}
+                    <ImageWithFallback
+                      src={result.imageUrl}
+                      alt=""
+                      fill
+                      sizes="40px"
+                      className="object-cover"
+                    />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium">{result.title}</span>

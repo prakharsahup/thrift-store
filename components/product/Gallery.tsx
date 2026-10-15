@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { ImageWithFallback } from "@/components/ui/ImageWithFallback";
 import { useCarouselState } from "@/hooks/useCarouselState";
 import { cn } from "@/lib/utils/cn";
 import { ZoomViewer } from "./ZoomViewer";
@@ -43,7 +43,7 @@ export function Gallery({ images, title }: Props) {
                 i === selectedIndex ? "border-fg" : "border-transparent hover:border-input",
               )}
             >
-              <Image src={image.url} alt="" fill sizes="80px" className="object-cover" />
+              <ImageWithFallback src={image.url} alt="" fill sizes="80px" className="object-cover" />
             </button>
           </li>
         ))}
@@ -68,7 +68,7 @@ export function Gallery({ images, title }: Props) {
                 aria-label={`${i + 1} of ${images.length}`}
                 className="relative aspect-[3/4] min-w-0 shrink-0 grow-0 basis-full"
               >
-                <Image
+                <ImageWithFallback
                   src={image.url}
                   alt={image.alt || title}
                   fill

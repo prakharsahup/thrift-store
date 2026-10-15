@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { ArrowDown, ArrowUp, GripVertical, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { ImageWithFallback } from "@/components/ui/ImageWithFallback";
 import { Input } from "@/components/ui/Input";
 import {
   addProductImages,
@@ -161,7 +161,7 @@ export function ImageManager({ productId, productTitle, images }: Props) {
             >
               <GripVertical aria-hidden className="size-5 shrink-0 cursor-grab text-muted" />
               <div className="relative aspect-3/4 w-16 shrink-0 overflow-hidden rounded-sm bg-surface">
-                <Image src={photo.url} alt="" fill sizes="64px" className="object-cover" />
+                <ImageWithFallback src={photo.url} alt="" fill sizes="64px" className="object-cover" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="mb-1 text-xs font-semibold text-muted">

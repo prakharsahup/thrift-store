@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Minus, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { ImageWithFallback } from "@/components/ui/ImageWithFallback";
 import { cn } from "@/lib/utils/cn";
 
 type Props = {
@@ -285,7 +285,7 @@ export function ZoomViewer({ images, title, index, onIndexChange, open, onClose 
               )}
               style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})` }}
             >
-              <Image
+              <ImageWithFallback
                 key={image.url}
                 src={image.url}
                 alt={image.alt || title}
