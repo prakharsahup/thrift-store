@@ -352,11 +352,12 @@ Every schema change goes in `supabase/migrations/` as SQL, and RLS is enabled on
 ## 12. Commands
 
 ```
-pnpm dev            # local dev
+pnpm dev            # local dev, against the hosted Supabase project — no local DB, no Docker
 pnpm build          # production build — must pass before ending a phase
 pnpm lint           # must pass
 pnpm typecheck      # tsc --noEmit — must pass
-supabase db reset   # re-run migrations + seed locally
+pnpm db:push        # apply new supabase/migrations/*.sql directly to the hosted project
+pnpm db:types       # regenerate lib/supabase/database.types.ts from the hosted project's schema
 ```
 
 ---

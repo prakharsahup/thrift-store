@@ -4,10 +4,6 @@ import type { NextConfig } from "next";
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL)
   : null;
-// Local Supabase runs on 127.0.0.1, which Next refuses to optimise images from unless told to.
-// Only allowed when the project itself points at a local Supabase, never for a hosted one.
-const supabaseIsLocal =
-  supabaseUrl !== null && ["127.0.0.1", "localhost"].includes(supabaseUrl.hostname);
 
 const nextConfig: NextConfig = {
   images: {
@@ -27,7 +23,6 @@ const nextConfig: NextConfig = {
           ]
         : []),
     ],
-    dangerouslyAllowLocalIP: supabaseIsLocal,
   },
   // Baseline security headers ("reasonable security safeguards", DPDP Act s. 8(5)). No CSP yet:
   // Razorpay's checkout script and frames need a carefully tested allow-list (docs/COMPLIANCE.md).

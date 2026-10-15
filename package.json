@@ -10,11 +10,9 @@
     "typecheck": "next typegen && tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "db:start": "pnpm dlx supabase start -x imgproxy,realtime,supavisor",
-    "db:stop": "pnpm dlx supabase stop",
-    "db:reset": "pnpm dlx supabase db reset",
-    "db:test": "pnpm dlx supabase test db",
-    "db:types": "pnpm dlx supabase gen types typescript --local > lib/supabase/database.types.ts && prettier --write lib/supabase/database.types.ts"
+    "db:link": "pnpm dlx supabase link --project-ref mvzslooxqtcudvzdbtkh",
+    "db:push": "pnpm dlx supabase db push --linked",
+    "db:types": "pnpm dlx supabase gen types typescript --project-id mvzslooxqtcudvzdbtkh > lib/supabase/database.types.ts && prettier --write lib/supabase/database.types.ts"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

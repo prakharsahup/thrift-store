@@ -1,5 +1,12 @@
 # For detailed configuration reference documentation, visit:
 # https://supabase.com/docs/guides/local-development/cli/config
+#
+# This project has no local Supabase stack (no Docker) — it runs against the hosted "xyz-thrift"
+# project (ap-south-1) only. This file still matters for `supabase link` / `db push` / `gen types`
+# (see package.json's db:* scripts) and as a reference for settings that must also be set by hand
+# in that project's Dashboard (auth providers, email templates, SMS provider — the [api]/[db]/
+# [studio]/[inbucket] sections below only apply to a local `supabase start`, which this project
+# doesn't use).
 # A string used to distinguish different Supabase projects on the same host. Defaults to the
 # working directory name when running `supabase init`.
 project_id = "WebWeb"
@@ -300,20 +307,14 @@ max_frequency = "30s"
 # enabled = true
 # uri = "pg-functions://<database>/<schema>/<hook_name>"
 
-# Local only: no real SMS provider. Codes are written to dev.sms_outbox (supabase/dev/sms_outbox.sql)
-# instead of being sent. Production uses a real provider (or an HTTP send-SMS hook) instead.
-[auth.hook.send_sms]
-enabled = true
-uri = "pg-functions://postgres/dev/send_sms_hook"
-
+# Dead locally (no `supabase start`). The hosted project's real SMS provider is configured in its
+# Dashboard under Authentication → Providers → Phone, not here.
 # Configure one of the supported SMS providers: `twilio`, `twilio_verify`, `messagebird`, `textlocal`, `vonage`.
-# Locally, a provider must be "enabled" for the CLI to switch phone sign-in on at all, but the
-# send_sms hook above replaces it, so these placeholder values are never used and nothing is sent.
 [auth.sms.twilio]
 enabled = true
-account_sid = "local-placeholder-unused"
-message_service_sid = "local-placeholder-unused"
-auth_token = "local-placeholder-unused"
+account_sid = "unused-locally-see-dashboard"
+message_service_sid = "unused-locally-see-dashboard"
+auth_token = "unused-locally-see-dashboard"
 
 # Multi-factor-authentication is available to Supabase Pro plan.
 [auth.mfa]

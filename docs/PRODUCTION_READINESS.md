@@ -14,7 +14,7 @@ Legend: ✅ done · 🔧 code exists, needs a real value/config from the owner �
 - [ ] 🔧 `RESEND_API_KEY` + verified sending domain in Resend (without it, prod silently skips every email — order confirmations, status updates, support tickets, the new owner order-alert)
 - [ ] 🔧 `business.email` (`lib/config/legal.ts`) or `SUPPORT_INBOX`/`ORDER_NOTIFICATION_EMAIL` set to a real inbox — right now `business.email` is still the `[support@yourdomain.in]` placeholder, so support alerts and order-notification emails are silently skipped
 - [ ] 🔧 `NEXT_PUBLIC_SITE_URL` set to the real domain (defaults to `http://localhost:3000`) — this feeds metadata, emails, sitemap links, JSON-LD
-- [ ] ❌ Production Supabase project — as of early October the DB was local-only (Docker + CLI); nothing here confirms a hosted project exists yet
+- [x] ✅ Production Supabase project — hosted project "xyz-thrift" (ap-south-1) is live and is the only database; local Docker/CLI dev stack was removed 2026-10-15
 - [ ] 🔧 `SENTRY_DSN` is in `.env.example` but **`@sentry/nextjs` isn't installed and there's no Sentry init code anywhere** — error tracking isn't actually wired up despite the env var existing
 - [ ] 🔧 Decide on `NEXT_PUBLIC_AUTH_GOOGLE_ENABLED` / `NEXT_PUBLIC_AUTH_PHONE_ENABLED` for launch (both `false` by default — phone sign-in needs a real SMS provider configured in Supabase, Google needs OAuth credentials)
 
