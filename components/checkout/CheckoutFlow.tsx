@@ -146,12 +146,16 @@ export function CheckoutFlow({
     const checkout = new window.Razorpay({
       key: body.keyId,
       amount: body.amountPaise,
-      currency: "INR",
+      // Must match the order's own currency (lib/server/payments.ts) — the order was created in USD.
+      currency: "USD",
       name: site.name,
       description: `Order #${body.orderId.slice(0, 8).toUpperCase()}`,
       order_id: body.razorpayOrderId,
       prefill: body.prefill,
-      theme: { color: primary || "#000000" },
+      // Razorpay's modal runs in its own iframe, so it needs a resolved color, not a CSS var
+      // reference. The fallback mirrors --color-primary in app/globals.css for the rare case the
+      // custom property can't be read.
+      theme: { color: primary || "#8855d9" },
       handler: (response) => void verify(body.orderId, response),
       modal: {
         escape: true,

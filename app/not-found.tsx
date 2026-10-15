@@ -6,7 +6,11 @@ import { genderNav } from "@/lib/config/navigation";
 
 export const metadata: Metadata = { title: "Page not found" };
 
-// Renders inside the root layout only, so it brings its own storefront chrome.
+// Fallback for a URL that matches no route at all (so it isn't wrapped by any group layout) —
+// it brings its own storefront chrome. (store) and (brand) routes get app/(store)/not-found.tsx
+// instead: those groups' own layout.tsx already renders <SiteShell>, and Next keeps that layout
+// mounted around whichever not-found.tsx it falls back to, so wrapping again here would double
+// the header.
 export default function NotFound() {
   return (
     <SiteShell>

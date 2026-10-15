@@ -14,7 +14,7 @@ function fail(status: number, body: Omit<CheckoutFailed, "ok">) {
   return NextResponse.json<CheckoutFailed>({ ok: false, ...body }, { status });
 }
 
-/** Razorpay's smallest charge is ₹1. */
+/** Razorpay's smallest charge is $1 (we price in USD cents — see createRazorpayOrder). */
 const MIN_CHARGE_PAISE = 100;
 
 export async function POST(request: NextRequest) {

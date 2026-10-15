@@ -26,7 +26,7 @@ export function CartLine({ line }: Props) {
         {line.imageUrl ? (
           <Image
             src={line.imageUrl}
-            alt=""
+            alt={line.title}
             fill
             sizes="72px"
             className={cn("object-cover", unavailable && "opacity-50")}

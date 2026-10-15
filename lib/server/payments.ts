@@ -24,6 +24,11 @@ function hmacMatches(secret: string, payload: string, signature: string): boolea
 /**
  * Creates the Razorpay order the browser pays against. `amountPaise` must come from our own
  * order row, never from the client. Returns Razorpay's order id ("order_…").
+ *
+ * The field is still named `amountPaise` for the smallest-unit integer convention (CLAUDE.md
+ * §2.7), but the store prices everything in USD (see lib/utils/money.ts) — it's really cents.
+ * `currency` must match: Razorpay charges whatever integer we send in the unit of this currency,
+ * so sending "INR" against a USD-cents amount would charge ~1/80th of the real price.
  */
 export async function createRazorpayOrder(
   config: RazorpayConfig,
@@ -37,7 +42,7 @@ export async function createRazorpayOrder(
     },
     body: JSON.stringify({
       amount: order.amountPaise,
-      currency: "INR",
+      currency: "USD",
       receipt: order.id,
       notes: { order_id: order.id },
     }),

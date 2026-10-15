@@ -21,6 +21,12 @@ export function generateStaticParams() {
   return genders.map((gender) => ({ gender }));
 }
 
+const metaTitles: Record<Gender, string> = {
+  men: "Men's",
+  women: "Women's",
+  unisex: "Unisex",
+};
+
 const intros: Record<Gender, string> = {
   men: "Broken-in denim, proper workwear and vintage sportswear — every piece graded and measured.",
   women: "Slip dresses, tailored trousers and Y2K finds — one of each, with every flaw shown.",
@@ -34,8 +40,7 @@ function isGender(value: string): value is Gender {
 export async function generateMetadata({ params }: PageProps<"/[gender]">): Promise<Metadata> {
   const { gender } = await params;
   if (!isGender(gender)) return {};
-  const name = gender.charAt(0).toUpperCase() + gender.slice(1);
-  return { title: `${name}'s pre-loved fashion`, description: intros[gender] };
+  return { title: `${metaTitles[gender]} pre-loved fashion`, description: intros[gender] };
 }
 
 const GRID_EMPTY = (
