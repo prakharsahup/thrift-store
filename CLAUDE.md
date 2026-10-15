@@ -36,8 +36,8 @@ A production-grade e-commerce site for **[STORE_NAME]**, a thrift / pre-loved fa
 6. **Secrets never reach the client.**
    - `SUPABASE_SERVICE_ROLE_KEY` and `RAZORPAY_KEY_SECRET` are only used in server code (`/lib/server`, route handlers, server actions).
    - Only `NEXT_PUBLIC_*` variables may be read in client code.
-7. **Money is stored as integer paise** (₹499 = `49900`).
-   - Format only at render time with `formatINR()` from `/lib/utils/money.ts`.
+7. **Money is stored as an integer smallest-unit amount** ($499 = `49900` cents).
+   - Format only at render time with `formatMoney()` from `/lib/utils/money.ts`.
 8. **Never trust the client for prices, stock, or totals.** Recompute everything on the server at checkout.
 9. **Mobile-first.** Build every component at 360px width first, then scale up.
 10. **Explain as you go.** After each feature, briefly say which files were added and whether each is a server or client component.
@@ -222,7 +222,7 @@ Every schema change goes in `supabase/migrations/` as SQL, and RLS is enabled on
   - "Just dropped" rail.
   - Upcoming drop banner with countdown.
   - "Shop by style" tiles (y2k, vintage, streetwear…).
-  - "Under ₹[499]" rail.
+  - "Under $[499]" rail.
   - Trust strip: authenticity, condition-graded, easy returns, COD if enabled.
 - **Category page (PLP):**
   - Filters: category, tagged size, condition, brand, price range, style.
@@ -279,7 +279,7 @@ Every schema change goes in `supabase/migrations/` as SQL, and RLS is enabled on
    - Handles failed payments by releasing the reservations.
 7. Send the confirmation email (Resend) and redirect to `/order/[id]`.
 
-**Shipping rule:** flat ₹[XX], free above ₹[XXX]. Keep it in a single config file, `/lib/config/shipping.ts`.
+**Shipping rule:** flat $[XX], free above $[XXX]. Keep it in a single config file, `/lib/config/shipping.ts`.
 
 ---
 

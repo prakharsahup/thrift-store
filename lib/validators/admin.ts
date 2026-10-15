@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { conditions } from "@/lib/config/conditions";
-import { rupeesToPaise } from "@/lib/utils/money";
+import { dollarsToCents } from "@/lib/utils/money";
 import { fromIstInputValue } from "@/lib/utils/datetime";
 import { slugify } from "@/lib/utils/slug";
 
@@ -27,15 +27,15 @@ const optionalSlug = z.union([z.literal(""), slug]).transform((v) => v || null);
 
 const optionalUuid = z.union([z.literal(""), z.uuid()]).transform((v) => v || null);
 
-/** "499" or "499.50" rupees → integer paise. */
-const rupees = (label: string) =>
+/** "499" or "499.50" dollars → integer cents. */
+const dollars = (label: string) =>
   z
     .string()
     .trim()
-    .regex(/^\d{1,7}(\.\d{1,2})?$/, `Enter ${label} in rupees, like 499.`)
-    .transform((v) => rupeesToPaise(Number(v)));
-const optionalRupees = (label: string) =>
-  z.union([z.literal(""), rupees(label)]).transform((v) => (v === "" ? null : v));
+    .regex(/^\d{1,7}(\.\d{1,2})?$/, `Enter ${label} in dollars, like 49.99.`)
+    .transform((v) => dollarsToCents(Number(v)));
+const optionalDollars = (label: string) =>
+  z.union([z.literal(""), dollars(label)]).transform((v) => (v === "" ? null : v));
 
 const optionalPositiveInt = (label: string) =>
   z
@@ -101,8 +101,8 @@ export const productFormSchema = z
         ),
       ])
       .refine((tags) => tags.length <= 10, "Ten tags at most."),
-    price: rupees("the price"),
-    original_price: optionalRupees("the est. retail price"),
+    price: dollars("the price"),
+    original_price: optionalDollars("the est. retail price"),
     /** "reserved" means "leave the status alone" (a shopper is checking out). */
     status: z.enum(["draft", "available", "sold", "reserved"]),
     // Measurements, one field per key in measurementKeys.
@@ -206,7 +206,7 @@ export const couponFormSchema = z
       .string()
       .trim()
       .regex(/^\d{1,7}(\.\d{1,2})?$/, "Enter a number."),
-    min_order: optionalRupees("the minimum order"),
+    min_order: optionalDollars("the minimum order"),
     max_uses: optionalPositiveInt("Max uses"),
     expires_at: optionalIstDateTime,
     active: checkbox,
@@ -217,12 +217,12 @@ export const couponFormSchema = z
       ctx.addIssue({ code: "custom", path: ["value"], message: "A whole percent from 1 to 100." });
     }
     if (c.type === "flat" && amount <= 0) {
-      ctx.addIssue({ code: "custom", path: ["value"], message: "More than ₹0." });
+      ctx.addIssue({ code: "custom", path: ["value"], message: "More than $0." });
     }
     return {
       code: c.code,
       type: c.type,
-      value: c.type === "percent" ? amount : rupeesToPaise(amount),
+      value: c.type === "percent" ? amount : dollarsToCents(amount),
       min_order_paise: c.min_order ?? 0,
       max_uses: c.max_uses,
       expires_at: c.expires_at,

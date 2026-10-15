@@ -8,7 +8,7 @@ import { shipping, shippingFor } from "@/lib/config/shipping";
 import { useStartCheckout } from "@/components/checkout/useStartCheckout";
 import { useCartStore } from "@/lib/stores/cart";
 import { cn } from "@/lib/utils/cn";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 import { CartLine } from "./CartLine";
 
 type Props = {
@@ -69,7 +69,7 @@ export function CartContents({ variant }: Props) {
         <p className="text-sm" aria-live="polite">
           {toFreeShipping > 0 ? (
             <>
-              Add <strong>{formatINR(toFreeShipping)}</strong> more for free shipping.
+              Add <strong>{formatMoney(toFreeShipping)}</strong> more for free shipping.
             </>
           ) : (
             <strong>You&rsquo;ve got free shipping.</strong>
@@ -103,11 +103,11 @@ export function CartContents({ variant }: Props) {
         <dl className="space-y-1 text-sm">
           <div className="flex justify-between">
             <dt>Subtotal</dt>
-            <dd className="font-semibold">{formatINR(subtotal)}</dd>
+            <dd className="font-semibold">{formatMoney(subtotal)}</dd>
           </div>
           <div className="flex justify-between text-muted">
             <dt>Shipping</dt>
-            <dd>{shippingCost === 0 ? "Free" : formatINR(shippingCost)}</dd>
+            <dd>{shippingCost === 0 ? "Free" : formatMoney(shippingCost)}</dd>
           </div>
         </dl>
         <p className="mt-2 text-xs text-muted">

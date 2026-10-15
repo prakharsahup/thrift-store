@@ -1,7 +1,7 @@
 import "server-only";
 import { business, formatAddress, grievanceOfficer, returnsPolicy } from "@/lib/config/legal";
 import { site } from "@/lib/config/site";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 import { supportTopics, type SupportTopic } from "@/lib/validators/support";
 
 // Transactional email. Email clients ignore CSS variables, so the templates inline the brand
@@ -119,16 +119,16 @@ export function orderConfirmationEmail(order: ConfirmationOrder): Omit<Email, "t
   );
 
   const rows: [string, string][] = [
-    ["Subtotal", formatINR(order.subtotalPaise)],
-    ["Shipping", order.shippingPaise === 0 ? "Free" : formatINR(order.shippingPaise)],
+    ["Subtotal", formatMoney(order.subtotalPaise)],
+    ["Shipping", order.shippingPaise === 0 ? "Free" : formatMoney(order.shippingPaise)],
     ...(order.discountPaise > 0
-      ? ([["Discount", `−${formatINR(order.discountPaise)}`]] as [string, string][])
+      ? ([["Discount", `−${formatMoney(order.discountPaise)}`]] as [string, string][])
       : []),
-    ["Paid", formatINR(order.totalPaise)],
+    ["Paid", formatMoney(order.totalPaise)],
   ];
 
   const refundNote = unavailable.length
-    ? `Sorry — ${unavailable.length === 1 ? "one piece" : `${unavailable.length} pieces`} sold to someone else a moment before your payment landed. We'll refund ${formatINR(refundPaise)} to your original payment method within 5–7 working days.`
+    ? `Sorry — ${unavailable.length === 1 ? "one piece" : `${unavailable.length} pieces`} sold to someone else a moment before your payment landed. We'll refund ${formatMoney(refundPaise)} to your original payment method within 5–7 working days.`
     : null;
 
   const text = [
@@ -136,7 +136,7 @@ export function orderConfirmationEmail(order: ConfirmationOrder): Omit<Email, "t
     "",
     ...order.items.map(
       (i) =>
-        `- ${i.title}: ${formatINR(i.pricePaise)}${i.unavailable ? " (sold out, refunding)" : ""}`,
+        `- ${i.title}: ${formatMoney(i.pricePaise)}${i.unavailable ? " (sold out, refunding)" : ""}`,
     ),
     "",
     ...rows.map(([label, value]) => `${label}: ${value}`),
@@ -164,7 +164,7 @@ export function orderConfirmationEmail(order: ConfirmationOrder): Omit<Email, "t
         (i) =>
           `<tr><td style="padding:8px 0;border-bottom:1px solid #e2d8c8">${escapeHtml(i.title)}${
             i.unavailable ? ' <span style="color:#b3123a">(sold out — refunding)</span>' : ""
-          }</td><td align="right" style="padding:8px 0;border-bottom:1px solid #e2d8c8">${formatINR(i.pricePaise)}</td></tr>`,
+          }</td><td align="right" style="padding:8px 0;border-bottom:1px solid #e2d8c8">${formatMoney(i.pricePaise)}</td></tr>`,
       )
       .join("")}
     ${rows
@@ -291,17 +291,17 @@ export function orderNotificationEmail(o: OrderNotification): Omit<Email, "to"> 
 
   const lines = [
     needsManualRefund
-      ? `⚠ Payment landed after this order's reservation expired — refund ${formatINR(o.totalPaise)} by hand in the Razorpay dashboard${o.razorpayPaymentId ? ` (payment ${o.razorpayPaymentId})` : ""}.`
+      ? `⚠ Payment landed after this order's reservation expired — refund ${formatMoney(o.totalPaise)} by hand in the Razorpay dashboard${o.razorpayPaymentId ? ` (payment ${o.razorpayPaymentId})` : ""}.`
       : `New order paid — #${shortId}`,
     "",
     ...o.items.map(
-      (i) => `- ${i.title}: ${formatINR(i.pricePaise)}${i.unavailable ? " (sold out — refunding)" : ""}`,
+      (i) => `- ${i.title}: ${formatMoney(i.pricePaise)}${i.unavailable ? " (sold out — refunding)" : ""}`,
     ),
     "",
-    `Subtotal: ${formatINR(o.subtotalPaise)}`,
-    `Shipping: ${o.shippingPaise === 0 ? "Free" : formatINR(o.shippingPaise)}`,
-    ...(o.discountPaise > 0 ? [`Discount: -${formatINR(o.discountPaise)}`] : []),
-    `Total: ${formatINR(o.totalPaise)}`,
+    `Subtotal: ${formatMoney(o.subtotalPaise)}`,
+    `Shipping: ${o.shippingPaise === 0 ? "Free" : formatMoney(o.shippingPaise)}`,
+    ...(o.discountPaise > 0 ? [`Discount: -${formatMoney(o.discountPaise)}`] : []),
+    `Total: ${formatMoney(o.totalPaise)}`,
     `Payment method: ${o.paymentMethod ?? "unknown"}`,
     "",
     `Customer: ${o.customerEmail ?? "no email on file"}`,
@@ -311,7 +311,7 @@ export function orderNotificationEmail(o: OrderNotification): Omit<Email, "to"> 
     "",
     ...(unavailable.length
       ? [
-          `Refund due: ${formatINR(unavailable.reduce((sum, i) => sum + i.pricePaise, 0))} for ${unavailable.length} unavailable item(s).`,
+          `Refund due: ${formatMoney(unavailable.reduce((sum, i) => sum + i.pricePaise, 0))} for ${unavailable.length} unavailable item(s).`,
           "",
         ]
       : []),
@@ -319,7 +319,7 @@ export function orderNotificationEmail(o: OrderNotification): Omit<Email, "to"> 
   ];
 
   return {
-    subject: `${needsManualRefund ? "[NEEDS REFUND] " : ""}New order #${shortId} — ${formatINR(o.totalPaise)}`,
+    subject: `${needsManualRefund ? "[NEEDS REFUND] " : ""}New order #${shortId} — ${formatMoney(o.totalPaise)}`,
     text: lines.join("\n"),
     html: `<pre style="font-family:Arial,Helvetica,sans-serif;white-space:pre-wrap">${escapeHtml(lines.join("\n"))}</pre>`,
   };

@@ -14,7 +14,7 @@ import { returnsPolicy } from "@/lib/config/legal";
 import { shippingFor } from "@/lib/config/shipping";
 import { site } from "@/lib/config/site";
 import { useCartStore } from "@/lib/stores/cart";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 import { AddressForm } from "./AddressForm";
 import { HoldCountdown, useSecondsLeft } from "./HoldCountdown";
 import { RAZORPAY_SCRIPT_URL, type RazorpaySuccess } from "./razorpay";
@@ -238,7 +238,7 @@ export function CheckoutFlow({
           {coupon ? (
             <div className="flex items-center justify-between gap-4 rounded-md bg-surface px-4 py-3 text-sm">
               <p>
-                <strong>{coupon.code}</strong> applied — you save {formatINR(discount)}.
+                <strong>{coupon.code}</strong> applied — you save {formatMoney(discount)}.
               </p>
               <Button variant="link" onClick={() => setCoupon(null)}>
                 Remove
@@ -309,7 +309,7 @@ export function CheckoutFlow({
                     .join(" · ")}
                 </p>
               </div>
-              <p className="text-sm font-semibold">{formatINR(item.pricePaise)}</p>
+              <p className="text-sm font-semibold">{formatMoney(item.pricePaise)}</p>
             </li>
           ))}
         </ul>
@@ -318,21 +318,21 @@ export function CheckoutFlow({
           <dl className="space-y-1 text-sm">
             <div className="flex justify-between">
               <dt>Subtotal</dt>
-              <dd>{formatINR(subtotal)}</dd>
+              <dd>{formatMoney(subtotal)}</dd>
             </div>
             <div className="flex justify-between">
               <dt>Shipping</dt>
-              <dd>{shippingCost === 0 ? "Free" : formatINR(shippingCost)}</dd>
+              <dd>{shippingCost === 0 ? "Free" : formatMoney(shippingCost)}</dd>
             </div>
             {discount > 0 ? (
               <div className="flex justify-between text-sale">
                 <dt>Coupon {coupon?.code}</dt>
-                <dd>−{formatINR(discount)}</dd>
+                <dd>−{formatMoney(discount)}</dd>
               </div>
             ) : null}
             <div className="flex justify-between border-t border-border pt-2 text-base font-bold">
               <dt>Total</dt>
-              <dd>{formatINR(total)}</dd>
+              <dd>{formatMoney(total)}</dd>
             </div>
           </dl>
           <p className="mt-1 text-xs text-muted">Inclusive of all taxes. No other charges.</p>
@@ -362,7 +362,7 @@ export function CheckoutFlow({
                 disabled={!paymentsEnabled || paying || !addressId}
                 onClick={() => void pay()}
               >
-                {paying ? "Opening payment…" : `Pay ${formatINR(total)}`}
+                {paying ? "Opening payment…" : `Pay ${formatMoney(total)}`}
               </Button>
               <p className="mt-2 text-center text-xs text-muted">
                 {paymentsEnabled

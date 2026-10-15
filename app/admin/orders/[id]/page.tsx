@@ -10,7 +10,7 @@ import { shortOrderId } from "@/lib/config/orders";
 import { requireAdmin } from "@/lib/server/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatIstDateTime } from "@/lib/utils/datetime";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 
 export const metadata: Metadata = { title: "Order" };
 
@@ -65,7 +65,7 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
       {unavailable.length > 0 || paidLate ? (
         <div role="alert" className="mb-8 rounded-lg border-2 border-sale p-4 text-sm">
           <p className="font-bold text-sale">
-            Refund due: {formatINR(paidLate ? order.total_paise : refundPaise)}
+            Refund due: {formatMoney(paidLate ? order.total_paise : refundPaise)}
           </p>
           <p className="mt-1">
             {paidLate
@@ -109,28 +109,28 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
                       </p>
                     ) : null}
                   </div>
-                  <p className="text-sm font-semibold">{formatINR(item.price_paise_snapshot)}</p>
+                  <p className="text-sm font-semibold">{formatMoney(item.price_paise_snapshot)}</p>
                 </li>
               ))}
             </ul>
             <dl className="space-y-1 border-t border-border px-4 py-3 text-sm">
               <div className="flex justify-between">
                 <dt>Subtotal</dt>
-                <dd>{formatINR(order.subtotal_paise)}</dd>
+                <dd>{formatMoney(order.subtotal_paise)}</dd>
               </div>
               <div className="flex justify-between">
                 <dt>Shipping</dt>
-                <dd>{formatINR(order.shipping_paise)}</dd>
+                <dd>{formatMoney(order.shipping_paise)}</dd>
               </div>
               {order.discount_paise > 0 ? (
                 <div className="flex justify-between">
                   <dt>Coupon {order.coupon_code}</dt>
-                  <dd>−{formatINR(order.discount_paise)}</dd>
+                  <dd>−{formatMoney(order.discount_paise)}</dd>
                 </div>
               ) : null}
               <div className="flex justify-between font-bold">
                 <dt>Total</dt>
-                <dd>{formatINR(order.total_paise)}</dd>
+                <dd>{formatMoney(order.total_paise)}</dd>
               </div>
             </dl>
           </section>

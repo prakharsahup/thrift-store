@@ -2,7 +2,7 @@ import Link from "next/link";
 import { BadgeCheck, RotateCcw, Ruler, Truck } from "lucide-react";
 import { returnsPolicy } from "@/lib/config/legal";
 import { shipping } from "@/lib/config/shipping";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 
 // Trust strip (CLAUDE.md §8). COD joins this list if it's enabled in a later phase.
 export function TrustStrip() {
@@ -38,8 +38,8 @@ export function TrustStrip() {
     },
     {
       Icon: Truck,
-      title: `Free shipping over ${formatINR(shipping.freeAbovePaise)}`,
-      body: `A flat ${formatINR(shipping.flatPaise)} below that, anywhere in India.`,
+      title: `Free shipping over ${formatMoney(shipping.freeAbovePaise)}`,
+      body: `A flat ${formatMoney(shipping.flatPaise)} below that, anywhere in India.`,
     },
   ];
 

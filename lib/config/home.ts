@@ -10,7 +10,7 @@ export const featuredCategorySlugs = [
   "unisex-jackets",
 ] as const;
 
-/** The "Under ₹…" rail. */
+/** The "Under $…" rail. */
 export const stealsMaxPaise = 49900;
 
 /** StackCards story section. */

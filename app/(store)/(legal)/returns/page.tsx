@@ -3,7 +3,7 @@ import Link from "next/link";
 import { LegalPage, type LegalSection } from "@/components/legal/LegalPage";
 import { policyUpdated, returnsPolicy as r, shippingPolicy } from "@/lib/config/legal";
 import { site } from "@/lib/config/site";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 
 export const metadata: Metadata = {
   title: "Returns, refunds & cancellation",
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/returns" },
 };
 
-const fee = r.changeOfMindFeePaise > 0 ? formatINR(r.changeOfMindFeePaise) : null;
+const fee = r.changeOfMindFeePaise > 0 ? formatMoney(r.changeOfMindFeePaise) : null;
 
 // TODO(owner): template policy. The windows and fees come from lib/config/legal.ts
 // (returnsPolicy); "not as described" returns must stay, because E-Commerce Rules 2020 r. 6(6)

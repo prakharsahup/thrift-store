@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import type { CartLine as CartLineData } from "@/lib/cart/types";
 import { useCartStore } from "@/lib/stores/cart";
 import { cn } from "@/lib/utils/cn";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 
 type Props = { line: CartLineData };
 
@@ -45,7 +45,7 @@ export function CartLine({ line }: Props) {
           {[line.brand, line.taggedSize && `Size ${line.taggedSize}`].filter(Boolean).join(" · ")}
         </p>
         <p className={cn("mt-1 text-sm font-bold", unavailable && "text-muted line-through")}>
-          {formatINR(line.pricePaise)}
+          {formatMoney(line.pricePaise)}
         </p>
         {unavailable ? (
           <p className="mt-1 text-xs font-semibold text-sale">

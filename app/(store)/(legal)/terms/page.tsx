@@ -14,7 +14,7 @@ import {
 } from "@/lib/config/legal";
 import { shipping } from "@/lib/config/shipping";
 import { site } from "@/lib/config/site";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 
 export const metadata: Metadata = {
   title: "Terms & conditions",
@@ -230,7 +230,7 @@ const sections: LegalSection[] = [
           {shippingPolicy.dispatchDays} business days, delivery {shippingPolicy.deliveryDays}{" "}
           business days after that,{" "}
           {shipping.flatPaise > 0
-            ? `free over ${formatINR(shipping.freeAbovePaise)}, otherwise ${formatINR(shipping.flatPaise)}`
+            ? `free over ${formatMoney(shipping.freeAbovePaise)}, otherwise ${formatMoney(shipping.flatPaise)}`
             : "free"}
           ).
         </p>
@@ -311,7 +311,7 @@ const sections: LegalSection[] = [
     body: (
       <>
         <p>
-          Prices are in Indian rupees and include all applicable taxes. The shipping charge, any
+          Prices are in US dollars and include all applicable taxes. The shipping charge, any
           coupon discount and the total are shown in your cart and at checkout before you pay. We
           don&rsquo;t add any other fees.
         </p>

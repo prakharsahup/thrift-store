@@ -284,7 +284,7 @@ export function CouponForm({ coupon }: { coupon: CouponValues | null }) {
           label="Type"
           options={[
             { value: "percent", label: "Percent off" },
-            { value: "flat", label: "Flat ₹ off" },
+            { value: "flat", label: "Flat $ off" },
           ]}
           defaultValue={coupon?.type ?? "percent"}
           error={e.type}
@@ -293,13 +293,13 @@ export function CouponForm({ coupon }: { coupon: CouponValues | null }) {
           name="value"
           label="Amount"
           inputMode="decimal"
-          hint="Percent (1–100) or rupees, by type."
+          hint="Percent (1–100) or dollars, by type."
           defaultValue={coupon ? (coupon.type === "flat" ? coupon.value / 100 : coupon.value) : ""}
           error={e.value}
         />
         <TextField
           name="min_order"
-          label="Minimum order (₹)"
+          label="Minimum order ($)"
           inputMode="decimal"
           defaultValue={coupon && coupon.min_order_paise > 0 ? coupon.min_order_paise / 100 : ""}
           error={e.min_order}

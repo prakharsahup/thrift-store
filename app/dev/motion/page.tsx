@@ -149,7 +149,7 @@ export default function MotionPlaygroundPage() {
               className="border-y border-fg py-3 text-sm font-semibold tracking-wide uppercase"
             />
             <Marquee
-              items={["Free shipping over ₹999", "New drop every Friday"]}
+              items={["Free shipping over $999", "New drop every Friday"]}
               speed={20}
               className="bg-accent py-2 text-xs font-semibold text-accent-fg"
             />

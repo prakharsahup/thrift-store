@@ -299,9 +299,9 @@ insert into public.banners (title, subtitle, image_url, image_alt, link_url, cta
   ('Monsoon Denim is live', 'Straight legs, flares and one very good trucker jacket.',
    'https://placehold.co/1600x700/B93A0E/FFFFFF/png?text=Monsoon+Denim',
    'Placeholder banner for the Monsoon Denim drop', '/drops/monsoon-denim', 'Shop the drop', 1),
-  ('Under ₹499', 'Graded, measured and cheaper than a pizza night.',
+  ('Under $499', 'Graded, measured and cheaper than a pizza night.',
    'https://placehold.co/1600x700/D4F04C/17140F/png?text=Under+499',
-   'Placeholder banner for items under 499 rupees', '/c/unisex?max=499', 'Shop steals', 2),
+   'Placeholder banner for items under $499', '/c/unisex?max=499', 'Shop steals', 2),
   ('Y2K Archive drops soon', 'Slip dresses, tiny bags and pleats. Get notified.',
    'https://placehold.co/1600x700/17140F/FBF8F3/png?text=Y2K+Archive',
    'Placeholder banner for the upcoming Y2K Archive drop', '/drops/y2k-archive', 'Notify me', 3);

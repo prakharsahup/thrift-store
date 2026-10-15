@@ -26,7 +26,7 @@ import {
   getNewArrivals,
   getProductsUnder,
 } from "@/lib/server/catalogue";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 
 export const metadata: Metadata = {
   title: { absolute: `${site.name} — pre-loved fashion, one of one` },
@@ -141,7 +141,7 @@ export default async function HomePage() {
                 className="inline-flex -rotate-2 items-center gap-3 rounded-md bg-primary py-2 pr-5 pl-3 text-2xl font-bold text-primary-fg md:text-3xl"
               >
                 <span aria-hidden className="size-3 shrink-0 rounded-full bg-bg" />
-                Under {formatINR(stealsMaxPaise)}
+                Under {formatMoney(stealsMaxPaise)}
               </h2>
               <p className="text-base text-muted">
                 Graded, measured, and cheaper than a night out.
@@ -151,7 +151,7 @@ export default async function HomePage() {
               See all steals <ArrowRight aria-hidden />
             </ButtonLink>
           </div>
-          <ProductRail label={`Under ${formatINR(stealsMaxPaise)}`}>
+          <ProductRail label={`Under ${formatMoney(stealsMaxPaise)}`}>
             {steals.map((product) => (
               <ProductCard key={product.id} product={product} sizes={RAIL_CARD_SIZES} />
             ))}

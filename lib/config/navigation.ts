@@ -1,4 +1,4 @@
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 
 // Header mega-menu, mobile menu and footer links. Category slugs follow `{gender}-{name}` and must
 // match the categories seeded in Phase 3; style and price links are PLP filters in the URL.
@@ -27,7 +27,7 @@ export const styleTags = [
   ["Minimal", "minimal"],
 ] as const;
 
-const priceCapsRupees = [499, 999, 1499] as const;
+const priceCapsDollars = [499, 999, 1499] as const;
 
 function categories(gender: Gender, items: ReadonlyArray<readonly [string, string]>): NavLink[] {
   return items.map(([label, slug]) => ({ label, href: `/c/${gender}-${slug}` }));
@@ -43,8 +43,8 @@ function byStyle(gender: Gender): NavColumn {
 function byPrice(gender: Gender): NavColumn {
   return {
     title: "Shop by price",
-    links: priceCapsRupees.map((max) => ({
-      label: `Under ${formatINR(max * 100)}`,
+    links: priceCapsDollars.map((max) => ({
+      label: `Under ${formatMoney(max * 100)}`,
       href: `/c/${gender}?max=${max}`,
     })),
   };

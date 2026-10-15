@@ -9,7 +9,7 @@ import { Input, inputVariants } from "@/components/ui/Input";
 import { requireAdmin } from "@/lib/server/auth";
 import { ADMIN_PAGE_SIZE, getAdminProducts, type ProductStatus } from "@/lib/server/admin";
 import { formatIstDateTime } from "@/lib/utils/datetime";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 
 export const metadata: Metadata = { title: "Products" };
 
@@ -119,7 +119,7 @@ export default async function AdminProductsPage({ searchParams }: PageProps<"/ad
                     Updated {formatIstDateTime(p.updated_at)}
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold">{formatINR(p.price_paise)}</p>
+                    <p className="font-semibold">{formatMoney(p.price_paise)}</p>
                     <StatusBadge {...productStatusBadge[p.status]} />
                   </div>
                 </Link>

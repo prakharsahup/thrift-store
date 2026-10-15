@@ -6,7 +6,7 @@ import { StatusBadge } from "@/components/admin/StatusBadge";
 import { deleteCoupon } from "@/lib/actions/admin/catalogue";
 import { requireAdmin } from "@/lib/server/auth";
 import { formatIstDateTime } from "@/lib/utils/datetime";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 
 export const metadata: Metadata = { title: "Coupons" };
 
@@ -23,8 +23,8 @@ export default async function AdminCouponsPage({ searchParams }: PageProps<"/adm
   const selected = coupons.find((c) => c.code === edit) ?? null;
   const describe = (c: (typeof coupons)[number]) =>
     [
-      c.type === "percent" ? `${c.value}% off` : `${formatINR(c.value)} off`,
-      c.min_order_paise > 0 ? `over ${formatINR(c.min_order_paise)}` : null,
+      c.type === "percent" ? `${c.value}% off` : `${formatMoney(c.value)} off`,
+      c.min_order_paise > 0 ? `over ${formatMoney(c.min_order_paise)}` : null,
       `used ${c.used_count}${c.max_uses ? `/${c.max_uses}` : ""}`,
       c.expires_at ? `until ${formatIstDateTime(c.expires_at)}` : null,
     ]

@@ -11,7 +11,7 @@ import { ChipLink } from "@/components/ui/ChipLink";
 import { stealsMaxPaise } from "@/lib/config/home";
 import { genders, styleTags, type Gender } from "@/lib/config/navigation";
 import { getCategoryPage, listProducts, type ProductQuery } from "@/lib/server/catalogue";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 
 // Only /men, /women and /unisex exist; any other top-level path falls through to the 404 page.
 export const dynamicParams = false;
@@ -132,9 +132,9 @@ export default async function GenderLandingPage({ params }: PageProps<"/[gender]
       {buyableSteals.length > 0 ? (
         <section aria-labelledby="landing-steals" className="mt-16">
           <h2 id="landing-steals" className="mb-6 text-xl font-bold md:text-2xl">
-            Under {formatINR(stealsMaxPaise)}
+            Under {formatMoney(stealsMaxPaise)}
           </h2>
-          <ProductRail label={`${root.name} under ${formatINR(stealsMaxPaise)}`}>
+          <ProductRail label={`${root.name} under ${formatMoney(stealsMaxPaise)}`}>
             {buyableSteals.map((product) => (
               <ProductCard key={product.id} product={product} sizes={RAIL_SIZES} />
             ))}

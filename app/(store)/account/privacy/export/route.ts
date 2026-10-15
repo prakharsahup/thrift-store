@@ -54,7 +54,7 @@ export async function GET() {
   const body = {
     exported_at: new Date().toISOString(),
     exported_from: site.url,
-    note: "Amounts are in paise (₹1 = 100 paise). Card and bank details are never stored by us.",
+    note: "Amounts are in cents ($1 = 100 cents). Card and bank details are never stored by us.",
     account: {
       id: user.id,
       email: user.email ?? null,

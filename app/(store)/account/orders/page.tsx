@@ -5,7 +5,7 @@ import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { formatOrderDate, orderStatuses, shortOrderId } from "@/lib/config/orders";
 import { requireUser } from "@/lib/server/auth";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 
 export const metadata: Metadata = { title: "Orders", robots: { index: false } };
 
@@ -56,7 +56,7 @@ export default async function OrdersPage() {
                     </span>
                   </span>
                   <span className="text-right">
-                    <span className="block font-semibold">{formatINR(order.total_paise)}</span>
+                    <span className="block font-semibold">{formatMoney(order.total_paise)}</span>
                     <span className="block text-sm text-muted">
                       {orderStatuses[order.status].label}
                     </span>

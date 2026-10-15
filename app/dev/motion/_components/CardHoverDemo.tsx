@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 
 const cards = [
   { title: "Faded denim jacket", brand: "Vintage", price: 129900, size: "M" },
@@ -37,7 +37,7 @@ export function CardHoverDemo() {
                 {card.brand} · Size {card.size}
               </span>
               <span className="block text-sm font-medium">{card.title}</span>
-              <span className="block text-sm font-bold">{formatINR(card.price)}</span>
+              <span className="block text-sm font-bold">{formatMoney(card.price)}</span>
             </span>
           </Link>
         </li>

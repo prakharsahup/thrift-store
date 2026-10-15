@@ -5,7 +5,7 @@ import { StatusBadge, orderStatusBadge } from "@/components/admin/StatusBadge";
 import { shortOrderId } from "@/lib/config/orders";
 import { requireAdmin } from "@/lib/server/auth";
 import { formatIstDateTime } from "@/lib/utils/datetime";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 import { cn } from "@/lib/utils/cn";
 
 export const metadata: Metadata = { title: "Orders" };
@@ -98,7 +98,7 @@ export default async function AdminOrdersPage({ searchParams }: PageProps<"/admi
                   <span className="flex flex-wrap items-center gap-2">
                     {refundDue(o) ? <StatusBadge label="Refund due" tone="bad" /> : null}
                     <StatusBadge {...orderStatusBadge[o.status]} />
-                    <span className="font-semibold">{formatINR(o.total_paise)}</span>
+                    <span className="font-semibold">{formatMoney(o.total_paise)}</span>
                   </span>
                 </Link>
               </li>

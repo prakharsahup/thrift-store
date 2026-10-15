@@ -1,13 +1,13 @@
 import { Marquee } from "@/components/motion/Marquee";
 import { shipping } from "@/lib/config/shipping";
 import { site } from "@/lib/config/site";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 
 // Phones: every message scrolls past in a Marquee (CSS only, so it's fine on store pages too).
 // md+: the messages sit side by side. The current drop comes from the database in the drops phase.
 export function AnnouncementBar() {
   const messages = [
-    `Free shipping on orders of ${formatINR(shipping.freeAbovePaise)}+`,
+    `Free shipping on orders of ${formatMoney(shipping.freeAbovePaise)}+`,
     ...site.announcements,
   ];
 

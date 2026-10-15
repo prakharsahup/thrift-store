@@ -148,7 +148,7 @@ lib/
   catalogue/        URL filter parsing (shared by server and client)
   motion/           GSAP setup, motion tokens
   validators/       zod schemas (shared by client and server)
-  utils/            money (formatINR — all money is integer paise), cn, slug
+  utils/            money (formatMoney — all money is an integer smallest-unit amount), cn, slug
 supabase/
   migrations/       every schema change, as SQL
   seed.sql          local sample data
@@ -167,7 +167,7 @@ supabase/
   everything.
 - **Reservations and payments** go through Postgres functions (`reserve_products`,
   `mark_order_paid`, …) that only the server's service role can call. See `CLAUDE.md` §4 and §9.
-- **Money is integer paise** (₹499 = `49900`). Format it only when rendering, with `formatINR()`.
+- **Money is an integer smallest-unit amount** ($499 = `49900` cents). Format it only when rendering, with `formatMoney()`.
 - **Make yourself an admin**: sign in once, then in the Supabase dashboard's SQL editor run
   `update profiles set role = 'admin' where id = (select id from auth.users where email = 'you@example.com');`
 - No automated database tests run anymore (the previous pgTAP suite in `supabase/tests/database/`

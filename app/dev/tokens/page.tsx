@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 
 export const metadata: Metadata = { title: "Design tokens" };
 
@@ -235,8 +235,8 @@ export default function TokensPage() {
           </span>
         </div>
         <p className="mt-6 flex items-baseline gap-3">
-          <span className="text-lg font-bold">{formatINR(49900)}</span>
-          <span className="text-sm text-muted line-through">{formatINR(249900)}</span>
+          <span className="text-lg font-bold">{formatMoney(49900)}</span>
+          <span className="text-sm text-muted line-through">{formatMoney(249900)}</span>
           <span className="text-sm font-semibold text-sale">est. retail · save 80%</span>
         </p>
       </Section>

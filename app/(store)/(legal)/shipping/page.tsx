@@ -4,10 +4,10 @@ import { LegalPage, type LegalSection } from "@/components/legal/LegalPage";
 import { policyUpdated, returnsPolicy, shippingPolicy as s } from "@/lib/config/legal";
 import { shipping } from "@/lib/config/shipping";
 import { site } from "@/lib/config/site";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 
-const flat = formatINR(shipping.flatPaise);
-const freeAbove = formatINR(shipping.freeAbovePaise);
+const flat = formatMoney(shipping.flatPaise);
+const freeAbove = formatMoney(shipping.freeAbovePaise);
 
 export const metadata: Metadata = {
   title: "Shipping policy",

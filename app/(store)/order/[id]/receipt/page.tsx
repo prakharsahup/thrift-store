@@ -7,7 +7,7 @@ import { business, formatAddress, tax } from "@/lib/config/legal";
 import { formatOrderDate, shortOrderId } from "@/lib/config/orders";
 import { site } from "@/lib/config/site";
 import { requireUser } from "@/lib/server/auth";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 
 export const metadata: Metadata = { title: "Order receipt", robots: { index: false } };
 
@@ -167,7 +167,7 @@ export default async function OrderReceiptPage({ params }: PageProps<"/order/[id
                   <td
                     className={`py-2 text-right align-top ${item.unavailable ? "text-muted line-through" : ""}`}
                   >
-                    {formatINR(item.price_paise_snapshot)}
+                    {formatMoney(item.price_paise_snapshot)}
                   </td>
                 </tr>
               ))}
@@ -177,33 +177,33 @@ export default async function OrderReceiptPage({ params }: PageProps<"/order/[id
           <dl className="ml-auto mt-4 max-w-xs space-y-1">
             <div className="flex justify-between">
               <dt>Subtotal</dt>
-              <dd>{formatINR(order.subtotal_paise)}</dd>
+              <dd>{formatMoney(order.subtotal_paise)}</dd>
             </div>
             <div className="flex justify-between">
               <dt>Shipping</dt>
-              <dd>{order.shipping_paise === 0 ? "Free" : formatINR(order.shipping_paise)}</dd>
+              <dd>{order.shipping_paise === 0 ? "Free" : formatMoney(order.shipping_paise)}</dd>
             </div>
             {order.discount_paise > 0 ? (
               <div className="flex justify-between">
                 <dt>Coupon {order.coupon_code}</dt>
-                <dd>−{formatINR(order.discount_paise)}</dd>
+                <dd>−{formatMoney(order.discount_paise)}</dd>
               </div>
             ) : null}
             <div className="flex justify-between border-t border-border pt-2 text-base font-bold">
               <dt>Total paid</dt>
-              <dd>{formatINR(order.total_paise)}</dd>
+              <dd>{formatMoney(order.total_paise)}</dd>
             </div>
             {refundPaise > 0 ? (
               <div className="flex justify-between text-muted">
                 <dt>Refund due</dt>
-                <dd>−{formatINR(refundPaise)}</dd>
+                <dd>−{formatMoney(refundPaise)}</dd>
               </div>
             ) : null}
           </dl>
         </div>
 
         <footer className="space-y-1 border-t border-border pt-4 text-xs text-muted">
-          <p>All amounts are in Indian rupees and include all applicable taxes.</p>
+          <p>All amounts are in US dollars and include all applicable taxes.</p>
           <p>
             Returns and cancellations: {site.url.replace(/^https?:\/\//, "")}/returns · Help:{" "}
             {site.url.replace(/^https?:\/\//, "")}/contact

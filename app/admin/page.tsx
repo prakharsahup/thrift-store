@@ -6,7 +6,7 @@ import { ButtonLink } from "@/components/ui/ButtonLink";
 import { shortOrderId } from "@/lib/config/orders";
 import { requireAdmin } from "@/lib/server/auth";
 import { daysAgoIso, formatIstDateTime } from "@/lib/utils/datetime";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -55,7 +55,7 @@ export default async function AdminDashboard() {
   const revenueToday = (todayOrders.data ?? []).reduce((sum, o) => sum + o.total_paise, 0);
   const tiles = [
     { label: "Orders today", value: String(todayOrders.data?.length ?? 0) },
-    { label: "Revenue today", value: formatINR(revenueToday) },
+    { label: "Revenue today", value: formatMoney(revenueToday) },
     { label: "To pack", value: String(toPack.count ?? 0), href: "/admin/orders?view=todo" },
     {
       label: "Pieces needing refunds",
@@ -141,7 +141,7 @@ export default async function AdminDashboard() {
                   </span>
                   <span className="flex items-center gap-3">
                     <StatusBadge {...orderStatusBadge[o.status]} />
-                    <span className="font-semibold">{formatINR(o.total_paise)}</span>
+                    <span className="font-semibold">{formatMoney(o.total_paise)}</span>
                   </span>
                 </Link>
               </li>

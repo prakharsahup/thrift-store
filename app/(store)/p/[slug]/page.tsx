@@ -15,7 +15,7 @@ import { business, returnsPolicy, shippingPolicy } from "@/lib/config/legal";
 import { styleTags } from "@/lib/config/navigation";
 import { shipping } from "@/lib/config/shipping";
 import { getProductBySlug, getRelatedProducts } from "@/lib/server/catalogue";
-import { formatINR, formatMoney, savingPercent } from "@/lib/utils/money";
+import { formatMoney, savingPercent } from "@/lib/utils/money";
 
 // Cached per product and refreshed at most once a minute. The checkout phase also revalidates a
 // product's page the moment it sells.
@@ -192,7 +192,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
                 Ships within {shippingPolicy.dispatchDays} business days; usually delivered{" "}
                 {shippingPolicy.deliveryDays} business days later.{" "}
                 {shipping.flatPaise > 0
-                  ? `Free shipping over ${formatINR(shipping.freeAbovePaise)}, otherwise ${formatINR(shipping.flatPaise)}.`
+                  ? `Free shipping over ${formatMoney(shipping.freeAbovePaise)}, otherwise ${formatMoney(shipping.flatPaise)}.`
                   : null}{" "}
                 <Link href="/shipping" className="underline hover:text-primary">
                   Shipping

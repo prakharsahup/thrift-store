@@ -4,7 +4,7 @@ import { site } from "@/lib/config/site";
 import { shipping } from "@/lib/config/shipping";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Json } from "@/lib/supabase/types";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 import type { AddressInput } from "@/lib/validators/checkout";
 import {
   orderConfirmationEmail,
@@ -107,7 +107,7 @@ function couponErrorMessage(failure: CouponFailure): string {
     case "expired":
       return "That code has expired.";
     case "min_order":
-      return `That code needs an order of ${formatINR(failure.min_order_paise ?? 0)} or more.`;
+      return `That code needs an order of ${formatMoney(failure.min_order_paise ?? 0)} or more.`;
     case "used_up":
       return "That code has been fully used.";
     case "already_used":

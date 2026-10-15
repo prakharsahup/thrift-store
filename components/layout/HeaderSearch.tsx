@@ -9,7 +9,7 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import type { SearchSuggestion } from "@/lib/server/catalogue";
 import { cn } from "@/lib/utils/cn";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 
 type Props = { className?: string };
 
@@ -179,7 +179,7 @@ export function HeaderSearch({ className }: Props) {
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium">{result.title}</span>
                     <span className="block text-xs text-muted">
-                      {[result.brand, formatINR(result.pricePaise), result.sold ? "Sold" : null]
+                      {[result.brand, formatMoney(result.pricePaise), result.sold ? "Sold" : null]
                         .filter(Boolean)
                         .join(" · ")}
                     </span>

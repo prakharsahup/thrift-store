@@ -9,7 +9,7 @@ import { ButtonLink } from "@/components/ui/ButtonLink";
 import { returnsPolicy } from "@/lib/config/legal";
 import { formatOrderDate, orderStatuses, shortOrderId } from "@/lib/config/orders";
 import { requireUser } from "@/lib/server/auth";
-import { formatINR } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 
 export const metadata: Metadata = { title: "Your order", robots: { index: false } };
 
@@ -92,7 +92,7 @@ export default async function OrderPage({ params }: PageProps<"/order/[id]">) {
           <p role="status" className="mt-6 rounded-md bg-surface p-4 text-sm">
             Sorry — {unavailable.length === 1 ? "one piece" : `${unavailable.length} pieces`} sold
             to someone else a moment before your payment landed. We&rsquo;ll refund{" "}
-            <strong>{formatINR(refundPaise)}</strong> to your original payment method within 5–7
+            <strong>{formatMoney(refundPaise)}</strong> to your original payment method within 5–7
             working days.
           </p>
         ) : null}
@@ -138,7 +138,7 @@ export default async function OrderPage({ params }: PageProps<"/order/[id]">) {
                     item.unavailable ? "text-sm text-muted line-through" : "text-sm font-semibold"
                   }
                 >
-                  {formatINR(item.price_paise_snapshot)}
+                  {formatMoney(item.price_paise_snapshot)}
                 </p>
               </li>
             ))}
@@ -146,23 +146,23 @@ export default async function OrderPage({ params }: PageProps<"/order/[id]">) {
           <dl className="space-y-1 border-t border-border px-4 py-4 text-sm md:px-6">
             <div className="flex justify-between">
               <dt>Subtotal</dt>
-              <dd>{formatINR(order.subtotal_paise)}</dd>
+              <dd>{formatMoney(order.subtotal_paise)}</dd>
             </div>
             <div className="flex justify-between">
               <dt>Shipping</dt>
-              <dd>{order.shipping_paise === 0 ? "Free" : formatINR(order.shipping_paise)}</dd>
+              <dd>{order.shipping_paise === 0 ? "Free" : formatMoney(order.shipping_paise)}</dd>
             </div>
             {order.discount_paise > 0 ? (
               <div className="flex justify-between text-sale">
                 <dt>Coupon {order.coupon_code}</dt>
-                <dd>−{formatINR(order.discount_paise)}</dd>
+                <dd>−{formatMoney(order.discount_paise)}</dd>
               </div>
             ) : null}
             <div className="flex justify-between border-t border-border pt-2 text-base font-bold">
               <dt>
                 {order.status === "pending" || order.status === "cancelled" ? "Total" : "Paid"}
               </dt>
-              <dd>{formatINR(order.total_paise)}</dd>
+              <dd>{formatMoney(order.total_paise)}</dd>
             </div>
             {order.payment_method ? (
               <p className="pt-1 text-xs text-muted">
