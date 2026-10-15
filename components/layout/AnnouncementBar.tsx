@@ -12,7 +12,7 @@ export function AnnouncementBar() {
   ];
 
   return (
-    <div className="surface-dark bg-fg text-bg">
+    <div className="surface-dark bg-surface text-fg">
       <Marquee
         items={messages}
         label="Announcements"

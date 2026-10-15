@@ -30,7 +30,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   // Matches --color-bg in app/globals.css (metadata can't read CSS variables).
-  themeColor: "#fbf8f3",
+  themeColor: "#100d16",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

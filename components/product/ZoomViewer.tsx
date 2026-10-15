@@ -263,7 +263,7 @@ export function ZoomViewer({ images, title, index, onIndexChange, open, onClose 
       aria-label={`Zoomed photos of ${title}`}
       onClose={handleClose}
       onKeyDown={handleKeyDown}
-      className="surface-dark m-0 h-dvh max-h-none w-screen max-w-none overflow-hidden bg-fg p-0 text-bg backdrop:bg-overlay"
+      className="surface-dark m-0 h-dvh max-h-none w-screen max-w-none overflow-hidden bg-bg p-0 text-fg backdrop:bg-overlay"
     >
       {open ? (
         <div className="relative h-full">
@@ -322,10 +322,10 @@ export function ZoomViewer({ images, title, index, onIndexChange, open, onClose 
           </Button>
 
           <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 px-4 pt-8 pb-[max(1rem,env(safe-area-inset-bottom))]">
-            <p className="rounded-full bg-fg/70 px-3 py-1 text-center text-xs text-bg">
+            <p className="rounded-full bg-bg/70 px-3 py-1 text-center text-xs text-fg">
               Tap to zoom · drag to move · pinch, or use + and − keys
             </p>
-            <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-fg/70 p-1">
+            <div className="pointer-events-auto flex items-center gap-2 rounded-full bg-bg/70 p-1">
               {count > 1 ? (
                 <Button variant="overlay" size="icon" shape="round" onClick={() => goTo(index - 1)}>
                   <ChevronLeft aria-hidden />

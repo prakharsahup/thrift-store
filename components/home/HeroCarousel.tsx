@@ -37,7 +37,7 @@ export function HeroCarousel({ banners }: Props) {
       className="site-container pt-4 md:pt-6"
       {...autoplay.interactionProps}
     >
-      <div ref={viewportRef} className="surface-dark overflow-hidden rounded-lg bg-fg text-bg">
+      <div ref={viewportRef} className="surface-dark overflow-hidden rounded-lg bg-surface text-fg">
         <div className="flex">
           {banners.map((banner, i) => (
             <div
@@ -57,7 +57,7 @@ export function HeroCarousel({ banners }: Props) {
                     <h2 className="text-2xl font-bold md:text-3xl">{banner.title}</h2>
                   )}
                   {banner.subtitle ? (
-                    <p className="max-w-md text-base text-bg/80">{banner.subtitle}</p>
+                    <p className="max-w-md text-base text-fg/80">{banner.subtitle}</p>
                   ) : null}
                   <Magnetic className="self-start">
                     <HoverMarquee href={banner.linkUrl} label={banner.ctaLabel} />

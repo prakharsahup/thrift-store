@@ -9,24 +9,25 @@
 @theme {
   --color-*: initial;
   /*
-   * Palette "kraft & chilli": unbleached paper, warm ink, a chilli-red signal colour and a volt
-   * accent. Thrift-tag warmth with streetwear punch. Ratios are WCAG 2 contrast for the pair noted.
+   * Palette "violet noir": near-black ground with a lavender-purple signal. Owner-approved
+   * 2026-10-15 (replaces "kraft & chilli"). Ratios are WCAG 2 contrast for the pair noted.
    */
-  --color-bg: #fbf8f3; /* paper: page background */
-  --color-fg: #17140f; /* ink: warm near-black, 17.3:1 on bg, 15.5:1 on surface */
-  --color-muted: #675e53; /* secondary text: 6.0:1 on bg, 5.4:1 on surface */
-  --color-surface: #f1ebe0; /* kraft: section and card fills */
-  --color-primary: #b93a0e; /* chilli: CTAs, links, focus. 5.4:1 on bg, 4.8:1 on surface */
-  --color-primary-fg: #ffffff; /* text on chilli: 5.7:1 */
-  --color-accent: #d4f04c; /* volt: badges, stickers, accents on dark: 14.3:1 with ink */
-  --color-accent-fg: #17140f;
-  --color-sale: #b3123a; /* crimson: savings and errors: 6.5:1 on bg, 5.8:1 on surface */
-  --color-sold: #a39a8d; /* SOLD badge fill only; text on it uses fg (6.6:1) */
-  --color-border: #e2d8c8; /* dividers and card outlines (decorative) */
-  --color-input: #857b6d; /* form field outlines: 3.9:1 on bg, 3.5:1 on surface (WCAG 1.4.11) */
-  --color-overlay: rgb(23 20 15 / 0.6);
+  --color-bg: #100d16; /* void: page background */
+  --color-fg: #f5ecff; /* near-white lavender ink: 16.8:1 on bg, 14.9:1 on surface */
+  --color-muted: #9f8bc2; /* secondary text: 6.4:1 on bg, 5.7:1 on surface */
+  --color-surface: #19141f; /* elevated panel: section and card fills */
+  --color-primary: #8855d9; /* violet: CTAs, links, focus. 4.0:1 on bg (large text/UI only) */
+  --color-primary-fg: #f5ecff; /* text on violet: 4.2:1 */
+  --color-accent: #c8a5ff; /* lilac: badges, highlights. 9.4:1 on bg */
+  --color-accent-fg: #100d16;
+  --color-sale: #ff4d6d; /* pink-red: savings and errors, kept distinct from the violet hue */
+  --color-sold: #5c5468; /* SOLD badge fill only; text on it uses fg (6.3:1) */
+  --color-border: #2e2740; /* dividers and card outlines (decorative) */
+  --color-input: #6b5f85; /* form field outlines: 3.3:1 on bg (WCAG 1.4.11) */
+  --color-overlay: rgb(16 13 22 / 0.7);
   --color-white: #ffffff; /* text on photos / video */
-  /* Chilli on ink is only 3.2:1, so dark sections use the volt accent instead (14.3:1). */
+  /* Primary text at small sizes sits just under 4.5:1 on bg; it's used bold/large (buttons, nav)
+     or paired with the lilac accent for body-sized links, which stays comfortably at 9.4:1. */
 
   /* Type scale: 12 / 14 / 16 / 18 / 24 / 32 / 48 / 64 */
   --text-*: initial;
@@ -62,7 +63,7 @@
   --font-sans: var(--font-body);
 }
 
-/* Dark sections (bg-fg): volt focus ring, since chilli on ink is too low-contrast. */
+/* Inverted sections (bg-fg/text-bg): lilac accent focus ring, since violet on ink is too low-contrast. */
 @utility surface-dark {
   --focus-ring: var(--color-accent);
 }

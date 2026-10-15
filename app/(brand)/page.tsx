@@ -56,7 +56,7 @@ export default async function HomePage() {
       {banners.length > 0 ? (
         <HeroCarousel banners={banners} />
       ) : (
-        <section className="surface-dark bg-fg py-20 text-bg">
+        <section className="surface-dark bg-surface py-20 text-fg">
           <div className="site-container">
             <RevealText as="h1" trigger="load" className="max-w-3xl text-3xl font-bold md:text-4xl">
               {site.tagline}

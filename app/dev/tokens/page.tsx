@@ -7,46 +7,46 @@ export const metadata: Metadata = { title: "Design tokens" };
 
 // Class names are written out in full so Tailwind can detect them.
 const colors = [
-  { token: "--color-bg", value: "#fbf8f3", swatch: "bg-bg", note: "Paper · page background" },
-  { token: "--color-fg", value: "#17140f", swatch: "bg-fg", note: "Ink · text, dark sections" },
-  { token: "--color-muted", value: "#675e53", swatch: "bg-muted", note: "Secondary text · 6.0:1" },
+  { token: "--color-bg", value: "#100d16", swatch: "bg-bg", note: "Void · page background" },
+  { token: "--color-fg", value: "#f5ecff", swatch: "bg-fg", note: "Near-white ink · text" },
+  { token: "--color-muted", value: "#9f8bc2", swatch: "bg-muted", note: "Secondary text · 6.4:1" },
   {
     token: "--color-surface",
-    value: "#f1ebe0",
+    value: "#19141f",
     swatch: "bg-surface",
-    note: "Kraft · section fill",
+    note: "Panel · section fill",
   },
   {
     token: "--color-primary",
-    value: "#b93a0e",
+    value: "#8855d9",
     swatch: "bg-primary",
-    note: "Chilli · CTAs, links",
+    note: "Violet · CTAs, links",
   },
   {
     token: "--color-primary-fg",
-    value: "#ffffff",
+    value: "#f5ecff",
     swatch: "bg-primary-fg",
-    note: "Text on chilli · 5.7:1",
+    note: "Text on violet · 4.2:1",
   },
   {
     token: "--color-accent",
-    value: "#d4f04c",
+    value: "#c8a5ff",
     swatch: "bg-accent",
-    note: "Volt · stickers, dark focus",
+    note: "Lilac · badges, highlights",
   },
   {
     token: "--color-accent-fg",
-    value: "#17140f",
+    value: "#100d16",
     swatch: "bg-accent-fg",
-    note: "Text on volt · 14.3:1",
+    note: "Text on lilac · 9.4:1",
   },
-  { token: "--color-sale", value: "#b3123a", swatch: "bg-sale", note: "Crimson · savings, errors" },
-  { token: "--color-sold", value: "#a39a8d", swatch: "bg-sold", note: "SOLD badge fill" },
-  { token: "--color-border", value: "#e2d8c8", swatch: "bg-border", note: "Dividers (decorative)" },
-  { token: "--color-input", value: "#857b6d", swatch: "bg-input", note: "Field outlines · 3.9:1" },
+  { token: "--color-sale", value: "#ff4d6d", swatch: "bg-sale", note: "Pink-red · savings, errors" },
+  { token: "--color-sold", value: "#5c5468", swatch: "bg-sold", note: "SOLD badge fill" },
+  { token: "--color-border", value: "#2e2740", swatch: "bg-border", note: "Dividers (decorative)" },
+  { token: "--color-input", value: "#6b5f85", swatch: "bg-input", note: "Field outlines · 3.3:1" },
   {
     token: "--color-overlay",
-    value: "ink 60%",
+    value: "void 70%",
     swatch: "bg-overlay",
     note: "Drawer / modal scrim",
   },
@@ -189,7 +189,7 @@ export default function TokensPage() {
           <Button variant="sold" disabled>
             Sold
           </Button>
-          <span className="text-xs">Tab here: focus rings turn volt on dark sections.</span>
+          <span className="text-xs">Tab here: focus rings turn lilac on dark sections.</span>
         </div>
         <p className="mt-4 text-xs text-muted">
           Links styled as buttons use <code>ButtonLink</code>, which shares the same variants.
