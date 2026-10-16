@@ -2,16 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { ProductGrid } from "@/components/catalogue/ProductGrid";
-import { ProductRail } from "@/components/home/ProductRail";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { HoverMarquee } from "@/components/motion/HoverMarquee";
-import { ProductCard } from "@/components/product/ProductCard";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { ChipLink } from "@/components/ui/ChipLink";
-import { stealsMaxPaise } from "@/lib/config/home";
 import { genders, styleTags, type Gender } from "@/lib/config/navigation";
 import { getCategoryPage, listProducts, type ProductQuery } from "@/lib/server/catalogue";
-import { formatMoney } from "@/lib/utils/money";
 
 // Only /men, /women and /unisex exist; any other top-level path falls through to the 404 page.
 export const dynamicParams = false;
@@ -46,8 +42,6 @@ export async function generateMetadata({ params }: PageProps<"/[gender]">): Prom
 const GRID_EMPTY = (
   <p className="text-sm text-muted">New pieces are on their way. Check back soon.</p>
 );
-const RAIL_SIZES =
-  "(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 640px) 33vw, 46vw";
 
 /** An unfiltered, newest-first query over some categories. */
 function browse(categoryIds: string[], extra: Partial<ProductQuery>): ProductQuery {
@@ -66,20 +60,16 @@ function browse(categoryIds: string[], extra: Partial<ProductQuery>): ProductQue
   };
 }
 
-// Gender landing (/men, /women, /unisex): category links, the newest pieces, style shortcuts and
-// a steals rail. Light motion only — it's a shopping page.
+// Gender landing (/men, /women, /unisex): category links, the newest pieces and style shortcuts.
+// Light motion only — it's a shopping page.
 export default async function GenderLandingPage({ params }: PageProps<"/[gender]">) {
   const { gender } = await params;
   if (!isGender(gender)) notFound();
   const root = await getCategoryPage(gender);
   if (!root) notFound();
 
-  const [newest, steals] = await Promise.all([
-    // 12 fills whole rows at 2, 3 and 4 columns; ProductGrid trims if fewer come back.
-    listProducts(browse(root.ids, { limit: 12 })),
-    listProducts(browse(root.ids, { maxRupees: stealsMaxPaise / 100, limit: 12 })),
-  ]);
-  const buyableSteals = steals.products.filter((p) => p.status !== "sold");
+  // 12 fills whole rows at 2, 3 and 4 columns; ProductGrid trims if fewer come back.
+  const newest = await listProducts(browse(root.ids, { limit: 12 }));
 
   return (
     <div className="site-container py-6 md:py-10">
@@ -133,19 +123,6 @@ export default async function GenderLandingPage({ params }: PageProps<"/[gender]
           ))}
         </ul>
       </section>
-
-      {buyableSteals.length > 0 ? (
-        <section aria-labelledby="landing-steals" className="mt-16">
-          <h2 id="landing-steals" className="mb-6 text-xl font-bold md:text-2xl">
-            Under {formatMoney(stealsMaxPaise)}
-          </h2>
-          <ProductRail label={`${root.name} under ${formatMoney(stealsMaxPaise)}`}>
-            {buyableSteals.map((product) => (
-              <ProductCard key={product.id} product={product} sizes={RAIL_SIZES} />
-            ))}
-          </ProductRail>
-        </section>
-      ) : null}
     </div>
   );
 }

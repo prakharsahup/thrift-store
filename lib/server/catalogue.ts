@@ -2,11 +2,11 @@ import "server-only";
 import { cache } from "react";
 import { z } from "zod";
 import { compareSizes, type Filters } from "@/lib/catalogue/filters";
-import { conditions as conditionGrades, type ProductCondition } from "@/lib/config/conditions";
+import { selectableConditions, type ProductCondition } from "@/lib/config/conditions";
 import { styleTags } from "@/lib/config/navigation";
 import { hasSupabaseEnv } from "@/lib/env";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createPublicClient } from "@/lib/supabase/server";
-import { savingPercent } from "@/lib/utils/money";
 
 // Public catalogue reads for brand and store pages. They use the cookie-free client, so pages can
 // be cached. A failed query is logged and returns an empty result: the page renders without that
@@ -41,15 +41,18 @@ export type Banner = {
 export type CategoryTile = { slug: string; name: string; imageUrl: string | null };
 
 export type FeaturedDrop = {
+  id: string;
   slug: string;
   name: string;
   description: string;
   bannerUrl: string | null;
   goLiveAt: string;
   isLive: boolean;
+  /** Published pieces in the drop, counted even before go-live (when they're still hidden). */
+  pieceCount: number;
 };
 
-export type ImpactStats = { listed: number; rehomed: number; averageSavingPercent: number };
+export type ImpactStats = { listed: number; rehomed: number };
 
 const PRODUCT_CARD_COLUMNS =
   "id, slug, title, brand, tagged_size, condition, price_paise, original_price_paise, currency, status, effective_status, product_images(url, alt, sort_order)";
@@ -71,6 +74,17 @@ type Supabase = NonNullable<ReturnType<typeof client>>;
 function listedProducts(supabase: Supabase) {
   return supabase
     .from("listed_products")
+    .select(PRODUCT_CARD_COLUMNS)
+    .order("sort_order", { referencedTable: "product_images" });
+}
+
+/**
+ * Every public product, sold ones included however long ago (the storefront_products view).
+ * Only the archive reads this; listings use listedProducts.
+ */
+function storefrontProducts(supabase: Supabase) {
+  return supabase
+    .from("storefront_products")
     .select(PRODUCT_CARD_COLUMNS)
     .order("sort_order", { referencedTable: "product_images" });
 }
@@ -113,31 +127,7 @@ function toCards(rows: ProductRow[] | null): ProductCardData[] {
   return (rows ?? []).flatMap((row) => toCard(row) ?? []);
 }
 
-/** Newest listed products ("Just dropped"). */
-export async function getNewArrivals(limit = 12): Promise<ProductCardData[]> {
-  const supabase = client();
-  if (!supabase) return [];
-  const { data, error } = await listedProducts(supabase)
-    .order("published_at", { ascending: false })
-    .limit(limit);
-  logError("getNewArrivals", error);
-  return toCards(data);
-}
-
-/** Buyable products at or under a price, newest first. */
-export async function getProductsUnder(maxPaise: number, limit = 12): Promise<ProductCardData[]> {
-  const supabase = client();
-  if (!supabase) return [];
-  const { data, error } = await listedProducts(supabase)
-    .in("status", ["available", "reserved"])
-    .lte("price_paise", maxPaise)
-    .order("published_at", { ascending: false })
-    .limit(limit);
-  logError("getProductsUnder", error);
-  return toCards(data);
-}
-
-/** Active hero banners (RLS hides inactive and out-of-window ones). */
+/** Active hero banners from admin (RLS hides inactive and out-of-window ones). */
 export async function getBanners(): Promise<Banner[]> {
   const supabase = client();
   if (!supabase) return [];
@@ -157,72 +147,240 @@ export async function getBanners(): Promise<Banner[]> {
   }));
 }
 
+/** Newest listed products ("Just dropped"). */
+export async function getNewArrivals(limit = 12): Promise<ProductCardData[]> {
+  const supabase = client();
+  if (!supabase) return [];
+  const { data, error } = await listedProducts(supabase)
+    .order("published_at", { ascending: false })
+    .limit(limit);
+  logError("getNewArrivals", error);
+  return toCards(data);
+}
+
 /** Categories by slug, returned in the order given. */
 export async function getCategoryTiles(slugs: readonly string[]): Promise<CategoryTile[]> {
   const supabase = client();
   if (!supabase) return [];
+  const all = await allCategories(supabase);
   const { data, error } = await supabase
     .from("categories")
     .select("slug, name, image_url")
     .in("slug", [...slugs]);
   logError("getCategoryTiles", error);
   const bySlug = new Map((data ?? []).map((c) => [c.slug, c]));
-  return slugs.flatMap((slug) => {
-    const c = bySlug.get(slug);
-    return c ? [{ slug: c.slug, name: c.name, imageUrl: c.image_url }] : [];
-  });
+
+  // A real piece beats a placeholder: tiles show the newest photo from anywhere in the category
+  // unless the owner has set a proper category image.
+  const tiles = await Promise.all(
+    slugs.map(async (slug) => {
+      const c = bySlug.get(slug);
+      const row = all.find((r) => r.slug === slug);
+      if (!c || !row) return null;
+      const ownImage = c.image_url && !c.image_url.startsWith("https://placehold.co/");
+      if (ownImage) return { slug, name: c.name, imageUrl: c.image_url };
+      const { data: newest, error: photoError } = await listedProducts(supabase)
+        .in("category_id", withDescendants(all, row.id))
+        .in("status", ["available", "reserved"])
+        .order("published_at", { ascending: false })
+        .limit(1);
+      logError("getCategoryTiles (photo)", photoError);
+      const photo = toCards(newest)[0]?.images[0]?.url;
+      return { slug, name: c.name, imageUrl: photo ?? null };
+    }),
+  );
+  return tiles.flatMap((t) => (t ? [t] : []));
 }
 
 /** The next upcoming published drop, or else the most recent live one. */
-export async function getFeaturedDrop(): Promise<FeaturedDrop | null> {
+export const getFeaturedDrop = cache(
+  async function getFeaturedDrop(): Promise<FeaturedDrop | null> {
+    const supabase = client();
+    if (!supabase) return null;
+    const now = new Date().toISOString();
+    const columns = "id, slug, name, description, banner_url, go_live_at";
+
+    const upcoming = await supabase
+      .from("drops")
+      .select(columns)
+      .gt("go_live_at", now)
+      .order("go_live_at")
+      .limit(1)
+      .maybeSingle();
+    logError("getFeaturedDrop (upcoming)", upcoming.error);
+
+    const drop =
+      upcoming.data ??
+      (
+        await supabase
+          .from("drops")
+          .select(columns)
+          .lte("go_live_at", now)
+          .order("go_live_at", { ascending: false })
+          .limit(1)
+          .maybeSingle()
+      ).data;
+    if (!drop) return null;
+
+    return {
+      id: drop.id,
+      slug: drop.slug,
+      name: drop.name,
+      description: drop.description,
+      bannerUrl: drop.banner_url,
+      goLiveAt: drop.go_live_at,
+      isLive: drop.go_live_at <= now,
+      pieceCount: await countDropPieces(drop.id),
+    };
+  },
+);
+
+/**
+ * How many published pieces a drop holds. Before go-live RLS hides them from the public client, so
+ * this one number is read with the service role (no user input reaches the query).
+ */
+async function countDropPieces(dropId: string): Promise<number> {
+  try {
+    const { count, error } = await createAdminClient()
+      .from("products")
+      .select("id", { count: "exact", head: true })
+      .eq("drop_id", dropId)
+      .neq("status", "draft");
+    logError("countDropPieces", error);
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+/** A live drop's listed pieces, newest first (claimed ones included while they're still shown). */
+export async function getDropPieces(dropId: string, limit = 24): Promise<ProductCardData[]> {
+  const supabase = client();
+  if (!supabase) return [];
+  const { data, error } = await listedProducts(supabase)
+    .eq("drop_id", dropId)
+    .order("published_at", { ascending: false })
+    .limit(limit);
+  logError("getDropPieces", error);
+  return toCards(data);
+}
+
+export type PastDrop = { id: string; slug: string; name: string; pieces: ProductCardData[] };
+
+/** The most recent drop that has gone live (other than `exceptId`), with its pieces. */
+export async function getLastDrop(exceptId: string | null): Promise<PastDrop | null> {
   const supabase = client();
   if (!supabase) return null;
-  const now = new Date().toISOString();
-  const columns = "slug, name, description, banner_url, go_live_at";
-
-  const upcoming = await supabase
+  let query = supabase
     .from("drops")
-    .select(columns)
-    .gt("go_live_at", now)
-    .order("go_live_at")
-    .limit(1)
-    .maybeSingle();
-  logError("getFeaturedDrop (upcoming)", upcoming.error);
+    .select("id, slug, name")
+    .lte("go_live_at", new Date().toISOString())
+    .order("go_live_at", { ascending: false })
+    .limit(1);
+  if (exceptId) query = query.neq("id", exceptId);
+  const { data, error } = await query.maybeSingle();
+  logError("getLastDrop", error);
+  if (!data) return null;
+  const pieces = await getDropPieces(data.id, 8);
+  return pieces.length > 0 ? { ...data, pieces } : null;
+}
 
-  const drop =
-    upcoming.data ??
-    (
-      await supabase
-        .from("drops")
-        .select(columns)
-        .lte("go_live_at", now)
-        .order("go_live_at", { ascending: false })
-        .limit(1)
-        .maybeSingle()
-    ).data;
-  if (!drop) return null;
+/** Pieces sold in the last 7 days (the listing window), newest sale first. */
+export async function getRecentlyClaimed(limit = 8): Promise<ProductCardData[]> {
+  const supabase = client();
+  if (!supabase) return [];
+  const { data, error } = await listedProducts(supabase)
+    .eq("status", "sold")
+    .order("sold_at", { ascending: false })
+    .limit(limit);
+  logError("getRecentlyClaimed", error);
+  return toCards(data);
+}
 
+export type DropDetail = FeaturedDrop;
+
+const DROP_COLUMNS = "id, slug, name, description, banner_url, go_live_at";
+
+type DropRow = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  banner_url: string | null;
+  go_live_at: string;
+};
+
+async function toDropDetail(row: DropRow, now: string): Promise<DropDetail> {
   return {
-    slug: drop.slug,
-    name: drop.name,
-    description: drop.description,
-    bannerUrl: drop.banner_url,
-    goLiveAt: drop.go_live_at,
-    isLive: drop.go_live_at <= now,
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    description: row.description,
+    bannerUrl: row.banner_url,
+    goLiveAt: row.go_live_at,
+    isLive: row.go_live_at <= now,
+    pieceCount: await countDropPieces(row.id),
   };
 }
 
-/** A published drop's name, for the placeholder drop page (null if there's no such drop). */
-export async function getDropName(slug: string): Promise<string | null> {
+/** One published drop by slug (RLS hides unpublished ones), or null. */
+export const getDrop = cache(async function getDrop(slug: string): Promise<DropDetail | null> {
   const supabase = client();
   if (!supabase) return null;
   const { data, error } = await supabase
     .from("drops")
-    .select("name")
+    .select(DROP_COLUMNS)
     .eq("slug", slug)
     .maybeSingle();
-  logError("getDropName", error);
-  return data?.name ?? null;
+  logError("getDrop", error);
+  return data ? toDropDetail(data, new Date().toISOString()) : null;
+});
+
+/** Every published drop: upcoming ones soonest first, then past ones newest first. */
+export async function getDrops(): Promise<{ upcoming: DropDetail[]; past: DropDetail[] }> {
+  const supabase = client();
+  if (!supabase) return { upcoming: [], past: [] };
+  const { data, error } = await supabase
+    .from("drops")
+    .select(DROP_COLUMNS)
+    .order("go_live_at", { ascending: false });
+  logError("getDrops", error);
+  const now = new Date().toISOString();
+  const drops = await Promise.all((data ?? []).map((row) => toDropDetail(row, now)));
+  return {
+    upcoming: drops.filter((d) => !d.isLive).reverse(),
+    past: drops.filter((d) => d.isLive),
+  };
+}
+
+export type ArchiveDrop = { drop: DropDetail; pieces: ProductCardData[] };
+
+/**
+ * The archive: every drop that has gone live with all its pieces (claimed ones included, however
+ * old), plus pieces claimed straight off the rack (no drop), newest sale first.
+ */
+export async function getArchive(): Promise<{ drops: ArchiveDrop[]; offRack: ProductCardData[] }> {
+  const supabase = client();
+  if (!supabase) return { drops: [], offRack: [] };
+  const { past } = await getDrops();
+  const drops = await Promise.all(
+    past.map(async (drop) => {
+      const { data, error } = await storefrontProducts(supabase)
+        .eq("drop_id", drop.id)
+        .order("status", { ascending: false })
+        .order("published_at", { ascending: false })
+        .limit(48);
+      logError("getArchive (drop)", error);
+      return { drop, pieces: toCards(data) };
+    }),
+  );
+  const { data, error } = await storefrontProducts(supabase)
+    .is("drop_id", null)
+    .eq("status", "sold")
+    .order("sold_at", { ascending: false })
+    .limit(48);
+  logError("getArchive (off rack)", error);
+  return { drops: drops.filter((d) => d.pieces.length > 0), offRack: toCards(data) };
 }
 
 /** Real numbers for the impact counters. */
@@ -230,30 +388,17 @@ export async function getImpactStats(): Promise<ImpactStats | null> {
   const supabase = client();
   if (!supabase) return null;
 
-  const [listed, rehomed, prices] = await Promise.all([
+  const [listed, rehomed] = await Promise.all([
     supabase
       .from("products")
       .select("id", { count: "exact", head: true })
       .in("status", ["available", "reserved"]),
     supabase.from("products").select("id", { count: "exact", head: true }).eq("status", "sold"),
-    // TODO: move to a SQL view once the catalogue is large; fine for hundreds of rows.
-    supabase
-      .from("products")
-      .select("price_paise, original_price_paise")
-      .neq("status", "draft")
-      .not("original_price_paise", "is", null),
   ]);
-  logError("getImpactStats", listed.error ?? rehomed.error ?? prices.error);
-  if (listed.error || rehomed.error || prices.error) return null;
+  logError("getImpactStats", listed.error ?? rehomed.error);
+  if (listed.error || rehomed.error) return null;
 
-  const savings = (prices.data ?? []).flatMap((p) =>
-    p.original_price_paise ? [savingPercent(p.price_paise, p.original_price_paise)] : [],
-  );
-  const averageSavingPercent = savings.length
-    ? Math.round(savings.reduce((sum, s) => sum + s, 0) / savings.length)
-    : 0;
-
-  return { listed: listed.count ?? 0, rehomed: rehomed.count ?? 0, averageSavingPercent };
+  return { listed: listed.count ?? 0, rehomed: rehomed.count ?? 0 };
 }
 
 // ---------------------------------------------------------------------------
@@ -264,9 +409,13 @@ export type CategoryNode = { id: string; slug: string; name: string; gender: str
 
 export type CategoryPage = CategoryNode & {
   parent: CategoryNode | null;
+  /** Every category above this one, top-level first (e.g. Unisex, Jackets for Bomber). */
+  ancestors: CategoryNode[];
   /** Sub-categories of this category, or of its parent for a sub-category (for sibling links). */
   children: CategoryNode[];
-  /** This category plus its sub-categories: what the listing includes. */
+  /** The category `children` belong to: this one if it has sub-categories, else its parent. */
+  hub: CategoryNode;
+  /** This category plus every category below it: what the listing includes. */
   ids: string[];
 };
 
@@ -277,6 +426,17 @@ async function allCategories(supabase: Supabase) {
     .order("sort_order");
   logError("allCategories", error);
   return data ?? [];
+}
+
+type CategoryRow = Awaited<ReturnType<typeof allCategories>>[number];
+
+/** A category's id plus the ids of everything below it, at any depth. */
+function withDescendants(all: CategoryRow[], id: string): string[] {
+  const ids = [id];
+  for (let i = 0; i < ids.length; i++) {
+    for (const c of all) if (c.parent_id === ids[i] && !ids.includes(c.id)) ids.push(c.id);
+  }
+  return ids;
 }
 
 /**
@@ -292,7 +452,7 @@ export const getCategoryPage = cache(async function getCategoryPage(
   const category = all.find((c) => c.slug === slug);
   if (!category) return null;
 
-  const node = (c: (typeof all)[number]): CategoryNode => ({
+  const node = (c: CategoryRow): CategoryNode => ({
     id: c.id,
     slug: c.slug,
     name: c.name,
@@ -302,12 +462,125 @@ export const getCategoryPage = cache(async function getCategoryPage(
   const ownChildren = all.filter((c) => c.parent_id === category.id);
   const siblings = parent ? all.filter((c) => c.parent_id === parent.id) : [];
 
+  const ancestors: CategoryRow[] = [];
+  for (let up = parent; up && !ancestors.includes(up);) {
+    ancestors.unshift(up);
+    up = all.find((c) => c.id === up?.parent_id) ?? null;
+  }
+
   return {
     ...node(category),
     parent: parent ? node(parent) : null,
+    ancestors: ancestors.map(node),
     children: (ownChildren.length > 0 ? ownChildren : siblings).map(node),
-    ids: [category.id, ...ownChildren.map((c) => c.id)],
+    hub: node(ownChildren.length > 0 || !parent ? category : parent),
+    ids: withDescendants(all, category.id),
   };
+});
+
+export type ShopMenuItem = { slug: string; name: string; href: string; children: NavCategory[] };
+type NavCategory = { slug: string; name: string; href: string };
+
+/**
+ * The header "Shop" menu: the given categories in order, each with its sub-categories. Gender roots
+ * (Women) link to their landing page and list no sub-categories there.
+ */
+export const getShopMenu = cache(async function getShopMenu(
+  slugs: readonly string[],
+): Promise<ShopMenuItem[]> {
+  const supabase = client();
+  if (!supabase) return [];
+  const all = await allCategories(supabase);
+  const isRoot = (c: CategoryRow) => c.parent_id === null;
+  const href = (c: CategoryRow) => (isRoot(c) ? `/${c.slug}` : `/c/${c.slug}`);
+  return slugs.flatMap((slug) => {
+    const c = all.find((row) => row.slug === slug);
+    if (!c) return [];
+    const children = isRoot(c)
+      ? []
+      : all
+          .filter((row) => row.parent_id === c.id)
+          .map((row) => ({ slug: row.slug, name: row.name, href: href(row) }));
+    return [{ slug: c.slug, name: c.name, href: href(c), children }];
+  });
+});
+
+export type GenderMenu = {
+  slug: string;
+  name: string;
+  href: string;
+  /** Top-level categories under the gender, each with its own sub-categories. */
+  groups: ShopMenuItem[];
+};
+
+/**
+ * The header's Men / Women / Unisex menus, straight from `categories`: each gender's categories
+ * in their sort order, except that `featuredFirst` (the home tiles) lead, in that order.
+ */
+export const getGenderMenus = cache(async function getGenderMenus(
+  featuredFirst: readonly string[],
+): Promise<GenderMenu[]> {
+  const supabase = client();
+  if (!supabase) return [];
+  const all = await allCategories(supabase);
+  const rank = (slug: string) => {
+    const i = featuredFirst.indexOf(slug);
+    return i === -1 ? featuredFirst.length : i;
+  };
+  return all
+    .filter((root) => root.parent_id === null)
+    .map((root) => ({
+      slug: root.slug,
+      name: root.name,
+      href: `/${root.slug}`,
+      groups: all
+        .filter((c) => c.parent_id === root.id)
+        .sort((a, b) => rank(a.slug) - rank(b.slug))
+        .map((c) => ({
+          slug: c.slug,
+          name: c.name,
+          href: `/c/${c.slug}`,
+          children: all
+            .filter((sub) => sub.parent_id === c.id)
+            .map((sub) => ({ slug: sub.slug, name: sub.name, href: `/c/${sub.slug}` })),
+        })),
+    }));
+});
+
+export type BrandLink = { name: string; count: number; href: string };
+
+/** Values in the brand field that aren't really brands, so the Brand menu leaves them out. */
+const NOT_BRANDS = new Set(["unbranded", "vintage", "unknown", "other", "rare", "no brand"]);
+
+/** Brands with at least `min` pieces on sale, biggest first: the header's Brand menu. */
+export const getTopBrands = cache(async function getTopBrands(
+  min = 2,
+  limit = 36,
+): Promise<BrandLink[]> {
+  const supabase = client();
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("listed_products")
+    .select("brand")
+    .in("status", ["available", "reserved"])
+    .not("brand", "is", null);
+  logError("getTopBrands", error);
+  const counts = new Map<string, number>();
+  for (const row of data ?? []) {
+    const brand = row.brand?.trim();
+    if (brand && !NOT_BRANDS.has(brand.toLowerCase())) {
+      counts.set(brand, (counts.get(brand) ?? 0) + 1);
+    }
+  }
+  return [...counts]
+    .filter(([, count]) => count >= min)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, limit)
+    .map(([name, count]) => ({
+      name,
+      count,
+      href: `/search?brand=${encodeURIComponent(name)}`,
+    }));
 });
 
 /** Root categories (Men / Women / Unisex) with all their descendant ids — for the search filter. */
@@ -322,7 +595,7 @@ export async function getCategoryGroups(): Promise<(CategoryNode & { ids: string
       slug: root.slug,
       name: root.name,
       gender: root.gender,
-      ids: [root.id, ...all.filter((c) => c.parent_id === root.id).map((c) => c.id)],
+      ids: withDescendants(all, root.id),
     }));
 }
 
@@ -439,9 +712,7 @@ export async function getFacets(scope: {
 
   return {
     sizes: facets.sizes.sort(compareSizes),
-    conditions: (Object.keys(conditionGrades) as ProductCondition[]).filter((c) =>
-      presentConditions.has(c),
-    ),
+    conditions: selectableConditions.filter((c) => presentConditions.has(c)),
     brands: facets.brands.sort((a, b) => a.localeCompare(b)),
     styles,
     priceRangeRupees: {

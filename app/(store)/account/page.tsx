@@ -19,7 +19,7 @@ export default async function AccountPage() {
 
   const sections = [
     {
-      href: "/account/wishlist",
+      href: "/wishlist",
       label: "Wishlist",
       body: "Pieces you've saved.",
       Icon: Heart,
@@ -66,7 +66,7 @@ export default async function AccountPage() {
                 href={href}
                 className="flex h-full gap-3 rounded-lg border border-border p-5 hover:border-fg"
               >
-                <Icon aria-hidden className="size-5 shrink-0 text-primary" />
+                <Icon aria-hidden className="size-5 shrink-0 text-accent" />
                 <span>
                   <span className="block font-display font-bold">{label}</span>
                   <span className="mt-1 block text-sm text-muted">{body}</span>
@@ -102,9 +102,9 @@ export default async function AccountPage() {
             Sign-in methods
           </h2>
           <p className="mb-6 text-sm text-muted">
-            You currently sign in with {user.email ? "your email" : "your phone number"} only.
-            Add {user.email ? "a phone number" : "an email"} so you can use either — and so a code
-            sent the other way doesn&rsquo;t accidentally create a second account.
+            You currently sign in with {user.email ? "your email" : "your phone number"} only. Add{" "}
+            {user.email ? "a phone number" : "an email"} so you can use either — and so a code sent
+            the other way doesn&rsquo;t accidentally create a second account.
           </p>
           <LinkIdentityForm kind={user.email ? "phone" : "email"} />
         </section>

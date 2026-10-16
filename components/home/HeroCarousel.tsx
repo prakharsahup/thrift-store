@@ -1,34 +1,47 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
-import { HoverMarquee } from "@/components/motion/HoverMarquee";
-import { Magnetic } from "@/components/motion/Magnetic";
+import { DropCountdown } from "@/components/drops/DropCountdown";
 import { useMotionEnabled } from "@/components/motion/MotionProvider";
-import { RevealImage } from "@/components/motion/RevealImage";
-import { RevealText } from "@/components/motion/RevealText";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 import { CarouselButton } from "@/components/ui/CarouselButton";
 import { useCarouselAutoplay } from "@/hooks/useCarouselAutoplay";
 import { useCarouselState } from "@/hooks/useCarouselState";
-import type { Banner } from "@/lib/server/catalogue";
 import { cn } from "@/lib/utils/cn";
 
-type Props = { banners: Banner[] };
+export type HeroSlide = {
+  id: string;
+  eyebrow: string;
+  title: string;
+  body?: string | null;
+  /** Skewed bone label under the title, e.g. "Mon · 11:19 am · 3 pieces". */
+  sticker?: string;
+  /** Go-live time: shows the countdown boxes. */
+  countdownTo?: string;
+  cta: { href: string; label: string };
+  /** One wide image (a banner or drop image)… */
+  image?: { url: string; alt: string } | null;
+  /** …or up to three piece photos side by side. */
+  pieces?: { href: string; title: string; imageUrl: string | null; alt: string }[];
+};
 
-// Banner artwork is 16:7 (1600×700, see supabase/seed.sql); the frame uses the same ratio, so
-// object-cover never crops it. On desktop the image takes 7/12 of the container.
-const IMAGE_SIZES = "(min-width: 1440px) 800px, (min-width: 1280px) 56vw, 100vw";
+type Props = { slides: HeroSlide[] };
 
-// Home hero: admin-managed banners in an Embla carousel (CLAUDE.md §8), inside the page container
-// so its edges line up with every section below. The first slide is the page's h1 and gets the
-// load reveals (MOTION.md §6). Autoplays every 6s with motion on; pauses on hover or focus, and
-// has a visible pause button.
-export function HeroCarousel({ banners }: Props) {
+const IMAGE_SIZES = "(min-width: 1440px) 820px, (min-width: 1024px) 58vw, 100vw";
+
+// Home hero (Drop Night design): a swipeable carousel of the current drop, the owner's banners and
+// the newest pieces. Text sits on ink at the left, artwork at the right; square corners, purple
+// only on the button. Autoplays every 6 s with motion on; pauses on hover/focus and has a visible
+// pause button. The first slide's title is the page's h1.
+export function HeroCarousel({ slides }: Props) {
   const motionEnabled = useMotionEnabled();
-  const [viewportRef, api] = useEmblaCarousel({ loop: banners.length > 1 });
+  const many = slides.length > 1;
+  const [viewportRef, api] = useEmblaCarousel({ loop: many });
   const { selectedIndex } = useCarouselState(api);
-  const autoplay = useCarouselAutoplay(api, { enabled: motionEnabled && banners.length > 1 });
+  const autoplay = useCarouselAutoplay(api, { enabled: motionEnabled && many });
 
   return (
     <section
@@ -37,74 +50,99 @@ export function HeroCarousel({ banners }: Props) {
       className="site-container pt-4 md:pt-6"
       {...autoplay.interactionProps}
     >
-      <div ref={viewportRef} className="surface-dark overflow-hidden rounded-lg bg-surface text-fg">
+      <div ref={viewportRef} className="overflow-hidden border border-border">
         <div className="flex">
-          {banners.map((banner, i) => (
-            <div
-              key={banner.id}
-              role="group"
-              aria-roledescription="slide"
-              aria-label={`${i + 1} of ${banners.length}`}
-              className="min-w-0 shrink-0 grow-0 basis-full"
-            >
-              <div className="grid h-full xl:grid-cols-[5fr_7fr] xl:items-center">
-                <div className="order-2 flex flex-col gap-4 p-5 sm:p-8 xl:order-1 xl:gap-5 xl:p-10">
-                  {i === 0 ? (
-                    <RevealText as="h1" trigger="load" className="text-2xl font-bold md:text-3xl">
-                      {banner.title}
-                    </RevealText>
-                  ) : (
-                    <h2 className="text-2xl font-bold md:text-3xl">{banner.title}</h2>
-                  )}
-                  {banner.subtitle ? (
-                    <p className="max-w-md text-base text-fg/80">{banner.subtitle}</p>
-                  ) : null}
-                  <Magnetic className="self-start">
-                    <HoverMarquee href={banner.linkUrl} label={banner.ctaLabel} />
-                  </Magnetic>
-                </div>
-                {i === 0 ? (
-                  <RevealImage
-                    src={banner.imageUrl}
-                    alt={banner.imageAlt}
-                    sizes={IMAGE_SIZES}
-                    priority
-                    trigger="load"
-                    className="order-1 aspect-[16/7] w-full xl:order-2"
-                  />
-                ) : (
-                  <div className="relative order-1 aspect-[16/7] w-full xl:order-2">
-                    <Image
-                      src={banner.imageUrl}
-                      alt={banner.imageAlt}
-                      fill
-                      sizes={IMAGE_SIZES}
-                      className="object-cover"
-                    />
+          {slides.map((slide, i) => {
+            const Heading = i === 0 ? "h1" : "h2";
+            return (
+              <div
+                key={slide.id}
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`${i + 1} of ${slides.length}`}
+                className="min-w-0 shrink-0 grow-0 basis-full"
+              >
+                <div className="grid h-full lg:min-h-[30rem] lg:grid-cols-[5fr_7fr]">
+                  <div className="order-2 flex flex-col justify-end gap-4 p-6 md:p-10 lg:order-1">
+                    <p className="text-xs font-bold tracking-widest text-accent uppercase">
+                      {slide.eyebrow}
+                    </p>
+                    <Heading className="text-3xl text-accent md:text-4xl">{slide.title}</Heading>
+                    {slide.sticker ? (
+                      <p className="w-fit -rotate-2 bg-fg px-3 py-1 font-display text-sm text-bg md:text-base">
+                        {slide.sticker}
+                      </p>
+                    ) : null}
+                    {slide.body ? (
+                      <p className="max-w-md text-base text-muted">{slide.body}</p>
+                    ) : null}
+                    {slide.countdownTo ? <DropCountdown target={slide.countdownTo} /> : null}
+                    <ButtonLink href={slide.cta.href} size="lg" className="mt-2 self-start">
+                      {slide.cta.label}
+                    </ButtonLink>
                   </div>
-                )}
+
+                  <div className="relative order-1 aspect-[4/3] bg-surface lg:order-2 lg:aspect-auto">
+                    {slide.pieces && slide.pieces.length > 0 ? (
+                      <div className="absolute inset-0 grid grid-cols-3 gap-px bg-border">
+                        {slide.pieces.slice(0, 3).map((piece, p) => (
+                          <Link
+                            key={piece.href}
+                            href={piece.href}
+                            tabIndex={-1}
+                            className="group relative block overflow-hidden bg-surface"
+                          >
+                            {piece.imageUrl ? (
+                              <Image
+                                src={piece.imageUrl}
+                                alt={piece.alt}
+                                fill
+                                priority={i === 0 && p === 0}
+                                sizes="(min-width: 1024px) 20vw, 33vw"
+                                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                              />
+                            ) : (
+                              <span className="halftone absolute inset-0" />
+                            )}
+                          </Link>
+                        ))}
+                      </div>
+                    ) : slide.image ? (
+                      <Image
+                        src={slide.image.url}
+                        alt={slide.image.alt}
+                        fill
+                        priority={i === 0}
+                        sizes={IMAGE_SIZES}
+                        className="object-cover"
+                      />
+                    ) : (
+                      <span className="halftone absolute inset-0" />
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
-      {banners.length > 1 ? (
+      {many ? (
         <div className="flex items-center justify-between gap-4 pt-3">
           <div className="flex gap-1">
-            {banners.map((banner, i) => (
+            {slides.map((slide, i) => (
               <button
-                key={banner.id}
+                key={slide.id}
                 type="button"
-                aria-label={`Show slide ${i + 1}: ${banner.title}`}
+                aria-label={`Show slide ${i + 1}: ${slide.title}`}
                 aria-current={i === selectedIndex ? "true" : undefined}
                 onClick={() => api?.scrollTo(i)}
                 className="flex h-10 cursor-pointer items-center px-1"
               >
                 <span
                   className={cn(
-                    "block h-1 rounded-full transition-all",
-                    i === selectedIndex ? "w-8 bg-primary" : "w-4 bg-input",
+                    "block h-1 transition-all",
+                    i === selectedIndex ? "w-8 bg-accent" : "w-4 bg-input",
                   )}
                 />
               </button>

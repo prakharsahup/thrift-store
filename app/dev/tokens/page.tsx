@@ -7,46 +7,53 @@ export const metadata: Metadata = { title: "Design tokens" };
 
 // Class names are written out in full so Tailwind can detect them.
 const colors = [
-  { token: "--color-bg", value: "#100d16", swatch: "bg-bg", note: "Void · page background" },
-  { token: "--color-fg", value: "#f5ecff", swatch: "bg-fg", note: "Near-white ink · text" },
-  { token: "--color-muted", value: "#9f8bc2", swatch: "bg-muted", note: "Secondary text · 6.4:1" },
-  {
-    token: "--color-surface",
-    value: "#19141f",
-    swatch: "bg-surface",
-    note: "Panel · section fill",
-  },
+  { token: "--color-bg", value: "#0b0b0b", swatch: "bg-bg", note: "Ink · page background" },
+  { token: "--color-fg", value: "#e7e6e1", swatch: "bg-fg", note: "Bone · text, paper sections" },
+  { token: "--color-muted", value: "#a9a4b5", swatch: "bg-muted", note: "Secondary text · 8.1:1" },
+  { token: "--color-surface", value: "#2a2732", swatch: "bg-surface", note: "Plum-grey · tiles" },
   {
     token: "--color-primary",
-    value: "#8855d9",
+    value: "#7a3cff",
     swatch: "bg-primary",
-    note: "Violet · CTAs, links",
+    note: "Purple · CTAs, stickers",
   },
   {
     token: "--color-primary-fg",
-    value: "#f5ecff",
+    value: "#ffffff",
     swatch: "bg-primary-fg",
-    note: "Text on violet · 4.2:1",
+    note: "Text on purple · 5.4:1",
   },
   {
     token: "--color-accent",
-    value: "#c8a5ff",
+    value: "#cdbef5",
     swatch: "bg-accent",
-    note: "Lilac · badges, highlights",
+    note: "Lavender · headlines, links",
   },
   {
     token: "--color-accent-fg",
-    value: "#100d16",
+    value: "#0b0b0b",
     swatch: "bg-accent-fg",
-    note: "Text on lilac · 9.4:1",
+    note: "Text on lavender",
   },
-  { token: "--color-sale", value: "#ff4d6d", swatch: "bg-sale", note: "Pink-red · savings, errors" },
-  { token: "--color-sold", value: "#5c5468", swatch: "bg-sold", note: "SOLD badge fill" },
-  { token: "--color-border", value: "#2e2740", swatch: "bg-border", note: "Dividers (decorative)" },
-  { token: "--color-input", value: "#6b5f85", swatch: "bg-input", note: "Field outlines · 3.3:1" },
+  { token: "--color-sale", value: "#ff4d6d", swatch: "bg-sale", note: "Errors" },
+  {
+    token: "--color-sold",
+    value: "#4a4553",
+    swatch: "bg-sold",
+    note: "Sold fill · 7.4:1 with bone",
+  },
+  { token: "--color-border", value: "#34303d", swatch: "bg-border", note: "Dividers (decorative)" },
+  { token: "--color-input", value: "#8a8597", swatch: "bg-input", note: "Field outlines · 5.5:1" },
+  {
+    token: "--color-paper-muted",
+    value: "#57534e",
+    swatch: "bg-paper-muted",
+    note: "Muted text on bone · 6.2:1",
+  },
+  { token: "--color-halftone", value: "#1c1b19", swatch: "bg-halftone", note: "Halftone dots" },
   {
     token: "--color-overlay",
-    value: "void 70%",
+    value: "ink 75%",
     swatch: "bg-overlay",
     note: "Drawer / modal scrim",
   },
@@ -120,10 +127,8 @@ export default function TokensPage() {
       <Section title="Typography">
         <div className="grid gap-6 md:grid-cols-2">
           <div className="rounded-md bg-surface p-6">
-            <p className="text-xs text-muted">
-              --font-display · Bricolage Grotesque (h1/h2 at 85% width)
-            </p>
-            <h2 className="mt-2 text-2xl font-bold">One of one. Never twice.</h2>
+            <p className="text-xs text-muted">--font-display · Bungee (h1/h2, caps only)</p>
+            <h2 className="mt-2 text-2xl text-accent">One of one. Never twice.</h2>
           </div>
           <div className="rounded-md bg-surface p-6">
             <p className="text-xs text-muted">--font-body · Instrument Sans</p>
@@ -138,7 +143,7 @@ export default function TokensPage() {
               <span className="w-24 shrink-0 font-mono text-xs text-muted">
                 {t.cls} · {t.px}
               </span>
-              <span className={`${t.cls} truncate font-display font-bold`}>Pre-loved denim</span>
+              <span className={`${t.cls} truncate font-display`}>Pre-loved denim</span>
             </li>
           ))}
         </ul>
@@ -189,7 +194,7 @@ export default function TokensPage() {
           <Button variant="sold" disabled>
             Sold
           </Button>
-          <span className="text-xs">Tab here: focus rings turn lilac on dark sections.</span>
+          <span className="text-xs">Tab here: focus rings stay visible on paper sections.</span>
         </div>
         <p className="mt-4 text-xs text-muted">
           Links styled as buttons use <code>ButtonLink</code>, which shares the same variants.
@@ -230,15 +235,57 @@ export default function TokensPage() {
           <span className="rounded-sm bg-accent px-2 py-1 text-xs font-bold uppercase text-accent-fg">
             New drop
           </span>
+          <span className="-rotate-3 bg-primary px-2 py-1 font-display text-sm text-primary-fg">
+            Claimed
+          </span>
           <span className="rounded-sm bg-sold px-2 py-1 text-xs font-bold uppercase text-fg">
             Sold
           </span>
         </div>
-        <p className="mt-6 flex items-baseline gap-3">
-          <span className="text-lg font-bold">{formatMoney(49900)}</span>
-          <span className="text-sm text-muted line-through">{formatMoney(249900)}</span>
-          <span className="text-sm font-semibold text-sale">est. retail · save 80%</span>
+        <p className="mt-6 flex items-baseline justify-between gap-3 text-sm">
+          <span className="font-semibold">Baggy jeans · 32</span>
+          <span className="font-bold">{formatMoney(149900)}</span>
         </p>
+      </Section>
+
+      <Section title="Drop Night elements">
+        <p className="text-xs text-muted">NEXT DROP</p>
+        <p className="font-display text-hero text-accent">Drop 07</p>
+        <p className="mt-2 inline-block -rotate-2 bg-fg px-4 py-2 font-display text-xl text-bg">
+          Thu · 8 PM · 12 pieces
+        </p>
+        <div className="mt-8 flex gap-3">
+          {[
+            ["02", "Days"],
+            ["14", "Hrs"],
+            ["37", "Min"],
+          ].map(([n, label]) => (
+            <div key={label} className="w-24 border border-accent px-3 py-2">
+              <p className="font-display text-2xl">{n}</p>
+              <p className="text-xs font-semibold uppercase">{label}</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-8 grid grid-cols-3 items-end gap-3">
+          <div className="flex h-40 items-end bg-surface p-3 font-display text-xl">??</div>
+          <div className="flex h-56 items-end bg-surface p-3 font-display text-xl">??</div>
+          <div className="flex h-32 items-end bg-surface p-3 font-display text-xl">??</div>
+        </div>
+        <div className="mt-8 bg-fg p-6 text-bg">
+          <p className="font-display text-3xl">Last drop — 06</p>
+          <div className="mt-4 grid grid-cols-3 gap-3">
+            <div className="halftone relative aspect-[3/4]">
+              <span className="absolute top-2 -left-1 -rotate-3 bg-primary px-2 py-1 font-display text-sm text-primary-fg">
+                Claimed
+              </span>
+            </div>
+            <div className="halftone aspect-[3/4]" />
+            <div className="halftone aspect-[3/4]" />
+          </div>
+          <p className="mt-2 text-sm text-paper-muted">
+            Halftone texture on bone (utility: halftone).
+          </p>
+        </div>
       </Section>
 
       <Section title="Container">

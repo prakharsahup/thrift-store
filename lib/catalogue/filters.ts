@@ -154,14 +154,14 @@ export function activeFilters(
   if (base.minRupees !== null) {
     chips.push({
       key: "min",
-      label: `From $${base.minRupees}`,
+      label: `From ₹${base.minRupees}`,
       href: filtersHref(pathname, { ...base, minRupees: null }),
     });
   }
   if (base.maxRupees !== null) {
     chips.push({
       key: "max",
-      label: `Up to $${base.maxRupees}`,
+      label: `Up to ₹${base.maxRupees}`,
       href: filtersHref(pathname, { ...base, maxRupees: null }),
     });
   }

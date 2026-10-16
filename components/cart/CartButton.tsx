@@ -5,13 +5,31 @@ import { Button } from "@/components/ui/Button";
 import { useCartStore } from "@/lib/stores/cart";
 import { cn } from "@/lib/utils/cn";
 
-type Props = { className?: string };
+type Props = {
+  className?: string;
+  /** "text" reads "Cart (2)" (Drop Night header); "icon" is the bag icon with a count badge. */
+  variant?: "icon" | "text";
+};
 
-// Header cart icon with a live count. Opens the drawer.
-export function CartButton({ className }: Props) {
+// Header cart button with a live count. Opens the drawer.
+export function CartButton({ className, variant = "icon" }: Props) {
   const count = useCartStore((s) => s.lines.length);
   const open = useCartStore((s) => s.open);
   const openCart = useCartStore((s) => s.openCart);
+
+  if (variant === "text") {
+    return (
+      <button
+        type="button"
+        onClick={openCart}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        className={cn("tabular-nums", className)}
+      >
+        Cart ({count})
+      </button>
+    );
+  }
 
   return (
     <Button

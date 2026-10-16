@@ -4,7 +4,7 @@ import { SelectField, TextAreaField, TextField } from "./FormField";
 import { FormFooter } from "./FormFooter";
 import { useAdminForm } from "./useAdminForm";
 import { saveProduct } from "@/lib/actions/admin/products";
-import { conditions } from "@/lib/config/conditions";
+import { conditions, selectableConditions } from "@/lib/config/conditions";
 import { measurementKeys } from "@/lib/validators/admin";
 
 export type ProductFormValues = {
@@ -138,7 +138,7 @@ export function ProductForm({ product, categories, drops, holdNote }: Props) {
           name="condition"
           label="Condition"
           placeholder="Choose a grade"
-          options={Object.entries(conditions).map(([value, c]) => ({ value, label: c.label }))}
+          options={selectableConditions.map((value) => ({ value, label: conditions[value].label }))}
           defaultValue={product?.condition}
           error={e.condition}
         />
@@ -174,14 +174,14 @@ export function ProductForm({ product, categories, drops, holdNote }: Props) {
         <div className="grid gap-4 sm:grid-cols-2">
           <TextField
             name="price"
-            label="Price ($)"
+            label="Price (₹)"
             inputMode="decimal"
             defaultValue={product ? rupees(product.price_paise) : ""}
             error={e.price}
           />
           <TextField
             name="original_price"
-            label="Est. retail ($)"
+            label="Est. retail (₹)"
             hint="Optional. Shown with the saving."
             inputMode="decimal"
             defaultValue={product ? rupees(product.original_price_paise) : ""}

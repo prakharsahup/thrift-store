@@ -171,10 +171,10 @@ export function FilterForm({
 
       {facets.priceRangeRupees ? (
         <fieldset className="border-b border-border py-3">
-          <legend className="float-left mb-3 w-full text-sm font-semibold">Price ($)</legend>
+          <legend className="float-left mb-3 w-full text-sm font-semibold">Price (₹)</legend>
           <div className="clear-both flex items-center gap-2">
             <label htmlFor={`${idPrefix}-min`} className="sr-only">
-              Minimum price in dollars
+              Minimum price in rupees
             </label>
             <Input
               id={`${idPrefix}-min`}
@@ -191,7 +191,7 @@ export function FilterForm({
               –
             </span>
             <label htmlFor={`${idPrefix}-max`} className="sr-only">
-              Maximum price in dollars
+              Maximum price in rupees
             </label>
             <Input
               id={`${idPrefix}-max`}

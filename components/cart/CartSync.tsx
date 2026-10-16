@@ -6,15 +6,15 @@ import { useCartStore } from "@/lib/stores/cart";
 import { useWishlistStore } from "@/lib/stores/wishlist";
 import { createClient } from "@/lib/supabase/client";
 
-// Renders nothing. Restores the guest cart from localStorage, then follows the Supabase session:
-// on sign-in it merges the guest cart into the account and loads the wishlist; on sign-out it
-// clears both. Pages stay cacheable because no server code reads the session for this.
+// Renders nothing. Restores the guest cart and wishlist from localStorage, then follows the
+// Supabase session: on sign-in it merges both into the account; on sign-out it clears both. Pages stay cacheable because no server code reads the session for this.
 export function CartSync() {
   useEffect(() => {
     void useCartStore.persist.rehydrate();
+    void useWishlistStore.persist.rehydrate();
     if (!hasSupabaseEnv()) {
       useCartStore.getState().markReady();
-      useWishlistStore.getState().reset();
+      useWishlistStore.getState().markGuest();
       return;
     }
 
@@ -26,11 +26,13 @@ export function CartSync() {
       window.setTimeout(() => {
         if (userId) {
           void useCartStore.getState().signedIn(userId);
-          if (event !== "TOKEN_REFRESHED") void useWishlistStore.getState().load();
+          if (event !== "TOKEN_REFRESHED") void useWishlistStore.getState().signedIn();
+        } else if (event === "SIGNED_OUT") {
+          useCartStore.getState().signedOut();
+          useWishlistStore.getState().signedOut();
         } else {
-          if (event === "SIGNED_OUT") useCartStore.getState().signedOut();
-          else useCartStore.getState().markReady();
-          useWishlistStore.getState().reset();
+          useCartStore.getState().markReady();
+          useWishlistStore.getState().markGuest();
         }
       }, 0);
     });

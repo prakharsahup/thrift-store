@@ -195,7 +195,9 @@ async function notifyLatePayment(
     .eq("id", orderId)
     .single();
   if (error) {
-    console.error(`[orders] load cancelled order ${orderId} for late-payment alert: ${error.message}`);
+    console.error(
+      `[orders] load cancelled order ${orderId} for late-payment alert: ${error.message}`,
+    );
     return;
   }
   const address = addressSnapshotSchema.safeParse(order.address);

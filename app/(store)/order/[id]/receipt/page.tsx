@@ -52,7 +52,7 @@ export default async function OrderReceiptPage({ params }: PageProps<"/order/[id
   return (
     <div className="site-container py-6 md:py-10 print:p-0">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4 print:hidden">
-        <Link href={`/order/${order.id}`} className="text-sm underline hover:text-primary">
+        <Link href={`/order/${order.id}`} className="text-sm underline hover:text-accent">
           ← Back to order {shortOrderId(order.id)}
         </Link>
         <PrintButton />
@@ -203,7 +203,7 @@ export default async function OrderReceiptPage({ params }: PageProps<"/order/[id
         </div>
 
         <footer className="space-y-1 border-t border-border pt-4 text-xs text-muted">
-          <p>All amounts are in US dollars and include all applicable taxes.</p>
+          <p>All amounts are in Indian rupees and include all applicable taxes.</p>
           <p>
             Returns and cancellations: {site.url.replace(/^https?:\/\//, "")}/returns · Help:{" "}
             {site.url.replace(/^https?:\/\//, "")}/contact

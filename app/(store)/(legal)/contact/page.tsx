@@ -119,28 +119,25 @@ export default async function ContactPage({ searchParams }: PageProps<"/contact"
             </h2>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/shipping" className="font-semibold underline hover:text-primary">
+                <Link href="/shipping" className="font-semibold underline hover:text-accent">
                   Shipping policy
                 </Link>{" "}
                 — costs, dispatch times and tracking.
               </li>
               <li>
-                <Link href="/returns" className="font-semibold underline hover:text-primary">
+                <Link href="/returns" className="font-semibold underline hover:text-accent">
                   Returns, refunds &amp; cancellation
                 </Link>{" "}
                 — how to cancel or send something back.
               </li>
               <li>
-                <Link href="/account/orders" className="font-semibold underline hover:text-primary">
+                <Link href="/account/orders" className="font-semibold underline hover:text-accent">
                   Your orders
                 </Link>{" "}
                 — status and tracking links.
               </li>
               <li>
-                <Link
-                  href="/account/privacy"
-                  className="font-semibold underline hover:text-primary"
-                >
+                <Link href="/account/privacy" className="font-semibold underline hover:text-accent">
                   Privacy &amp; data
                 </Link>{" "}
                 — download or delete your data.

@@ -1,7 +1,5 @@
-import { formatMoney } from "@/lib/utils/money";
-
 // Header mega-menu, mobile menu and footer links. Category slugs follow `{gender}-{name}` and must
-// match the categories seeded in Phase 3; style and price links are PLP filters in the URL.
+// match the categories seeded in Phase 3; style links are PLP filters in the URL.
 
 export const genders = ["men", "women", "unisex"] as const;
 export type Gender = (typeof genders)[number];
@@ -27,8 +25,6 @@ export const styleTags = [
   ["Minimal", "minimal"],
 ] as const;
 
-const priceCapsDollars = [499, 999, 1499] as const;
-
 function categories(gender: Gender, items: ReadonlyArray<readonly [string, string]>): NavLink[] {
   return items.map(([label, slug]) => ({ label, href: `/c/${gender}-${slug}` }));
 }
@@ -37,16 +33,6 @@ function byStyle(gender: Gender): NavColumn {
   return {
     title: "Shop by style",
     links: styleTags.map(([label, tag]) => ({ label, href: `/c/${gender}?style=${tag}` })),
-  };
-}
-
-function byPrice(gender: Gender): NavColumn {
-  return {
-    title: "Shop by price",
-    links: priceCapsDollars.map((max) => ({
-      label: `Under ${formatMoney(max * 100)}`,
-      href: `/c/${gender}?max=${max}`,
-    })),
   };
 }
 
@@ -94,7 +80,6 @@ export const genderNav: readonly GenderNav[] = [
         ]),
       },
       byStyle("men"),
-      byPrice("men"),
     ],
     feature: feature("men", "Broken-in denim"),
   },
@@ -134,7 +119,6 @@ export const genderNav: readonly GenderNav[] = [
         ]),
       },
       byStyle("women"),
-      byPrice("women"),
     ],
     feature: feature("women", "Y2K finds"),
   },
@@ -162,7 +146,6 @@ export const genderNav: readonly GenderNav[] = [
         ]),
       },
       byStyle("unisex"),
-      byPrice("unisex"),
     ],
     feature: feature("unisex", "Vintage sportswear"),
   },
@@ -184,17 +167,11 @@ export const brandLinks: readonly NavLink[] = [
 export const accountLinks: readonly NavLink[] = [
   { label: "My account", href: "/account" },
   { label: "Orders", href: "/account/orders" },
-  { label: "Wishlist", href: "/account/wishlist" },
+  { label: "Wishlist", href: "/wishlist" },
 ];
 
+/** Footer link columns after "Shop", which the footer builds from the category menu. */
 export const footerNav: readonly NavColumn[] = [
-  {
-    title: "Shop",
-    links: [
-      ...genderNav.map(({ label, href }) => ({ label, href })),
-      { label: "Search", href: "/search" },
-    ],
-  },
   {
     title: "Help",
     links: [

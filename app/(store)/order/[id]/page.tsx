@@ -209,7 +209,7 @@ export default async function OrderPage({ params }: PageProps<"/order/[id]">) {
                   : order.status === "delivered"
                     ? `You have ${returnsPolicy.windowDays} days from delivery to report a problem${returnsPolicy.changeOfMind ? " or return a piece" : ""}.`
                     : "This order has been refunded."}{" "}
-              <Link href="/returns" className="underline hover:text-primary">
+              <Link href="/returns" className="underline hover:text-accent">
                 Returns, refunds &amp; cancellation policy
               </Link>
             </p>

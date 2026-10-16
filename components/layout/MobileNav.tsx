@@ -7,10 +7,10 @@ import { cn } from "@/lib/utils/cn";
 import { useMobileMenu } from "./MobileMenuProvider";
 
 const itemClass =
-  "flex h-full flex-col items-center justify-center gap-1 text-xs font-medium text-muted aria-[current=page]:text-fg";
+  "flex h-full flex-col items-center justify-center gap-1 text-xs font-bold tracking-wider text-muted uppercase aria-[current=page]:text-accent aria-expanded:text-accent";
 const iconClass = "size-5";
 
-// Fixed bottom bar below lg. "Categories" opens the same drawer as the header hamburger.
+// Fixed bottom bar below lg. "Shop" opens the same drawer as the header menu button.
 export function MobileNav() {
   const pathname = usePathname();
   const { open, show } = useMobileMenu();
@@ -41,7 +41,7 @@ export function MobileNav() {
             className={cn(itemClass, "w-full")}
           >
             <LayoutGrid aria-hidden className={iconClass} />
-            Categories
+            Shop
           </button>
         </li>
         <li>
@@ -51,23 +51,13 @@ export function MobileNav() {
           </Link>
         </li>
         <li>
-          <Link
-            href="/account/wishlist"
-            aria-current={current("/account/wishlist")}
-            className={itemClass}
-          >
+          <Link href="/wishlist" aria-current={current("/wishlist")} className={itemClass}>
             <Heart aria-hidden className={iconClass} />
             Wishlist
           </Link>
         </li>
         <li>
-          <Link
-            href="/account"
-            aria-current={
-              pathname.startsWith("/account/wishlist") ? undefined : current("/account")
-            }
-            className={itemClass}
-          >
+          <Link href="/account" aria-current={current("/account")} className={itemClass}>
             <User aria-hidden className={iconClass} />
             Account
           </Link>

@@ -8,9 +8,11 @@ export const conditions = {
     label: "New with tags",
     description: "Never worn. The original tags are still attached.",
   },
+  // Retired grade (owner decision, 2026-10-15): pieces once graded "Like new" are now "Good". The
+  // enum value stays in the database, so anything still carrying it reads as Good.
   like_new: {
-    label: "Like new",
-    description: "Worn once or twice, with no visible wear.",
+    label: "Good",
+    description: "Gently worn with light signs of use. Any flaws are listed and photographed.",
   },
   good: {
     label: "Good",
@@ -21,3 +23,10 @@ export const conditions = {
     description: "Visible wear such as fading or small marks — all listed and photographed.",
   },
 } as const satisfies Record<ProductCondition, { label: string; description: string }>;
+
+/** The grades a piece can be given, best first. */
+export const selectableConditions = [
+  "new_with_tags",
+  "good",
+  "fair",
+] as const satisfies readonly ProductCondition[];

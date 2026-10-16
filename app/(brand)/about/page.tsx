@@ -42,7 +42,7 @@ export default function AboutPage() {
   return (
     <>
       <section className="site-container py-16 md:py-24">
-        <p className="text-xs font-semibold tracking-widest text-primary uppercase">
+        <p className="text-xs font-semibold tracking-widest text-accent uppercase">
           About {site.name}
         </p>
         <RevealText
@@ -75,7 +75,7 @@ export default function AboutPage() {
       </div>
 
       <section aria-labelledby="about-process" className="site-container py-16 md:py-24">
-        <p className="mb-2 text-xs font-semibold tracking-widest text-primary uppercase">
+        <p className="mb-2 text-xs font-semibold tracking-widest text-accent uppercase">
           How it works
         </p>
         <RevealText as="h2" id="about-process" className="mb-10 text-2xl font-bold md:text-3xl">

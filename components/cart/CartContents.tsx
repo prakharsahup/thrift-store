@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { ButtonLink } from "@/components/ui/ButtonLink";
-import { shipping, shippingFor } from "@/lib/config/shipping";
+import { shippingFor } from "@/lib/config/shipping";
 import { useStartCheckout } from "@/components/checkout/useStartCheckout";
 import { useCartStore } from "@/lib/stores/cart";
 import { cn } from "@/lib/utils/cn";
@@ -16,8 +16,8 @@ type Props = {
   variant: "drawer" | "page";
 };
 
-// The cart itself, shared by the drawer and /cart: lines, subtotal, free-shipping progress and the
-// checkout button. Totals here are estimates for display; checkout recomputes on the server.
+// The cart itself, shared by the drawer and /cart: lines, subtotal and the checkout button.
+// Totals here are estimates for display; checkout recomputes on the server.
 export function CartContents({ variant }: Props) {
   const lines = useCartStore((s) => s.lines);
   const error = useCartStore((s) => s.error);
@@ -28,8 +28,6 @@ export function CartContents({ variant }: Props) {
   const buyable = lines.filter((l) => l.status === "available");
   const subtotal = buyable.reduce((sum, l) => sum + l.pricePaise, 0);
   const shippingCost = buyable.length ? shippingFor(subtotal) : 0;
-  const toFreeShipping = Math.max(0, shipping.freeAbovePaise - subtotal);
-  const progress = Math.min(1, subtotal / shipping.freeAbovePaise);
   const blocked = lines.length > buyable.length;
 
   if (!ready) {
@@ -65,24 +63,6 @@ export function CartContents({ variant }: Props) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="border-b border-border px-4 py-3 md:px-6">
-        <p className="text-sm" aria-live="polite">
-          {toFreeShipping > 0 ? (
-            <>
-              Add <strong>{formatMoney(toFreeShipping)}</strong> more for free shipping.
-            </>
-          ) : (
-            <strong>You&rsquo;ve got free shipping.</strong>
-          )}
-        </p>
-        <div aria-hidden className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface">
-          <div
-            className="h-full origin-left rounded-full bg-primary transition-transform duration-500"
-            style={{ transform: `scaleX(${progress})` }}
-          />
-        </div>
-      </div>
-
       <ul
         className={cn(
           "divide-y divide-border px-4 md:px-6",
@@ -138,7 +118,7 @@ export function CartContents({ variant }: Props) {
           <Link
             href="/cart"
             onClick={closeCart}
-            className="mt-3 block text-center text-sm font-semibold text-primary underline"
+            className="mt-3 block text-center text-sm font-semibold text-accent underline"
           >
             View full cart
           </Link>

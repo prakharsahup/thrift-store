@@ -283,9 +283,13 @@ export type OrderNotification = {
 export function orderNotificationEmail(o: OrderNotification): Omit<Email, "to"> {
   const shortId = o.id.slice(0, 8).toUpperCase();
   const a = o.address;
-  const addressLines = [a.name, a.phone, a.line1, a.line2, `${a.city}, ${a.state} ${a.pincode}`].filter(
-    (l): l is string => Boolean(l),
-  );
+  const addressLines = [
+    a.name,
+    a.phone,
+    a.line1,
+    a.line2,
+    `${a.city}, ${a.state} ${a.pincode}`,
+  ].filter((l): l is string => Boolean(l));
   const unavailable = o.items.filter((i) => i.unavailable);
   const needsManualRefund = o.status === "cancelled";
 
@@ -295,7 +299,8 @@ export function orderNotificationEmail(o: OrderNotification): Omit<Email, "to"> 
       : `New order paid — #${shortId}`,
     "",
     ...o.items.map(
-      (i) => `- ${i.title}: ${formatMoney(i.pricePaise)}${i.unavailable ? " (sold out — refunding)" : ""}`,
+      (i) =>
+        `- ${i.title}: ${formatMoney(i.pricePaise)}${i.unavailable ? " (sold out — refunding)" : ""}`,
     ),
     "",
     `Subtotal: ${formatMoney(o.subtotalPaise)}`,
@@ -434,4 +439,32 @@ export function supportResolvedEmail(m: {
 </div>
 </body></html>`;
   return { subject: `Ticket ${m.ticket} resolved`, html, text };
+}
+
+/**
+ * Double opt-in for a drop alert (request_notify): nobody is emailed about a drop until the
+ * address owner clicks this link.
+ */
+export function dropAlertConfirmEmail(a: {
+  dropName: string;
+  confirmUrl: string;
+}): Omit<Email, "to"> {
+  const intro = `Someone (hopefully you) asked for an alert when ${a.dropName} goes live on ${site.name}. Confirm it's you and we'll email you once, when the drop opens.`;
+  const ignore = "Didn't ask for this? Ignore this email and you won't hear from us.";
+
+  const text = [intro, "", `Confirm: ${a.confirmUrl}`, "", ignore, legalFooter().text].join("\n");
+
+  const html = `<!doctype html>
+<html lang="en"><body style="margin:0;background:#fbf8f3;color:#17140f;font-family:Arial,Helvetica,sans-serif">
+<div style="max-width:520px;margin:0 auto;padding:32px 24px">
+  <p style="font-size:24px;font-weight:bold;margin:0 0 4px">${escapeHtml(site.name)}</p>
+  <h1 style="font-size:20px;margin:24px 0 4px">Confirm your alert for ${escapeHtml(a.dropName)}</h1>
+  <p style="margin:0 0 24px">${escapeHtml(intro)}</p>
+  <p style="margin:0 0 24px"><a href="${a.confirmUrl}" style="background:#7a3cff;color:#fff;padding:12px 20px;border-radius:2px;text-decoration:none;font-weight:bold">Confirm my alert</a></p>
+  <p style="font-size:14px;color:#675e53;margin:0">${escapeHtml(ignore)}</p>
+  ${legalFooter().html}
+</div>
+</body></html>`;
+
+  return { subject: `Confirm your alert for ${a.dropName}`, html, text };
 }

@@ -122,7 +122,7 @@ export default async function AdminDashboard() {
           </h2>
           <Link
             href="/admin/orders?view=all"
-            className="text-sm font-semibold text-primary underline"
+            className="text-sm font-semibold text-accent underline"
           >
             All orders
           </Link>

@@ -20,7 +20,7 @@ export function WishlistButton({ productId, className }: Props) {
         aria-pressed={saved}
         onClick={() => void toggle()}
       >
-        <Heart aria-hidden className={cn(saved && "fill-primary text-primary")} />
+        <Heart aria-hidden className={cn(saved && "fill-primary text-accent")} />
         {saved ? "Saved to wishlist" : "Save to wishlist"}
       </Button>
       {error ? (

@@ -383,16 +383,16 @@ export function CheckoutFlow({
               {/* Terms shown before payment, never pre-accepted (E-Commerce Rules 2020 r. 4(9)). */}
               <p className="mt-3 text-xs text-muted">
                 By paying, you agree to our{" "}
-                <Link href="/terms" className="underline hover:text-primary">
+                <Link href="/terms" className="underline hover:text-accent">
                   Terms
                 </Link>{" "}
                 and{" "}
-                <Link href="/returns" className="underline hover:text-primary">
+                <Link href="/returns" className="underline hover:text-accent">
                   Returns &amp; cancellation policy
                 </Link>
                 . You can cancel free of charge until your order ships. Your details are used as
                 described in our{" "}
-                <Link href="/privacy" className="underline hover:text-primary">
+                <Link href="/privacy" className="underline hover:text-accent">
                   Privacy notice
                 </Link>
                 .

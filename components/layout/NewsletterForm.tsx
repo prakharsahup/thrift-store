@@ -15,9 +15,12 @@ export function NewsletterForm() {
   const [state, formAction, pending] = useActionState(subscribeToNewsletter, initialState);
 
   return (
-    <form action={formAction} noValidate className="max-w-sm">
-      <label htmlFor="newsletter-email" className="mb-2 block font-display font-bold">
-        Get first dibs on new drops
+    <form action={formAction} noValidate className="w-full max-w-xl lg:justify-self-end">
+      <label
+        htmlFor="newsletter-email"
+        className="mb-2 block text-xs font-bold tracking-widest uppercase"
+      >
+        Email
       </label>
       <div className="flex gap-2">
         <Input
@@ -31,8 +34,8 @@ export function NewsletterForm() {
           aria-invalid={state.status === "error" || undefined}
           className="flex-1"
         />
-        <Button type="submit" variant="secondary" disabled={pending}>
-          {pending ? "Signing up…" : "Sign up"}
+        <Button type="submit" disabled={pending}>
+          {pending ? "Signing up…" : "Notify me"}
         </Button>
       </div>
       <p
@@ -46,7 +49,7 @@ export function NewsletterForm() {
         {state.message}
       </p>
       <p className="text-xs text-muted">
-        Occasional emails about new drops. Unsubscribe any time; see our{" "}
+        Drop alerts only. Unsubscribe any time; see our{" "}
         <Link href="/privacy" className="underline hover:text-fg">
           Privacy notice
         </Link>

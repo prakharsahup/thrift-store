@@ -11,12 +11,22 @@ export async function generateMetadata({ params }: PageProps<"/c/[slug]">): Prom
   const { slug } = await params;
   const category = await getCategoryPage(slug);
   if (!category) return {};
-  const title = category.parent
-    ? `${category.parent.name}'s ${category.name.toLowerCase()}`
-    : `All ${category.name.toLowerCase()}`;
+  const { parent } = category;
+  // "Men's jackets" under a gender; "Jackets: Bomber" one level further down.
+  const underGender = parent && ROOT_LANDINGS.has(parent.slug);
+  const title = !parent
+    ? `All ${category.name.toLowerCase()}`
+    : underGender
+      ? `${parent.name}'s ${category.name.toLowerCase()}`
+      : `${parent.name}: ${category.name}`;
+  const scope = !parent
+    ? category.name.toLowerCase()
+    : underGender
+      ? `${category.name.toLowerCase()} for ${parent.name.toLowerCase()}`
+      : `${parent.name.toLowerCase()} — ${category.name.toLowerCase()}`;
   return {
     title,
-    description: `Pre-loved ${category.name.toLowerCase()}${category.parent ? ` for ${category.parent.name.toLowerCase()}` : ""}: one-of-one pieces, graded and measured.`,
+    description: `Pre-loved ${scope}: one-of-one pieces, graded and measured.`,
     alternates: { canonical: `/c/${slug}` },
   };
 }
@@ -38,18 +48,30 @@ export default async function CategoryListingPage({
     getFacets({ categoryIds: category.ids, q: "" }),
   ]);
 
-  const root = category.parent ?? category;
+  // Gender roots have their own landing page; every other category is a listing.
+  const hrefFor = (c: { slug: string }) =>
+    ROOT_LANDINGS.has(c.slug) ? `/${c.slug}` : `/c/${c.slug}`;
   const breadcrumbs = [
     { label: "Home", href: "/" },
-    ...(ROOT_LANDINGS.has(root.slug) ? [{ label: root.name, href: `/${root.slug}` }] : []),
-    ...(category.parent ? [{ label: category.name }] : [{ label: "Shop all" }]),
+    ...(category.parent
+      ? [
+          ...category.ancestors.map((a) => ({ label: a.name, href: hrefFor(a) })),
+          { label: category.name },
+        ]
+      : [
+          ...(ROOT_LANDINGS.has(category.slug)
+            ? [{ label: category.name, href: hrefFor(category) }]
+            : []),
+          { label: "Shop all" },
+        ]),
   ];
 
-  // Sub-category links: children of a top-level category, or siblings of a sub-category.
+  // Sub-category links: children of a category that has them, or siblings of a sub-category.
+  const { hub } = category;
   const subnav = (
-    <nav aria-label={`${root.name} categories`} className="-mx-4 mt-5 overflow-x-auto px-4">
+    <nav aria-label={`${hub.name} categories`} className="-mx-4 mt-5 overflow-x-auto px-4">
       <ul className="flex w-max gap-2">
-        {[{ slug: root.slug, name: `All ${root.name.toLowerCase()}` }, ...category.children].map(
+        {[{ slug: hub.slug, name: `All ${hub.name.toLowerCase()}` }, ...category.children].map(
           (link) => {
             const current = link.slug === category.slug;
             return (

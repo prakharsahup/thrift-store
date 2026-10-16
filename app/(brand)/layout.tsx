@@ -1,12 +1,8 @@
 import { SiteShell } from "@/components/layout/SiteShell";
-import { SmoothScroll } from "@/components/motion/SmoothScroll";
 
-// Full-motion brand pages (MOTION.md §2): Lenis smooth scroll here, the page transition in
-// template.tsx. Shopping pages live in (store) and get neither.
+// Brand pages (home, about, lookbook). Drop Night redesign: native scrolling and no page-enter
+// transition here either, so the home page loads no animation library at all. About and
+// Lookbook keep their own on-scroll reveals (MOTION.md), which respect the motion toggle.
 export default function BrandLayout({ children }: LayoutProps<"/">) {
-  return (
-    <SiteShell>
-      <SmoothScroll>{children}</SmoothScroll>
-    </SiteShell>
-  );
+  return <SiteShell>{children}</SiteShell>;
 }

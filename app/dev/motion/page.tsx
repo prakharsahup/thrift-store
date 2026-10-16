@@ -118,7 +118,7 @@ export default function MotionPlaygroundPage() {
           description="On for this whole page. Scroll with a mouse wheel or trackpad and compare with /dev/tokens, which scrolls natively. Touch scrolling stays native. Tune with lenis.lerp."
         >
           <p className="text-sm">
-            <Link href="/dev/tokens" className="font-semibold text-primary underline">
+            <Link href="/dev/tokens" className="font-semibold text-accent underline">
               Compare with native scrolling on /dev/tokens
             </Link>
           </p>
@@ -149,7 +149,7 @@ export default function MotionPlaygroundPage() {
               className="border-y border-fg py-3 text-sm font-semibold tracking-wide uppercase"
             />
             <Marquee
-              items={["Free shipping over $999", "New drop every Friday"]}
+              items={["Free shipping over ₹999", "New drop every Friday"]}
               speed={20}
               className="bg-accent py-2 text-xs font-semibold text-accent-fg"
             />

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage, type LegalSection } from "@/components/legal/LegalPage";
-import { conditions } from "@/lib/config/conditions";
+import { conditions, selectableConditions } from "@/lib/config/conditions";
 import {
   business,
   externalRedress,
@@ -81,7 +81,8 @@ const sections: LegalSection[] = [
           We make reasonable efforts to display each item&rsquo;s condition accurately through
           photographs and descriptions. Every piece is inspected and cleaned before listing, then
           described with a condition grade —{" "}
-          {Object.values(conditions)
+          {selectableConditions
+            .map((c) => conditions[c])
             .map((c) => `${c.label} (${c.description.replace(/\.$/, "")})`)
             .join("; ")}
           . Please review all product images and descriptions carefully before purchasing. Each
@@ -292,8 +293,8 @@ const sections: LegalSection[] = [
           Our products are generally unique or available in limited quantities. Adding a piece to
           your cart doesn&rsquo;t reserve it; when you start checkout, we hold the pieces in your
           cart for 15 minutes so nobody else can buy them while you pay. If the hold ends before you
-          pay, the pieces go back on sale, so adding an item to your cart does not guarantee it will
-          remain available until checkout is completed.
+          pay, the pieces become available to others again, so adding an item to your cart does not
+          guarantee it will remain available until checkout is completed.
         </p>
         <p>
           Your order is accepted, and the contract formed, when we confirm your payment by email and
@@ -311,15 +312,9 @@ const sections: LegalSection[] = [
     body: (
       <>
         <p>
-          Prices are in US dollars and include all applicable taxes. The shipping charge, any
+          Prices are in Indian rupees and include all applicable taxes. The shipping charge, any
           coupon discount and the total are shown in your cart and at checkout before you pay. We
           don&rsquo;t add any other fees.
-        </p>
-        <p>
-          Some listings show an &ldquo;est. retail&rdquo; price: our good-faith estimate of what the
-          item cost new, taken from the original price tag where there is one, otherwise from the
-          brand&rsquo;s published price for that item or a comparable new item. It is not an MRP, a
-          past price of ours, or the price you&rsquo;d pay in a shop today.
         </p>
         <p>
           We reserve the right to correct genuine pricing, listing or technical errors. If a piece

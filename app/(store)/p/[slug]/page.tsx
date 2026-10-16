@@ -12,10 +12,10 @@ import { MeasurementsTable } from "@/components/product/MeasurementsTable";
 import { ProductCard } from "@/components/product/ProductCard";
 import { ChipLink } from "@/components/ui/ChipLink";
 import { business, returnsPolicy, shippingPolicy } from "@/lib/config/legal";
-import { styleTags } from "@/lib/config/navigation";
+import { genders, styleTags } from "@/lib/config/navigation";
 import { shipping } from "@/lib/config/shipping";
 import { getProductBySlug, getRelatedProducts } from "@/lib/server/catalogue";
-import { formatMoney, savingPercent } from "@/lib/utils/money";
+import { formatMoney } from "@/lib/utils/money";
 
 // Cached per product and refreshed at most once a minute. The checkout phase also revalidates a
 // product's page the moment it sells.
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: PageProps<"/p/[slug]">): Prom
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) return {};
-  const price = formatMoney(product.pricePaise, product.currency);
+  const price = formatMoney(product.pricePaise);
   return {
     title: `${product.title}${product.brand ? ` · ${product.brand}` : ""}`,
     description:
@@ -53,9 +53,6 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
   if (!product) notFound();
 
   const related = await getRelatedProducts(product);
-  const saving = product.originalPricePaise
-    ? savingPercent(product.pricePaise, product.originalPricePaise)
-    : 0;
   const parent = product.category?.parent;
 
   return (
@@ -63,7 +60,17 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },
-          ...(parent ? [{ label: parent.name, href: `/${parent.slug}` }] : []),
+          ...(parent
+            ? [
+                {
+                  label: parent.name,
+                  // A gender has its own landing page; a parent like Jackets is a listing.
+                  href: (genders as readonly string[]).includes(parent.slug)
+                    ? `/${parent.slug}`
+                    : `/c/${parent.slug}`,
+                },
+              ]
+            : []),
           ...(product.category
             ? [{ label: product.category.name, href: `/c/${product.category.slug}` }]
             : []),
@@ -79,43 +86,19 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
           {product.brand ? (
             <Link
               href={`/search?brand=${encodeURIComponent(product.brand)}`}
-              className="text-xs font-semibold tracking-wider text-primary uppercase hover:underline"
+              className="text-xs font-semibold tracking-wider text-accent uppercase hover:underline"
             >
               {product.brand}
             </Link>
           ) : (
             <p className="text-xs font-semibold tracking-wider text-muted uppercase">Unbranded</p>
           )}
-          <h1 className="mt-2 text-xl font-semibold tracking-tight font-stretch-normal lg:text-2xl">
-            {product.title}
-          </h1>
+          <h1 className="mt-2 text-xl leading-tight lg:text-2xl">{product.title}</h1>
 
-          <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <p className="font-body text-lg font-bold tabular-nums lg:text-xl">
-              {formatMoney(product.pricePaise, product.currency)}
-            </p>
-            {product.originalPricePaise ? (
-              <p className="text-sm text-muted">
-                est. retail <s>{formatMoney(product.originalPricePaise, product.currency)}</s>
-                {saving > 0 ? (
-                  <span className="ml-2 font-semibold text-sale">You save {saving}%</span>
-                ) : null}
-              </p>
-            ) : null}
-          </div>
-          <p className="mt-1 text-xs text-muted">
-            Inclusive of all taxes.
-            {product.originalPricePaise ? (
-              <>
-                {" "}
-                &ldquo;est. retail&rdquo; is our estimate of its price when new —{" "}
-                <Link href="/terms#prices" className="underline hover:text-primary">
-                  how we work it out
-                </Link>
-                .
-              </>
-            ) : null}
+          <p className="mt-3 font-body text-lg font-bold tabular-nums lg:text-xl">
+            {formatMoney(product.pricePaise)}
           </p>
+          <p className="mt-1 text-xs text-muted">Inclusive of all taxes.</p>
 
           <dl className="mt-5 grid grid-cols-2 gap-4 border-y border-border py-4 text-sm">
             <div>
@@ -126,7 +109,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
               <dt className="text-muted">Availability</dt>
               <dd className="mt-0.5 font-semibold">
                 {product.status === "sold"
-                  ? "Sold"
+                  ? "Claimed"
                   : product.status === "reserved"
                     ? "On hold"
                     : "Only one available"}
@@ -154,7 +137,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
               otherwise. Please check the photographs, condition details and measurements before
               purchasing. All sales are final — we don&rsquo;t accept returns or exchanges for
               sizing preferences, change of mind, or disclosed imperfections.{" "}
-              <Link href="/returns#change-of-mind" className="underline hover:text-primary">
+              <Link href="/returns#change-of-mind" className="underline hover:text-accent">
                 Full policy
               </Link>
               .
@@ -187,34 +170,34 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
           {/* Pre-purchase disclosures (E-Commerce Rules 2020 r. 6(5)): delivery, returns, seller. */}
           <ul className="mt-6 space-y-3 rounded-lg border border-border p-4 text-sm">
             <li className="flex gap-3">
-              <Truck aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
+              <Truck aria-hidden className="mt-0.5 size-4 shrink-0 text-accent" />
               <span>
                 Ships within {shippingPolicy.dispatchDays} business days; usually delivered{" "}
                 {shippingPolicy.deliveryDays} business days later.{" "}
                 {shipping.flatPaise > 0
                   ? `Free shipping over ${formatMoney(shipping.freeAbovePaise)}, otherwise ${formatMoney(shipping.flatPaise)}.`
                   : null}{" "}
-                <Link href="/shipping" className="underline hover:text-primary">
+                <Link href="/shipping" className="underline hover:text-accent">
                   Shipping
                 </Link>
               </span>
             </li>
             <li className="flex gap-3">
-              <RotateCcw aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
+              <RotateCcw aria-hidden className="mt-0.5 size-4 shrink-0 text-accent" />
               <span>
                 {returnsPolicy.changeOfMind
                   ? `Returnable within ${returnsPolicy.windowDays} days of delivery if unworn. Not as described? Full refund.`
                   : `Not as described? Return within ${returnsPolicy.windowDays} days for a full refund. No change-of-mind returns.`}{" "}
-                <Link href="/returns" className="underline hover:text-primary">
+                <Link href="/returns" className="underline hover:text-accent">
                   Returns
                 </Link>
               </span>
             </li>
             <li className="flex gap-3">
-              <Store aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
+              <Store aria-hidden className="mt-0.5 size-4 shrink-0 text-accent" />
               <span>
                 Sold by {business.legalName}.{" "}
-                <Link href="/contact" className="underline hover:text-primary">
+                <Link href="/contact" className="underline hover:text-accent">
                   Contact the seller
                 </Link>
               </span>
@@ -222,7 +205,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
           </ul>
 
           <section aria-labelledby="pdp-measurements" className="mt-8">
-            <h2 id="pdp-measurements" className="text-base font-bold font-stretch-normal">
+            <h2 id="pdp-measurements" className="text-base font-bold">
               Measurements
             </h2>
             <div className="mt-3">
@@ -234,7 +217,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
           </section>
 
           <section aria-labelledby="pdp-flaws" className="mt-8">
-            <h2 id="pdp-flaws" className="text-base font-bold font-stretch-normal">
+            <h2 id="pdp-flaws" className="text-base font-bold">
               Flaws
             </h2>
             <p className="mt-2 text-sm text-muted">
@@ -244,7 +227,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
           </section>
 
           <section aria-labelledby="pdp-description" className="mt-8">
-            <h2 id="pdp-description" className="text-base font-bold font-stretch-normal">
+            <h2 id="pdp-description" className="text-base font-bold">
               Description
             </h2>
             <p className="mt-2 text-sm leading-relaxed">{product.description}</p>
@@ -264,7 +247,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
                 Part of the{" "}
                 <Link
                   href={`/drops/${product.drop.slug}`}
-                  className="font-semibold text-primary underline"
+                  className="font-semibold text-accent underline"
                 >
                   {product.drop.name}
                 </Link>{" "}

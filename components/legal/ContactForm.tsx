@@ -197,7 +197,7 @@ export function ContactForm({ defaults }: Props) {
       <p className="text-xs text-muted">
         We use these details only to answer you, and keep the message for up to 3 years after
         it&rsquo;s resolved. See our{" "}
-        <Link href="/privacy" className="underline hover:text-primary">
+        <Link href="/privacy" className="underline hover:text-accent">
           Privacy notice
         </Link>
         .

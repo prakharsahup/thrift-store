@@ -36,7 +36,7 @@ export function AddToCartButton({ line, className }: Props) {
             showCart();
           }}
         >
-          {status === "sold" ? "Sold" : status === "reserved" ? "On hold" : "Add to cart"}
+          {status === "sold" ? "Claimed" : status === "reserved" ? "On hold" : "Add to cart"}
         </Button>
       )}
       {buyable ? null : (

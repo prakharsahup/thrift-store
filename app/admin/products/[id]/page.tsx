@@ -47,7 +47,7 @@ export default async function EditProductPage({
         <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-muted">
           <StatusBadge {...productStatusBadge[product.status]} />
           {product.status !== "draft" ? (
-            <Link href={`/p/${product.slug}`} className="text-primary underline" target="_blank">
+            <Link href={`/p/${product.slug}`} className="text-accent underline" target="_blank">
               View in shop
             </Link>
           ) : null}
