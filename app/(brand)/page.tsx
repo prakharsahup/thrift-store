@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { BrandTiles } from "@/components/home/BrandTiles";
 import { CategoryTiles } from "@/components/home/CategoryTiles";
 import { ClaimedGrid } from "@/components/home/ClaimedGrid";
 import { ClaimExplainer } from "@/components/home/ClaimExplainer";
@@ -12,6 +13,7 @@ import { featuredCategorySlugs, marqueeItems } from "@/lib/config/home";
 import { site } from "@/lib/config/site";
 import { dropPhase, dropTimeLabel, piecesLabel } from "@/lib/drops/phase";
 import {
+  getBrandTiles,
   getCategoryTiles,
   getDropPieces,
   getFeaturedDrop,
@@ -46,9 +48,10 @@ const photos = (pieces: ProductCardData[]): HeroTile[] =>
 // the newest pieces), the scrolling strip, the categories in the owner's order, the last drop (or
 // recent claims), what's just in, and how claiming works.
 export default async function HomePage() {
-  const [featured, categoryTiles, newArrivals, stats] = await Promise.all([
+  const [featured, categoryTiles, brandTiles, newArrivals, stats] = await Promise.all([
     getFeaturedDrop(),
     getCategoryTiles(featuredCategorySlugs),
+    getBrandTiles(),
     getNewArrivals(15),
     getImpactStats(),
   ]);
@@ -110,6 +113,15 @@ export default async function HomePage() {
             Shop by category
           </h2>
           <CategoryTiles tiles={categoryTiles} />
+        </section>
+      ) : null}
+
+      {brandTiles.length > 0 ? (
+        <section aria-labelledby="home-brands" className="site-container py-16 md:py-24">
+          <h2 id="home-brands" className="mb-8 text-2xl md:text-3xl">
+            Shop by brand
+          </h2>
+          <BrandTiles tiles={brandTiles} />
         </section>
       ) : null}
 

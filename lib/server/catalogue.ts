@@ -583,6 +583,29 @@ export const getTopBrands = cache(async function getTopBrands(
     }));
 });
 
+export type BrandTile = { name: string; imageUrl: string | null; href: string };
+
+/** Top brands with a representative photo (the newest listed piece from that brand) — home tiles. */
+export const getBrandTiles = cache(async function getBrandTiles(
+  limit = 12,
+): Promise<BrandTile[]> {
+  const supabase = client();
+  if (!supabase) return [];
+  const top = await getTopBrands(2, limit);
+  return Promise.all(
+    top.map(async (brand) => {
+      const { data, error } = await listedProducts(supabase)
+        .eq("brand", brand.name)
+        .in("status", ["available", "reserved"])
+        .order("published_at", { ascending: false })
+        .limit(1);
+      logError("getBrandTiles (photo)", error);
+      const photo = toCards(data)[0]?.images[0]?.url ?? null;
+      return { name: brand.name, imageUrl: photo, href: brand.href };
+    }),
+  );
+});
+
 /** Root categories (Men / Women / Unisex) with all their descendant ids — for the search filter. */
 export async function getCategoryGroups(): Promise<(CategoryNode & { ids: string[] })[]> {
   const supabase = client();
