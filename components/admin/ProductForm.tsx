@@ -25,6 +25,7 @@ export type ProductFormValues = {
   price_paise: number;
   original_price_paise: number | null;
   status: string;
+  cost: { cost_paise: number | null; source: string | null; acquired_on: string | null } | null;
 };
 
 type Props = {
@@ -210,6 +211,37 @@ export function ProductForm({ product, categories, drops, holdNote }: Props) {
           defaultValue={product?.slug}
           error={e.slug}
         />
+      </fieldset>
+
+      <fieldset className="space-y-4">
+        <legend className="text-lg font-bold">What you paid</legend>
+        <p className="text-sm text-muted">
+          Private: never shown in the shop. Used for profit in Insights; leave blank if you don’t
+          know.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <TextField
+            name="cost"
+            label="Cost (₹)"
+            inputMode="decimal"
+            defaultValue={rupees(product?.cost?.cost_paise ?? null)}
+            error={e.cost}
+          />
+          <TextField
+            name="cost_source"
+            label="Sourced from"
+            hint="e.g. a market, a bulk lot, a consignor."
+            defaultValue={product?.cost?.source}
+            error={e.cost_source}
+          />
+          <TextField
+            name="acquired_on"
+            label="Bought on"
+            type="date"
+            defaultValue={product?.cost?.acquired_on}
+            error={e.acquired_on}
+          />
+        </div>
       </fieldset>
 
       <FormFooter

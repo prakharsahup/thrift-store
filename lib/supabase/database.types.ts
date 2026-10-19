@@ -402,6 +402,41 @@ export type Database = {
           },
         ];
       };
+      order_status_events: {
+        Row: {
+          changed_at: string;
+          changed_by: string | null;
+          from_status: Database["public"]["Enums"]["order_status"] | null;
+          id: number;
+          order_id: string;
+          to_status: Database["public"]["Enums"]["order_status"];
+        };
+        Insert: {
+          changed_at?: string;
+          changed_by?: string | null;
+          from_status?: Database["public"]["Enums"]["order_status"] | null;
+          id?: never;
+          order_id: string;
+          to_status: Database["public"]["Enums"]["order_status"];
+        };
+        Update: {
+          changed_at?: string;
+          changed_by?: string | null;
+          from_status?: Database["public"]["Enums"]["order_status"] | null;
+          id?: never;
+          order_id?: string;
+          to_status?: Database["public"]["Enums"]["order_status"];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "order_status_events_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       orders: {
         Row: {
           address: Json;
@@ -467,6 +502,38 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "coupons";
             referencedColumns: ["code"];
+          },
+        ];
+      };
+      product_costs: {
+        Row: {
+          acquired_on: string | null;
+          cost_paise: number | null;
+          product_id: string;
+          source: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          acquired_on?: string | null;
+          cost_paise?: number | null;
+          product_id: string;
+          source?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          acquired_on?: string | null;
+          cost_paise?: number | null;
+          product_id?: string;
+          source?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "product_costs_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: true;
+            referencedRelation: "products";
+            referencedColumns: ["id"];
           },
         ];
       };
@@ -955,6 +1022,21 @@ export type Database = {
           product_id: string;
           reserved_order_id: string;
           reserved_until: string;
+        }[];
+      };
+      admin_products_missing_cost: {
+        Args: { p_limit: number; p_offset: number };
+        Returns: {
+          brand: string;
+          id: string;
+          image_alt: string;
+          image_url: string;
+          price_paise: number;
+          slug: string;
+          sold_at: string;
+          source: string;
+          status: Database["public"]["Enums"]["product_status"];
+          title: string;
         }[];
       };
       apply_coupon: { Args: { code: string; order_id: string }; Returns: Json };

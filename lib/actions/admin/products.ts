@@ -1,6 +1,7 @@
 "use server";
 
 import { randomBytes } from "node:crypto";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { failedForm, invalidForm, type FormState } from "@/lib/admin/form";
@@ -8,7 +9,14 @@ import { CATALOGUE_BUCKET, cataloguePathFromUrl } from "@/lib/admin/images";
 import { requireAdmin } from "@/lib/server/auth";
 import { revalidateStorefront } from "@/lib/server/revalidate";
 import { slugify } from "@/lib/utils/slug";
-import { imageAltSchema, measurementsFrom, productFormSchema } from "@/lib/validators/admin";
+import {
+  imageAltSchema,
+  measurementsFrom,
+  productCostRow,
+  productCostSchema,
+  productFormSchema,
+  type ProductCost,
+} from "@/lib/validators/admin";
 
 // Product admin (CLAUDE.md §8). Every action re-checks the admin role, and every query runs as
 // the admin through RLS.
@@ -20,6 +28,19 @@ const idSchema = z.uuid();
 /** "faded-denim-jacket" → "faded-denim-jacket-7f3a": thrift titles repeat, URLs mustn't. */
 function uniqueSlug(base: string): string {
   return `${slugify(base).slice(0, 70) || "piece"}-${randomBytes(2).toString("hex")}`;
+}
+
+/** Writes a piece's acquisition cost, or removes it when the fields were cleared. */
+async function saveCost(
+  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  productId: string,
+  cost: ProductCost,
+): Promise<string | null> {
+  const row = productCostRow(productId, cost);
+  const { error } = row
+    ? await supabase.from("product_costs").upsert(row)
+    : await supabase.from("product_costs").delete().eq("product_id", productId);
+  return error?.message ?? null;
 }
 
 /**
@@ -106,6 +127,12 @@ export async function saveProduct(
     return failedForm(`Couldn't save: ${result.error.message}`);
   }
 
+  const costError = await saveCost(supabase, result.data.id, form);
+  if (costError) {
+    if (!productId) redirect(`/admin/products/${result.data.id}?created=1&cost_failed=1`);
+    return failedForm(`Saved the product, but not its cost: ${costError}`);
+  }
+
   revalidateStorefront([row.slug, ...(current && current.slug !== row.slug ? [current.slug] : [])]);
   if (!productId) redirect(`/admin/products/${result.data.id}?created=1`);
   return { status: "saved", message: "Saved." };
@@ -135,6 +162,14 @@ export async function duplicateProduct(productId: string): Promise<void> {
     .select("id")
     .single();
   if (error) throw new Error(`Duplicate failed: ${error.message}`);
+
+  // Similar pieces usually come from the same lot, so the cost and source carry over too.
+  const { data: cost } = await supabase
+    .from("product_costs")
+    .select("cost_paise, source, acquired_on")
+    .eq("product_id", productId)
+    .maybeSingle();
+  if (cost) await supabase.from("product_costs").insert({ ...cost, product_id: data.id });
   redirect(`/admin/products/${data.id}?duplicated=1`);
 }
 
@@ -281,4 +316,55 @@ export async function deleteProductImage(imageId: string): Promise<ActionResult>
   if (path) await supabase.storage.from(CATALOGUE_BUCKET).remove([path]);
   if (data.product) revalidateStorefront([data.product.slug]);
   return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// Costs
+// ---------------------------------------------------------------------------
+
+/**
+ * Saves the bulk cost-entry form (/admin/products/costs): fields named cost_<id> and
+ * cost_source_<id>, one pair per listed piece. Rows left blank are skipped, not cleared, so
+ * saving a half-filled page never wipes anything.
+ */
+export async function saveProductCosts(
+  _previous: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const { supabase } = await requireAdmin();
+  const ids = formData
+    .getAll("product_id")
+    .filter((id): id is string => typeof id === "string" && idSchema.safeParse(id).success)
+    .slice(0, 100);
+
+  const fieldErrors: Record<string, string> = {};
+  const rows: NonNullable<ReturnType<typeof productCostRow>>[] = [];
+  for (const id of ids) {
+    const parsed = productCostSchema.safeParse({
+      cost: formData.get(`cost_${id}`) ?? "",
+      cost_source: formData.get(`cost_source_${id}`) ?? "",
+      acquired_on: "",
+    });
+    if (!parsed.success) {
+      for (const issue of parsed.error.issues) {
+        fieldErrors[`${String(issue.path[0])}_${id}`] ??= issue.message;
+      }
+      continue;
+    }
+    const row = productCostRow(id, parsed.data);
+    if (row) rows.push(row);
+  }
+  if (Object.keys(fieldErrors).length) {
+    return { status: "error", message: "Check the highlighted fields.", fieldErrors };
+  }
+  if (!rows.length) return failedForm("Enter at least one cost.");
+
+  // The page prefills any source already saved, so overwriting the whole row loses nothing.
+  const { error } = await supabase.from("product_costs").upsert(rows);
+  if (error) return failedForm(`Couldn't save: ${error.message}`);
+  revalidatePath("/admin/products/costs");
+  return {
+    status: "saved",
+    message: `Saved ${rows.length} ${rows.length === 1 ? "cost" : "costs"}.`,
+  };
 }
