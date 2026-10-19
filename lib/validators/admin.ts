@@ -70,6 +70,40 @@ export const measurementKeys = [
   "inseam",
 ] as const;
 
+/** "" or "2026-10-19" (a date input), not in the future. */
+const optionalPastDate = z
+  .union([z.literal(""), z.iso.date("Choose a date.")])
+  .transform((v) => v || null)
+  .refine(
+    (v) =>
+      v === null ||
+      v <= new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date()),
+    "That date is in the future.",
+  );
+
+/**
+ * What a piece cost to acquire (product_costs). Admin-only: it never reaches the storefront.
+ * Every field is optional; a piece with no cost is left out of profit figures.
+ */
+export const productCostSchema = z.object({
+  cost: optionalRupees("the cost"),
+  cost_source: optionalText(120),
+  acquired_on: optionalPastDate,
+});
+
+export type ProductCost = z.infer<typeof productCostSchema>;
+
+/** The product_costs row for a piece, or null when nothing was entered (delete any old row). */
+export function productCostRow(productId: string, cost: ProductCost) {
+  if (cost.cost === null && cost.cost_source === null && cost.acquired_on === null) return null;
+  return {
+    product_id: productId,
+    cost_paise: cost.cost,
+    source: cost.cost_source,
+    acquired_on: cost.acquired_on,
+  };
+}
+
 const measurement = z
   .string()
   .trim()
@@ -114,6 +148,7 @@ export const productFormSchema = z
     m_hip: measurement,
     m_inseam: measurement,
   })
+  .extend(productCostSchema.shape)
   .refine((p) => p.original_price === null || p.original_price > p.price, {
     path: ["original_price"],
     message: "Est. retail must be more than the price.",

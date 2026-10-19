@@ -80,7 +80,14 @@ export default async function AdminDashboard() {
     <>
       <PageHeader
         title="Dashboard"
-        actions={<ButtonLink href="/admin/products/new">New product</ButtonLink>}
+        actions={
+          <>
+            <ButtonLink href="/admin/insights" variant="outline">
+              Insights
+            </ButtonLink>
+            <ButtonLink href="/admin/products/new">New product</ButtonLink>
+          </>
+        }
       />
       <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
         {tiles.map((tile) => {

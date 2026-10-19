@@ -1,4 +1,5 @@
 import "server-only";
+import { z } from "zod";
 import type { requireAdmin } from "@/lib/server/auth";
 
 // Reads for the admin pages. They take the admin's own client (from requireAdmin), so RLS still
@@ -38,7 +39,7 @@ export async function getAdminProduct(supabase: AdminClient, id: string) {
     supabase
       .from("products")
       .select(
-        "id, slug, title, description, brand, category_id, drop_id, gender, tagged_size, condition, measurements, flaws, country_of_origin, style_tags, price_paise, original_price_paise, status, sold_at, created_at, published_at, product_images(id, url, alt, sort_order)",
+        "id, slug, title, description, brand, category_id, drop_id, gender, tagged_size, condition, measurements, flaws, country_of_origin, style_tags, price_paise, original_price_paise, status, sold_at, created_at, published_at, product_images(id, url, alt, sort_order), cost:product_costs(cost_paise, source, acquired_on)",
       )
       .eq("id", id)
       .order("sort_order", { referencedTable: "product_images" })
@@ -72,4 +73,36 @@ export async function getDropOptions(supabase: AdminClient) {
     .order("go_live_at", { ascending: false });
   if (error) throw new Error(`drops: ${error.message}`);
   return data;
+}
+
+const missingCostRowSchema = z.object({
+  id: z.string(),
+  slug: z.string(),
+  title: z.string(),
+  brand: z.string().nullable(),
+  status: z.enum(["draft", "available", "reserved", "sold"]),
+  price_paise: z.number(),
+  sold_at: z.string().nullable(),
+  source: z.string().nullable(),
+  image_url: z.string().nullable(),
+  image_alt: z.string().nullable(),
+});
+
+/** Pieces with no cost entered yet (sold first), and how many of all pieces have one. */
+export async function getProductsMissingCost(supabase: AdminClient, page: number) {
+  const count = { count: "exact", head: true } as const;
+  const [missing, all, costed] = await Promise.all([
+    supabase.rpc("admin_products_missing_cost", {
+      p_limit: ADMIN_PAGE_SIZE,
+      p_offset: (page - 1) * ADMIN_PAGE_SIZE,
+    }),
+    supabase.from("products").select("id", count),
+    supabase.from("product_costs").select("product_id", count).not("cost_paise", "is", null),
+  ]);
+  const failed = [missing, all, costed].find((r) => r.error);
+  if (failed?.error) throw new Error(`products missing cost: ${failed.error.message}`);
+  const total = all.count ?? 0;
+  const withCost = costed.count ?? 0;
+  // Counted rather than read off the rows, so a page past the end still reports the real number.
+  return { products: z.array(missingCostRowSchema).parse(missing.data), total, withCost };
 }

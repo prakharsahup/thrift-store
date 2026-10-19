@@ -37,7 +37,14 @@ export default async function AdminProductsPage({ searchParams }: PageProps<"/ad
     <>
       <PageHeader
         title="Products"
-        actions={<ButtonLink href="/admin/products/new">New product</ButtonLink>}
+        actions={
+          <>
+            <ButtonLink href="/admin/products/costs" variant="outline">
+              Enter costs
+            </ButtonLink>
+            <ButtonLink href="/admin/products/new">New product</ButtonLink>
+          </>
+        }
       >
         {one(params.deleted) ? (
           <p role="status" className="mt-4 rounded-md bg-surface p-3 text-sm">

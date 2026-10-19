@@ -28,11 +28,13 @@ export default async function EditProductPage({
   ]);
   if (!product) notFound();
 
-  const notice = query.created
-    ? "Product created. Now add its photos."
-    : query.duplicated
-      ? "Copied into a new draft. Change what's different, add photos, then publish."
-      : null;
+  const notice = query.cost_failed
+    ? "Product created, but its cost didn't save. Enter it again below."
+    : query.created
+      ? "Product created. Now add its photos."
+      : query.duplicated
+        ? "Copied into a new draft. Change what's different, add photos, then publish."
+        : null;
   const holdNote = product.hold
     ? `${product.hold.holder_email ?? "A shopper"} is checking out with this piece until ${formatIstDateTime(product.hold.reserved_until)} IST. Status changes are paused until the hold ends or the order completes.`
     : undefined;

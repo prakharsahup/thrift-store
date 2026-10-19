@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Heart, MapPin, Package, ShieldCheck } from "lucide-react";
+import { ChartLine, Heart, MapPin, Package, ShieldCheck } from "lucide-react";
 import { LinkIdentityForm } from "@/components/auth/LinkIdentityForm";
 import { ProfileForm } from "@/components/auth/ProfileForm";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { ButtonLink } from "@/components/ui/ButtonLink";
 import { requireUser } from "@/lib/server/auth";
 
 export const metadata: Metadata = { title: "Your account", robots: { index: false } };
@@ -13,9 +14,11 @@ export default async function AccountPage() {
   const { supabase, user } = await requireUser("/account");
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, phone")
+    .select("full_name, phone, role")
     .eq("id", user.id)
     .maybeSingle();
+  // Only a shortcut: /admin re-checks the role itself (proxy, layout and RLS).
+  const isAdmin = profile?.role === "admin";
   // Adding a phone number texts a code, so offer it only once an SMS provider is set up.
   const phoneEnabled = process.env.NEXT_PUBLIC_AUTH_PHONE_ENABLED === "true";
 
@@ -57,7 +60,15 @@ export default async function AccountPage() {
         <h1 className="text-2xl font-bold md:text-3xl">
           {profile?.full_name ? `Hi, ${profile.full_name.split(" ")[0]}` : "Hi there"}
         </h1>
-        <SignOutButton />
+        <div className="flex flex-wrap items-center gap-3">
+          {isAdmin ? (
+            <ButtonLink href="/admin/insights">
+              <ChartLine aria-hidden />
+              Business insights
+            </ButtonLink>
+          ) : null}
+          <SignOutButton />
+        </div>
       </div>
 
       <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
