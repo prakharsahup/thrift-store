@@ -177,11 +177,7 @@ export function HeaderSearch({ className }: Props) {
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium">{result.title}</span>
                     <span className="block text-xs text-muted">
-                      {[
-                        result.brand,
-                        formatMoney(result.pricePaise),
-                        result.sold ? "Claimed" : null,
-                      ]
+                      {[result.brand, formatMoney(result.pricePaise), result.sold ? "Sold" : null]
                         .filter(Boolean)
                         .join(" · ")}
                     </span>
@@ -200,7 +196,7 @@ export function HeaderSearch({ className }: Props) {
                 onClick={() => setOpen(false)}
                 onMouseEnter={() => setActive(results.length)}
                 className={cn(
-                  "block rounded-md p-2 text-sm font-semibold text-accent",
+                  "block rounded-md p-2 text-sm font-semibold text-primary",
                   active === results.length && "bg-surface",
                 )}
               >

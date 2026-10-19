@@ -26,18 +26,14 @@ export function ProductCard({ product, sizes, className }: Props) {
   return (
     <div className={cn("relative", className)}>
       <Link href={`/p/${product.slug}`} className="group/card block">
-        <span className="relative block aspect-[3/4] overflow-hidden bg-surface">
-          {front ? (
-            <ImageWithFallback
-              src={front.url}
-              alt={front.alt || product.title}
-              fill
-              sizes={sizes}
-              className={cn("object-cover", sold && "grayscale")}
-            />
-          ) : (
-            <span className="halftone absolute inset-0" />
-          )}
+        <span className="relative block aspect-[3/4] overflow-hidden rounded-md bg-surface">
+          <ImageWithFallback
+            src={front?.url}
+            alt={front?.alt || product.title}
+            fill
+            sizes={sizes}
+            className={cn("object-cover", sold && "opacity-60")}
+          />
           {back && !sold ? (
             <ImageWithFallback
               src={back.url}
@@ -47,13 +43,12 @@ export function ProductCard({ product, sizes, className }: Props) {
               className="object-cover opacity-0 transition-opacity duration-400 group-hover/card:opacity-100 group-focus-visible/card:opacity-100"
             />
           ) : null}
-          {/* Drop Night stickers: purple CLAIMED once sold, bone "On hold" during a checkout. */}
           {sold ? (
-            <span className="absolute top-3 -left-1 -rotate-3 bg-primary px-2 py-1 font-display text-sm text-primary-fg">
-              Claimed
+            <span className="absolute top-2 left-2 rounded-sm bg-sold px-2 py-1 text-xs font-bold tracking-wider text-fg">
+              SOLD
             </span>
           ) : product.status === "reserved" ? (
-            <span className="absolute top-3 -left-1 -rotate-2 bg-fg px-2 py-1 font-display text-sm text-bg">
+            <span className="absolute top-2 left-2 rounded-sm bg-fg px-2 py-1 text-xs font-semibold text-bg">
               On hold
             </span>
           ) : null}
@@ -64,9 +59,7 @@ export function ProductCard({ product, sizes, className }: Props) {
             {product.brand ?? "Unbranded"}
           </span>
           <span className="mt-0.5 block truncate text-sm font-medium">{product.title}</span>
-          <span className={cn("mt-1 block text-sm font-bold", sold && "text-muted line-through")}>
-            {formatMoney(product.pricePaise)}
-          </span>
+          <span className="mt-1 block text-sm font-bold">{formatMoney(product.pricePaise)}</span>
           <span className="mt-2 flex items-center gap-2 text-xs">
             <span
               className={cn(

@@ -84,7 +84,7 @@ export default async function AdminProductsPage({ searchParams }: PageProps<"/ad
       {products.length === 0 ? (
         <p className="rounded-lg border border-border p-8 text-center text-muted">
           No products match.{" "}
-          <Link href="/admin/products" className="text-accent underline">
+          <Link href="/admin/products" className="text-primary underline">
             Clear filters
           </Link>
         </p>
@@ -130,7 +130,7 @@ export default async function AdminProductsPage({ searchParams }: PageProps<"/ad
       {pages > 1 ? (
         <nav aria-label="Pages" className="mt-6 flex items-center gap-4 text-sm">
           {page > 1 ? (
-            <Link href={pageHref(page - 1)} className="font-semibold text-accent underline">
+            <Link href={pageHref(page - 1)} className="font-semibold text-primary underline">
               Previous
             </Link>
           ) : null}
@@ -138,7 +138,7 @@ export default async function AdminProductsPage({ searchParams }: PageProps<"/ad
             Page {page} of {pages}
           </span>
           {page < pages ? (
-            <Link href={pageHref(page + 1)} className="font-semibold text-accent underline">
+            <Link href={pageHref(page + 1)} className="font-semibold text-primary underline">
               Next
             </Link>
           ) : null}

@@ -1,7 +1,7 @@
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { CartSync } from "@/components/cart/CartSync";
-import { featuredCategorySlugs } from "@/lib/config/home";
-import { getFeaturedDrop, getGenderMenus, getShopMenu, getTopBrands } from "@/lib/server/catalogue";
+import { getTopBrands } from "@/lib/server/catalogue";
+import { AnnouncementBar } from "./AnnouncementBar";
 import { Footer } from "./Footer";
 import { Header } from "./Header";
 import { MobileMenu } from "./MobileMenu";
@@ -11,15 +11,10 @@ import { MobileNav } from "./MobileNav";
 type Props = { children: React.ReactNode };
 
 // The storefront chrome, shared by the (brand) and (store) route groups and the 404 page. The
-// gender menus, brands, footer categories and current drop come from the database; every read is
-// cached per request and uses the cookie-free client, so pages stay cacheable.
+// Brand menu's list comes from the database (cached per request, cookie-free, so pages stay
+// cacheable).
 export async function SiteShell({ children }: Props) {
-  const [menu, genders, brands, drop] = await Promise.all([
-    getShopMenu(featuredCategorySlugs),
-    getGenderMenus(featuredCategorySlugs),
-    getTopBrands(),
-    getFeaturedDrop(),
-  ]);
+  const brands = await getTopBrands();
 
   return (
     <MobileMenuProvider>
@@ -32,16 +27,17 @@ export async function SiteShell({ children }: Props) {
       {/* display: contents keeps the sticky header working; print:hidden leaves printed pages
           (receipts, policies) without the site chrome. */}
       <div className="contents print:hidden">
-        <Header genders={genders} brands={brands} />
+        <AnnouncementBar />
+        <Header brands={brands} />
       </div>
       <main id="main" tabIndex={-1} className="outline-none">
         {children}
       </main>
       <div className="contents print:hidden">
-        <Footer menu={menu} drop={drop} />
+        <Footer />
         <MobileNav />
       </div>
-      <MobileMenu genders={genders} brands={brands} />
+      <MobileMenu brands={brands} />
       <CartDrawer />
       <CartSync />
     </MobileMenuProvider>

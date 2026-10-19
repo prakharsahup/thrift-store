@@ -44,7 +44,7 @@ export function LegalPage({ title, updated, summary, sections }: Props) {
           <ol className="space-y-2 text-sm">
             {sections.map((section, i) => (
               <li key={section.id}>
-                <Link href={`#${section.id}`} className="hover:text-accent hover:underline">
+                <Link href={`#${section.id}`} className="hover:text-primary hover:underline">
                   {i + 1}. {section.title}
                 </Link>
               </li>
@@ -63,7 +63,7 @@ export function LegalPage({ title, updated, summary, sections }: Props) {
               <h2 id={`${section.id}-heading`} className="text-lg font-bold md:text-xl">
                 {i + 1}. {section.title}
               </h2>
-              <div className="mt-3 space-y-3 text-sm leading-relaxed md:text-base [&_a]:font-semibold [&_a]:text-accent [&_a]:underline [&_h3]:mt-5 [&_h3]:font-body [&_h3]:font-bold [&_li]:mt-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5">
+              <div className="mt-3 space-y-3 text-sm leading-relaxed md:text-base [&_a]:font-semibold [&_a]:text-primary [&_a]:underline [&_h3]:mt-5 [&_h3]:font-body [&_h3]:font-bold [&_li]:mt-1 [&_ol]:list-decimal [&_ol]:pl-5 [&_ul]:list-disc [&_ul]:pl-5">
                 {section.body}
               </div>
             </section>

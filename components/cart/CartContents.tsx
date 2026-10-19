@@ -118,7 +118,7 @@ export function CartContents({ variant }: Props) {
           <Link
             href="/cart"
             onClick={closeCart}
-            className="mt-3 block text-center text-sm font-semibold text-accent underline"
+            className="mt-3 block text-center text-sm font-semibold text-primary underline"
           >
             View full cart
           </Link>

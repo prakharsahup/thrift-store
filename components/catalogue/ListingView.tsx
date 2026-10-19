@@ -66,7 +66,7 @@ export function ListingView({
       <Breadcrumbs items={breadcrumbs} />
       <header className="mt-4">
         {eyebrow ? (
-          <p className="text-xs font-semibold tracking-widest text-accent uppercase">{eyebrow}</p>
+          <p className="text-xs font-semibold tracking-widest text-primary uppercase">{eyebrow}</p>
         ) : null}
         <h1 className="mt-1 text-2xl font-bold md:text-3xl">{title}</h1>
       </header>
@@ -94,7 +94,7 @@ export function ListingView({
               <p className="font-display text-xl font-bold">Nothing matches that — yet.</p>
               <p className="mt-2 text-sm text-muted">
                 New one-of-one pieces land every week. Try fewer filters, or{" "}
-                <Link href={clearHref} className="font-semibold text-accent underline">
+                <Link href={clearHref} className="font-semibold text-primary underline">
                   clear them all
                 </Link>
                 .

@@ -118,7 +118,7 @@ export default function MotionPlaygroundPage() {
           description="On for this whole page. Scroll with a mouse wheel or trackpad and compare with /dev/tokens, which scrolls natively. Touch scrolling stays native. Tune with lenis.lerp."
         >
           <p className="text-sm">
-            <Link href="/dev/tokens" className="font-semibold text-accent underline">
+            <Link href="/dev/tokens" className="font-semibold text-primary underline">
               Compare with native scrolling on /dev/tokens
             </Link>
           </p>

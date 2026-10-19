@@ -13,7 +13,7 @@ export function ClaimExplainer() {
         <h2 id="claim-title" className="sr-only">
           How claiming works
         </h2>
-        <p className="max-w-6xl font-display text-2xl leading-tight md:text-3xl">
+        <p className="max-w-6xl font-display font-bold text-2xl leading-tight md:text-3xl">
           Hit checkout{arrow}it&rsquo;s held for you for 15 minutes{arrow}pay, or it goes back on
           the rack.
         </p>

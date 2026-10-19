@@ -80,7 +80,7 @@ export default async function DropPage({ params }: PageProps<"/drops/[slug]">) {
             className="site-container grid gap-8 border-t border-border py-14 md:py-20 lg:grid-cols-2 lg:items-end"
           >
             <div>
-              <h2 id="drop-alert-title" className="text-2xl text-accent md:text-3xl">
+              <h2 id="drop-alert-title" className="text-2xl font-bold md:text-3xl">
                 Get the alert before the drop.
               </h2>
               {drop.description ? (
@@ -102,7 +102,7 @@ export default async function DropPage({ params }: PageProps<"/drops/[slug]">) {
           aria-labelledby="drop-pieces-title"
           className="site-container pb-16 md:pb-24"
         >
-          <h2 id="drop-pieces-title" className="mb-8 text-2xl md:text-3xl">
+          <h2 id="drop-pieces-title" className="mb-8 text-2xl font-bold md:text-3xl">
             Every piece
           </h2>
           <ProductGrid

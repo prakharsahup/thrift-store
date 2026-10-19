@@ -161,7 +161,13 @@ export function ImageManager({ productId, productTitle, images }: Props) {
             >
               <GripVertical aria-hidden className="size-5 shrink-0 cursor-grab text-muted" />
               <div className="relative aspect-3/4 w-16 shrink-0 overflow-hidden rounded-sm bg-surface">
-                <ImageWithFallback src={photo.url} alt="" fill sizes="64px" className="object-cover" />
+                <ImageWithFallback
+                  src={photo.url}
+                  alt=""
+                  fill
+                  sizes="64px"
+                  className="object-cover"
+                />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="mb-1 text-xs font-semibold text-muted">

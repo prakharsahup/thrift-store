@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
@@ -52,7 +53,7 @@ export default async function OrderReceiptPage({ params }: PageProps<"/order/[id
   return (
     <div className="site-container py-6 md:py-10 print:p-0">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4 print:hidden">
-        <Link href={`/order/${order.id}`} className="text-sm underline hover:text-accent">
+        <Link href={`/order/${order.id}`} className="text-sm underline hover:text-primary">
           ← Back to order {shortOrderId(order.id)}
         </Link>
         <PrintButton />
@@ -61,7 +62,21 @@ export default async function OrderReceiptPage({ params }: PageProps<"/order/[id
       <article className="mx-auto max-w-3xl rounded-lg border border-border p-5 text-sm md:p-8 print:border-0 print:p-0">
         <header className="flex flex-wrap justify-between gap-6 border-b border-border pb-6">
           <div>
-            <p className="font-display text-2xl font-bold">{site.name}</p>
+            {/* Light logo on screen (dark theme), the original black one on paper. */}
+            <Image
+              src="/brand/baaki-logo-light.png"
+              alt={site.name}
+              width={147}
+              height={72}
+              className="h-16 w-auto print:hidden"
+            />
+            <Image
+              src="/brand/baaki-logo-dark.png"
+              alt=""
+              width={147}
+              height={72}
+              className="hidden h-16 w-auto print:block"
+            />
             <p className="mt-2 font-semibold">{business.legalName}</p>
             <address className="text-muted not-italic">
               {formatAddress().map((line) => (

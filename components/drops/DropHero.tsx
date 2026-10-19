@@ -17,11 +17,11 @@ type Props = {
 export function DropHero({ eyebrow, title, sticker, body, countdownTo, primary }: Props) {
   return (
     <section aria-labelledby="drop-hero" className="site-container pt-8 pb-14 md:pt-12 md:pb-20">
-      <p className="text-xs font-bold tracking-widest text-accent uppercase">{eyebrow}</p>
-      <h1 id="drop-hero" className="mt-2 max-w-5xl text-3xl text-accent md:text-4xl">
+      <p className="text-xs font-semibold tracking-widest text-primary uppercase">{eyebrow}</p>
+      <h1 id="drop-hero" className="mt-2 max-w-5xl text-3xl font-bold md:text-4xl">
         {title}
       </h1>
-      <p className="mt-4 w-fit -rotate-2 bg-fg px-4 py-2 font-display text-base text-bg md:text-xl">
+      <p className="mt-4 w-fit -rotate-2 bg-fg px-4 py-2 font-display font-bold text-base text-bg md:text-xl">
         {sticker}
       </p>
       {body ? <p className="mt-6 max-w-prose text-base text-muted">{body}</p> : null}
@@ -34,7 +34,7 @@ export function DropHero({ eyebrow, title, sticker, body, countdownTo, primary }
           </ButtonLink>
           <Link
             href="#how-claiming-works"
-            className="text-sm font-semibold text-accent underline underline-offset-4 hover:text-fg"
+            className="text-sm font-semibold text-primary underline underline-offset-4 hover:text-fg"
           >
             How claiming works
           </Link>

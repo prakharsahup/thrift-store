@@ -86,14 +86,16 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
           {product.brand ? (
             <Link
               href={`/search?brand=${encodeURIComponent(product.brand)}`}
-              className="text-xs font-semibold tracking-wider text-accent uppercase hover:underline"
+              className="text-xs font-semibold tracking-wider text-primary uppercase hover:underline"
             >
               {product.brand}
             </Link>
           ) : (
             <p className="text-xs font-semibold tracking-wider text-muted uppercase">Unbranded</p>
           )}
-          <h1 className="mt-2 text-xl leading-tight lg:text-2xl">{product.title}</h1>
+          <h1 className="mt-2 text-xl font-semibold tracking-tight font-stretch-normal lg:text-2xl">
+            {product.title}
+          </h1>
 
           <p className="mt-3 font-body text-lg font-bold tabular-nums lg:text-xl">
             {formatMoney(product.pricePaise)}
@@ -109,7 +111,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
               <dt className="text-muted">Availability</dt>
               <dd className="mt-0.5 font-semibold">
                 {product.status === "sold"
-                  ? "Claimed"
+                  ? "Sold"
                   : product.status === "reserved"
                     ? "On hold"
                     : "Only one available"}
@@ -137,7 +139,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
               otherwise. Please check the photographs, condition details and measurements before
               purchasing. All sales are final — we don&rsquo;t accept returns or exchanges for
               sizing preferences, change of mind, or disclosed imperfections.{" "}
-              <Link href="/returns#change-of-mind" className="underline hover:text-accent">
+              <Link href="/returns#change-of-mind" className="underline hover:text-primary">
                 Full policy
               </Link>
               .
@@ -170,34 +172,34 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
           {/* Pre-purchase disclosures (E-Commerce Rules 2020 r. 6(5)): delivery, returns, seller. */}
           <ul className="mt-6 space-y-3 rounded-lg border border-border p-4 text-sm">
             <li className="flex gap-3">
-              <Truck aria-hidden className="mt-0.5 size-4 shrink-0 text-accent" />
+              <Truck aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
               <span>
                 Ships within {shippingPolicy.dispatchDays} business days; usually delivered{" "}
                 {shippingPolicy.deliveryDays} business days later.{" "}
                 {shipping.flatPaise > 0
                   ? `Free shipping over ${formatMoney(shipping.freeAbovePaise)}, otherwise ${formatMoney(shipping.flatPaise)}.`
                   : null}{" "}
-                <Link href="/shipping" className="underline hover:text-accent">
+                <Link href="/shipping" className="underline hover:text-primary">
                   Shipping
                 </Link>
               </span>
             </li>
             <li className="flex gap-3">
-              <RotateCcw aria-hidden className="mt-0.5 size-4 shrink-0 text-accent" />
+              <RotateCcw aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
               <span>
                 {returnsPolicy.changeOfMind
                   ? `Returnable within ${returnsPolicy.windowDays} days of delivery if unworn. Not as described? Full refund.`
                   : `Not as described? Return within ${returnsPolicy.windowDays} days for a full refund. No change-of-mind returns.`}{" "}
-                <Link href="/returns" className="underline hover:text-accent">
+                <Link href="/returns" className="underline hover:text-primary">
                   Returns
                 </Link>
               </span>
             </li>
             <li className="flex gap-3">
-              <Store aria-hidden className="mt-0.5 size-4 shrink-0 text-accent" />
+              <Store aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
               <span>
                 Sold by {business.legalName}.{" "}
-                <Link href="/contact" className="underline hover:text-accent">
+                <Link href="/contact" className="underline hover:text-primary">
                   Contact the seller
                 </Link>
               </span>
@@ -205,7 +207,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
           </ul>
 
           <section aria-labelledby="pdp-measurements" className="mt-8">
-            <h2 id="pdp-measurements" className="text-base font-bold">
+            <h2 id="pdp-measurements" className="text-base font-bold font-stretch-normal">
               Measurements
             </h2>
             <div className="mt-3">
@@ -217,7 +219,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
           </section>
 
           <section aria-labelledby="pdp-flaws" className="mt-8">
-            <h2 id="pdp-flaws" className="text-base font-bold">
+            <h2 id="pdp-flaws" className="text-base font-bold font-stretch-normal">
               Flaws
             </h2>
             <p className="mt-2 text-sm text-muted">
@@ -227,7 +229,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
           </section>
 
           <section aria-labelledby="pdp-description" className="mt-8">
-            <h2 id="pdp-description" className="text-base font-bold">
+            <h2 id="pdp-description" className="text-base font-bold font-stretch-normal">
               Description
             </h2>
             <p className="mt-2 text-sm leading-relaxed">{product.description}</p>
@@ -247,7 +249,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
                 Part of the{" "}
                 <Link
                   href={`/drops/${product.drop.slug}`}
-                  className="font-semibold text-accent underline"
+                  className="font-semibold text-primary underline"
                 >
                   {product.drop.name}
                 </Link>{" "}

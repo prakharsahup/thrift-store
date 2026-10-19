@@ -35,13 +35,13 @@ export function ClaimedGrid({
   // The tall and wide tiles only make sense once there are enough pieces for two rows.
   const uneven = pieces.length >= 5;
   return (
-    <section aria-labelledby={id} className="bg-fg text-bg">
+    <section aria-labelledby={id} className="border-t border-border">
       <div className="site-container py-14 md:py-20">
         <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
-          <h2 id={id} className="text-3xl md:text-4xl">
+          <h2 id={id} className="text-2xl font-bold md:text-3xl">
             {title}
           </h2>
-          <p className="text-base font-bold">{aside}</p>
+          <p className="text-sm text-muted">{aside}</p>
         </div>
 
         <ul className="mt-8 grid grid-cols-2 gap-x-3 gap-y-6 md:mt-10 md:grid-cols-6">
@@ -53,7 +53,7 @@ export function ClaimedGrid({
                 <Link href={`/p/${piece.slug}`} className="group flex flex-1 flex-col">
                   <span
                     className={cn(
-                      "relative block overflow-hidden",
+                      "relative block overflow-hidden rounded-md bg-surface",
                       uneven && i === 0
                         ? "aspect-[4/5] md:aspect-auto md:min-h-64 md:flex-1"
                         : uneven && i === 4
@@ -73,11 +73,11 @@ export function ClaimedGrid({
                         )}
                       />
                     ) : (
-                      <span className="halftone absolute inset-0" />
+                      <span className="absolute inset-0 bg-surface" />
                     )}
                     {claimed ? (
-                      <span className="absolute top-3 -left-1 -rotate-3 bg-primary px-2 py-1 font-display text-sm text-primary-fg">
-                        Claimed
+                      <span className="absolute top-2 left-2 rounded-sm bg-sold px-2 py-1 text-xs font-bold tracking-wider text-fg">
+                        SOLD
                       </span>
                     ) : null}
                   </span>
