@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   CalendarClock,
+  ChartLine,
   FolderTree,
   Image as ImageIcon,
   Inbox,
@@ -18,6 +19,7 @@ export const adminLinks = [
   { href: "/admin", label: "Dashboard", Icon: LayoutDashboard },
   { href: "/admin/products", label: "Products", Icon: Package },
   { href: "/admin/orders", label: "Orders", Icon: Receipt },
+  { href: "/admin/insights", label: "Insights", Icon: ChartLine },
   { href: "/admin/messages", label: "Messages", Icon: Inbox },
   { href: "/admin/drops", label: "Drops", Icon: CalendarClock },
   { href: "/admin/categories", label: "Categories", Icon: FolderTree },
