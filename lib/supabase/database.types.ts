@@ -1048,6 +1048,40 @@ export type Database = {
         Returns: Json;
       };
       drop_is_live: { Args: { drop_id: string }; Returns: boolean };
+      insights_breakdown: {
+        Args: { p_demo?: boolean; p_dimension: string; p_from: string; p_to: string };
+        Returns: Json;
+      };
+      insights_customers: {
+        Args: { p_demo?: boolean; p_from: string; p_to: string };
+        Returns: Json;
+      };
+      insights_fulfilment: {
+        Args: { p_demo?: boolean; p_from: string; p_to: string };
+        Returns: Json;
+      };
+      insights_funnel: {
+        Args: { p_demo?: boolean; p_from: string; p_to: string };
+        Returns: Json;
+      };
+      insights_heatmap: {
+        Args: { p_demo?: boolean; p_from: string; p_to: string };
+        Returns: Json;
+      };
+      insights_inventory: { Args: { p_demo?: boolean }; Returns: Json };
+      insights_marketing: {
+        Args: { p_demo?: boolean; p_from: string; p_to: string };
+        Returns: Json;
+      };
+      insights_prepare_demo: { Args: never; Returns: undefined };
+      insights_summary: {
+        Args: { p_demo?: boolean; p_from: string; p_to: string };
+        Returns: Json;
+      };
+      insights_timeseries: {
+        Args: { p_bucket: string; p_demo?: boolean; p_from: string; p_to: string };
+        Returns: Json;
+      };
       is_admin: { Args: never; Returns: boolean };
       is_slug: { Args: { value: string }; Returns: boolean };
       live_drop_ids: { Args: never; Returns: string[] };
