@@ -29,14 +29,14 @@ export default async function ArchivePage() {
     <>
       <div className="site-container py-6 md:py-10">
         <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Archive" }]} />
-        <h1 className="mt-4 text-3xl text-accent md:text-4xl">Archive</h1>
+        <h1 className="mt-4 text-2xl font-bold md:text-3xl">Archive</h1>
         <p className="mt-3 max-w-prose text-base text-muted">
           Every drop so far, and what went. There&rsquo;s only ever one of each, so this is the
           closest you&rsquo;ll get to a restock.
         </p>
         {empty ? (
-          <div className="mt-12 border border-border p-8">
-            <p className="font-display text-xl">Nothing claimed yet.</p>
+          <div className="mt-12 rounded-lg border border-border p-8">
+            <p className="font-display font-bold text-xl">Nothing claimed yet.</p>
             <p className="mt-2 text-sm text-muted">Be the first.</p>
             <ButtonLink href="/search?sort=newest" className="mt-6">
               Shop new in

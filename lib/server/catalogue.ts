@@ -265,38 +265,6 @@ export async function getDropPieces(dropId: string, limit = 24): Promise<Product
   return toCards(data);
 }
 
-export type PastDrop = { id: string; slug: string; name: string; pieces: ProductCardData[] };
-
-/** The most recent drop that has gone live (other than `exceptId`), with its pieces. */
-export async function getLastDrop(exceptId: string | null): Promise<PastDrop | null> {
-  const supabase = client();
-  if (!supabase) return null;
-  let query = supabase
-    .from("drops")
-    .select("id, slug, name")
-    .lte("go_live_at", new Date().toISOString())
-    .order("go_live_at", { ascending: false })
-    .limit(1);
-  if (exceptId) query = query.neq("id", exceptId);
-  const { data, error } = await query.maybeSingle();
-  logError("getLastDrop", error);
-  if (!data) return null;
-  const pieces = await getDropPieces(data.id, 8);
-  return pieces.length > 0 ? { ...data, pieces } : null;
-}
-
-/** Pieces sold in the last 7 days (the listing window), newest sale first. */
-export async function getRecentlyClaimed(limit = 8): Promise<ProductCardData[]> {
-  const supabase = client();
-  if (!supabase) return [];
-  const { data, error } = await listedProducts(supabase)
-    .eq("status", "sold")
-    .order("sold_at", { ascending: false })
-    .limit(limit);
-  logError("getRecentlyClaimed", error);
-  return toCards(data);
-}
-
 export type DropDetail = FeaturedDrop;
 
 const DROP_COLUMNS = "id, slug, name, description, banner_url, go_live_at";
@@ -478,75 +446,6 @@ export const getCategoryPage = cache(async function getCategoryPage(
   };
 });
 
-export type ShopMenuItem = { slug: string; name: string; href: string; children: NavCategory[] };
-type NavCategory = { slug: string; name: string; href: string };
-
-/**
- * The header "Shop" menu: the given categories in order, each with its sub-categories. Gender roots
- * (Women) link to their landing page and list no sub-categories there.
- */
-export const getShopMenu = cache(async function getShopMenu(
-  slugs: readonly string[],
-): Promise<ShopMenuItem[]> {
-  const supabase = client();
-  if (!supabase) return [];
-  const all = await allCategories(supabase);
-  const isRoot = (c: CategoryRow) => c.parent_id === null;
-  const href = (c: CategoryRow) => (isRoot(c) ? `/${c.slug}` : `/c/${c.slug}`);
-  return slugs.flatMap((slug) => {
-    const c = all.find((row) => row.slug === slug);
-    if (!c) return [];
-    const children = isRoot(c)
-      ? []
-      : all
-          .filter((row) => row.parent_id === c.id)
-          .map((row) => ({ slug: row.slug, name: row.name, href: href(row) }));
-    return [{ slug: c.slug, name: c.name, href: href(c), children }];
-  });
-});
-
-export type GenderMenu = {
-  slug: string;
-  name: string;
-  href: string;
-  /** Top-level categories under the gender, each with its own sub-categories. */
-  groups: ShopMenuItem[];
-};
-
-/**
- * The header's Men / Women / Unisex menus, straight from `categories`: each gender's categories
- * in their sort order, except that `featuredFirst` (the home tiles) lead, in that order.
- */
-export const getGenderMenus = cache(async function getGenderMenus(
-  featuredFirst: readonly string[],
-): Promise<GenderMenu[]> {
-  const supabase = client();
-  if (!supabase) return [];
-  const all = await allCategories(supabase);
-  const rank = (slug: string) => {
-    const i = featuredFirst.indexOf(slug);
-    return i === -1 ? featuredFirst.length : i;
-  };
-  return all
-    .filter((root) => root.parent_id === null)
-    .map((root) => ({
-      slug: root.slug,
-      name: root.name,
-      href: `/${root.slug}`,
-      groups: all
-        .filter((c) => c.parent_id === root.id)
-        .sort((a, b) => rank(a.slug) - rank(b.slug))
-        .map((c) => ({
-          slug: c.slug,
-          name: c.name,
-          href: `/c/${c.slug}`,
-          children: all
-            .filter((sub) => sub.parent_id === c.id)
-            .map((sub) => ({ slug: sub.slug, name: sub.name, href: `/c/${sub.slug}` })),
-        })),
-    }));
-});
-
 export type BrandLink = { name: string; count: number; href: string };
 
 /** Values in the brand field that aren't really brands, so the Brand menu leaves them out. */
@@ -586,9 +485,7 @@ export const getTopBrands = cache(async function getTopBrands(
 export type BrandTile = { name: string; imageUrl: string | null; href: string };
 
 /** Top brands with a representative photo (the newest listed piece from that brand) — home tiles. */
-export const getBrandTiles = cache(async function getBrandTiles(
-  limit = 12,
-): Promise<BrandTile[]> {
+export const getBrandTiles = cache(async function getBrandTiles(limit = 12): Promise<BrandTile[]> {
   const supabase = client();
   if (!supabase) return [];
   const top = await getTopBrands(2, limit);

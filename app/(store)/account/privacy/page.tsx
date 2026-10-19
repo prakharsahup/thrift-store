@@ -37,7 +37,7 @@ export default async function PrivacyDataPage() {
       <h1 className="mt-4 text-2xl font-bold md:text-3xl">Privacy &amp; data</h1>
       <p className="mt-2 max-w-prose text-muted">
         Your rights under India&rsquo;s Digital Personal Data Protection Act, in one place. Our{" "}
-        <Link href="/privacy" className="font-semibold text-fg underline hover:text-accent">
+        <Link href="/privacy" className="font-semibold text-fg underline hover:text-primary">
           Privacy notice
         </Link>{" "}
         explains what we collect and why.
@@ -56,7 +56,7 @@ export default async function PrivacyDataPage() {
           <a
             href="/account/privacy/export"
             download
-            className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-accent underline underline-offset-4 hover:text-fg"
+            className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary underline underline-offset-4 hover:text-fg"
           >
             <Download aria-hidden className="size-4" />
             Download my data (JSON)
@@ -69,13 +69,13 @@ export default async function PrivacyDataPage() {
           </h2>
           <p className="mt-2 text-sm text-muted">
             Edit your name and number on{" "}
-            <Link href="/account" className="font-semibold text-fg underline hover:text-accent">
+            <Link href="/account" className="font-semibold text-fg underline hover:text-primary">
               your account
             </Link>
             , and your delivery addresses under{" "}
             <Link
               href="/account/addresses"
-              className="font-semibold text-fg underline hover:text-accent"
+              className="font-semibold text-fg underline hover:text-primary"
             >
               Addresses
             </Link>
@@ -119,14 +119,14 @@ export default async function PrivacyDataPage() {
             complaint,{" "}
             <Link
               href="/contact?topic=privacy"
-              className="font-semibold text-fg underline hover:text-accent"
+              className="font-semibold text-fg underline hover:text-primary"
             >
               contact us
             </Link>{" "}
             or our Grievance Officer at{" "}
             <a
               href={`mailto:${grievanceOfficer.email}`}
-              className="font-semibold text-fg underline hover:text-accent"
+              className="font-semibold text-fg underline hover:text-primary"
             >
               {grievanceOfficer.email}
             </a>

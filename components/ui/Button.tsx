@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils/cn";
 
 // The one button style for the whole site (links that look like buttons use ButtonLink, which
 // shares these classes). Focus rings come from the global :focus-visible rule in globals.css, so
-// they switch to lavender automatically inside `surface-dark` sections.
+// they switch to volt automatically inside `surface-dark` sections.
 const buttonStyles = cva(
   [
     "inline-flex shrink-0 cursor-pointer items-center justify-center whitespace-nowrap select-none",
@@ -13,10 +13,10 @@ const buttonStyles = cva(
   {
     variants: {
       variant: {
-        /** Electric purple fill: the main action on a page or form. */
+        /** Chilli fill: the main action on a page or form. */
         primary:
           "bg-primary text-primary-fg disabled:bg-border disabled:text-muted not-disabled:hover:bg-fg not-disabled:hover:text-bg",
-        /** Bone fill: strong secondary action, e.g. "Sign up" in the footer. */
+        /** Ink fill: strong secondary action, e.g. "Sign up" in the footer. */
         secondary:
           "bg-fg text-bg disabled:bg-border disabled:text-muted not-disabled:hover:bg-primary not-disabled:hover:text-primary-fg",
         /** Outlined: secondary actions next to a primary one. */
@@ -27,7 +27,7 @@ const buttonStyles = cva(
         /** Paper fill for buttons that sit on photos or dark sections. */
         overlay: "bg-bg/90 text-fg shadow-sm disabled:opacity-50 not-disabled:hover:bg-bg",
         /** Looks like a text link, behaves like a button. */
-        link: "h-auto px-0 tracking-normal normal-case text-accent underline underline-offset-4 disabled:opacity-50 not-disabled:hover:text-fg",
+        link: "h-auto px-0 tracking-normal normal-case text-primary underline underline-offset-4 disabled:opacity-50 not-disabled:hover:text-fg",
         /** Unavailable product ("Sold" / "On hold"): stays readable while disabled. */
         sold: "bg-sold text-fg",
       },

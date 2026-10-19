@@ -43,7 +43,13 @@ export function Gallery({ images, title }: Props) {
                 i === selectedIndex ? "border-fg" : "border-transparent hover:border-input",
               )}
             >
-              <ImageWithFallback src={image.url} alt="" fill sizes="80px" className="object-cover" />
+              <ImageWithFallback
+                src={image.url}
+                alt=""
+                fill
+                sizes="80px"
+                className="object-cover"
+              />
             </button>
           </li>
         ))}

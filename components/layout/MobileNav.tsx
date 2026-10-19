@@ -7,10 +7,10 @@ import { cn } from "@/lib/utils/cn";
 import { useMobileMenu } from "./MobileMenuProvider";
 
 const itemClass =
-  "flex h-full flex-col items-center justify-center gap-1 text-xs font-bold tracking-wider text-muted uppercase aria-[current=page]:text-accent aria-expanded:text-accent";
+  "flex h-full flex-col items-center justify-center gap-1 text-xs font-medium text-muted aria-[current=page]:text-fg";
 const iconClass = "size-5";
 
-// Fixed bottom bar below lg. "Shop" opens the same drawer as the header menu button.
+// Fixed bottom bar below lg. "Categories" opens the same drawer as the header hamburger.
 export function MobileNav() {
   const pathname = usePathname();
   const { open, show } = useMobileMenu();
@@ -41,7 +41,7 @@ export function MobileNav() {
             className={cn(itemClass, "w-full")}
           >
             <LayoutGrid aria-hidden className={iconClass} />
-            Shop
+            Categories
           </button>
         </li>
         <li>

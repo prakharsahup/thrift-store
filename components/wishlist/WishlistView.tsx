@@ -61,7 +61,7 @@ export function WishlistView() {
   if (shown.length === 0) {
     return (
       <div className="mt-8 border border-border p-8">
-        <p className="font-display text-xl">Nothing on your wishlist yet</p>
+        <p className="font-display font-bold text-xl">Nothing on your wishlist yet</p>
         <p className="mt-2 text-sm text-muted">Tap the heart on any piece to keep it here.</p>
         <ButtonLink href="/search?sort=newest" className="mt-6">
           Browse new pieces

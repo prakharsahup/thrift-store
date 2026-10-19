@@ -1,7 +1,7 @@
 // Placeholder brand values — the owner will replace these.
 export const site = {
-  name: "Le.Jao.Bhai",
-  tagline: "Pre-loved fashion, graded and measured. One of one.",
+  name: "Baaki.store",
+  tagline: "baaki - what remains",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   locale: "en-IN",
   // Shown after the free-shipping message in the announcement bar. Placeholder copy.

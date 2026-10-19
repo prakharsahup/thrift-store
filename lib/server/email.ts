@@ -67,6 +67,14 @@ function escapeHtml(value: string): string {
  * Seller details and help links at the foot of every email (E-Commerce Rules 2020 r. 4(2): legal
  * name, address and customer-care contacts).
  */
+/**
+ * The logo at the top of every email (the black version, for the light email background). Many
+ * clients hide images until the reader allows them, so the alt text carries the store name.
+ */
+function brandMark(): string {
+  return `<p style="margin:0 0 4px"><img src="${site.url}/brand/baaki-logo-email.png" width="160" height="79" alt="${escapeHtml(site.name)}" style="display:block;border:0;height:auto;max-width:160px"></p>`;
+}
+
 function legalFooter(): { html: string; text: string } {
   const address = formatAddress().join(", ");
   const links: [string, string][] = [
@@ -154,7 +162,7 @@ export function orderConfirmationEmail(order: ConfirmationOrder): Omit<Email, "t
   const html = `<!doctype html>
 <html lang="en"><body style="margin:0;background:#fbf8f3;color:#17140f;font-family:Arial,Helvetica,sans-serif">
 <div style="max-width:520px;margin:0 auto;padding:32px 24px">
-  <p style="font-size:24px;font-weight:bold;margin:0 0 4px">${escapeHtml(site.name)}</p>
+  ${brandMark()}
   <h1 style="font-size:20px;margin:24px 0 4px">Thanks — your order is confirmed</h1>
   <p style="color:#675e53;margin:0 0 24px">Order #${shortId}. Every piece is one of one, and these ones are yours.</p>
   ${refundNote ? `<p style="background:#f1ebe0;padding:12px;border-radius:8px;margin:0 0 24px">${escapeHtml(refundNote)}</p>` : ""}
@@ -230,7 +238,7 @@ export function orderStatusEmail(order: {
   const html = `<!doctype html>
 <html lang="en"><body style="margin:0;background:#fbf8f3;color:#17140f;font-family:Arial,Helvetica,sans-serif">
 <div style="max-width:520px;margin:0 auto;padding:32px 24px">
-  <p style="font-size:24px;font-weight:bold;margin:0 0 4px">${escapeHtml(site.name)}</p>
+  ${brandMark()}
   <h1 style="font-size:20px;margin:24px 0 4px">${escapeHtml(copy.subject)}</h1>
   <p style="color:#675e53;margin:0 0 24px">Order #${shortId}. ${escapeHtml(copy.body)}</p>
   ${tracking ? `<p style="margin:0 0 16px"><a href="${escapeHtml(tracking)}" style="color:#b93a0e;font-weight:bold">Track your parcel</a></p>` : ""}
@@ -380,7 +388,7 @@ export function supportAcknowledgementEmail(m: SupportMessage): Omit<Email, "to"
   const html = `<!doctype html>
 <html lang="en"><body style="margin:0;background:#fbf8f3;color:#17140f;font-family:Arial,Helvetica,sans-serif">
 <div style="max-width:520px;margin:0 auto;padding:32px 24px">
-  <p style="font-size:24px;font-weight:bold;margin:0 0 4px">${escapeHtml(site.name)}</p>
+  ${brandMark()}
   <h1 style="font-size:20px;margin:24px 0 4px">We've got your message — ticket ${escapeHtml(m.ticket)}</h1>
   <p style="margin:0 0 16px">${escapeHtml(intro)}</p>
   <p style="margin:0 0 24px">${escapeHtml(timing)}</p>
@@ -430,7 +438,7 @@ export function supportResolvedEmail(m: {
   const html = `<!doctype html>
 <html lang="en"><body style="margin:0;background:#fbf8f3;color:#17140f;font-family:Arial,Helvetica,sans-serif">
 <div style="max-width:520px;margin:0 auto;padding:32px 24px">
-  <p style="font-size:24px;font-weight:bold;margin:0 0 4px">${escapeHtml(site.name)}</p>
+  ${brandMark()}
   <h1 style="font-size:20px;margin:24px 0 4px">Ticket ${escapeHtml(m.ticket)} resolved</h1>
   <p style="margin:0 0 16px">Hi ${escapeHtml(m.name)}, here's what we did:</p>
   <p style="font-size:14px;margin:0 0 24px;white-space:pre-wrap;background:#f1ebe0;padding:12px;border-radius:8px">${escapeHtml(m.resolution)}</p>
@@ -457,7 +465,7 @@ export function dropAlertConfirmEmail(a: {
   const html = `<!doctype html>
 <html lang="en"><body style="margin:0;background:#fbf8f3;color:#17140f;font-family:Arial,Helvetica,sans-serif">
 <div style="max-width:520px;margin:0 auto;padding:32px 24px">
-  <p style="font-size:24px;font-weight:bold;margin:0 0 4px">${escapeHtml(site.name)}</p>
+  ${brandMark()}
   <h1 style="font-size:20px;margin:24px 0 4px">Confirm your alert for ${escapeHtml(a.dropName)}</h1>
   <p style="margin:0 0 24px">${escapeHtml(intro)}</p>
   <p style="margin:0 0 24px"><a href="${a.confirmUrl}" style="background:#7a3cff;color:#fff;padding:12px 20px;border-radius:2px;text-decoration:none;font-weight:bold">Confirm my alert</a></p>

@@ -29,7 +29,11 @@ export function ActiveFilters({ chips, clearHref }: Props) {
           </li>
         ))}
       </ul>
-      <Link href={clearHref} scroll={false} className="text-xs font-semibold text-accent underline">
+      <Link
+        href={clearHref}
+        scroll={false}
+        className="text-xs font-semibold text-primary underline"
+      >
         Clear all
       </Link>
     </div>

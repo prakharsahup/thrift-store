@@ -23,7 +23,7 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
           </p>
           <div className="flex items-center gap-4 text-sm">
             <span className="hidden text-muted sm:inline">{user.email ?? user.phone}</span>
-            <Link href="/" className="font-semibold text-accent underline underline-offset-4">
+            <Link href="/" className="font-semibold text-primary underline underline-offset-4">
               View shop
             </Link>
           </div>

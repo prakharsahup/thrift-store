@@ -1,6 +1,6 @@
-# Le.Jao.Bhai — pre-loved fashion store
+# Baaki.store — pre-loved fashion store
 
-An e-commerce site for **Le.Jao.Bhai** (working name), a thrift / pre-loved fashion store selling in India.
+An e-commerce site for **Baaki.store** (working name), a thrift / pre-loved fashion store selling in India.
 Every product is a single, unique item — one of one — with a condition grade, flat measurements and
 honest flaw notes.
 

@@ -16,6 +16,8 @@ export default async function AccountPage() {
     .select("full_name, phone")
     .eq("id", user.id)
     .maybeSingle();
+  // Adding a phone number texts a code, so offer it only once an SMS provider is set up.
+  const phoneEnabled = process.env.NEXT_PUBLIC_AUTH_PHONE_ENABLED === "true";
 
   const sections = [
     {
@@ -66,7 +68,7 @@ export default async function AccountPage() {
                 href={href}
                 className="flex h-full gap-3 rounded-lg border border-border p-5 hover:border-fg"
               >
-                <Icon aria-hidden className="size-5 shrink-0 text-accent" />
+                <Icon aria-hidden className="size-5 shrink-0 text-primary" />
                 <span>
                   <span className="block font-display font-bold">{label}</span>
                   <span className="mt-1 block text-sm text-muted">{body}</span>
@@ -96,7 +98,7 @@ export default async function AccountPage() {
         />
       </section>
 
-      {!user.email || !user.phone ? (
+      {!user.email || (!user.phone && phoneEnabled) ? (
         <section aria-labelledby="account-signin" className="mt-12 max-w-md">
           <h2 id="account-signin" className="mb-2 text-xl font-bold">
             Sign-in methods

@@ -24,7 +24,7 @@ export default async function ConfirmAlertPage({ searchParams }: PageProps<"/not
   return (
     <div className="site-container py-20 md:py-28">
       <p className="text-xs font-bold tracking-widest text-muted uppercase">Drop alert</p>
-      <h1 className="mt-3 max-w-3xl text-3xl text-accent md:text-4xl">
+      <h1 className="mt-3 max-w-3xl text-2xl font-bold md:text-3xl">
         {ok ? "You're on the list." : "That link didn't work."}
       </h1>
       <p className="mt-4 max-w-prose text-base text-muted">

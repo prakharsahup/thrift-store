@@ -25,8 +25,8 @@ const units = [
   ["Min", 60],
 ] as const;
 
-// Drop Night countdown: outlined boxes with Bungee numerals. Screen readers get the go-live
-// time from the sticker above (see DropHero and HomeHero); the digits are hidden so nothing announces a tick.
+// Drop countdown: outlined boxes with big numerals. Screen readers get the go-live
+// time from the sticker above (see DropHero); the digits are hidden so nothing announces a tick.
 export function DropCountdown({ target, className }: Props) {
   const now = useSyncExternalStore(subscribe, nowInSeconds, serverSnapshot);
   const remaining =
@@ -34,7 +34,7 @@ export function DropCountdown({ target, className }: Props) {
 
   if (remaining === 0) {
     return (
-      <p className={cn("font-display text-xl text-accent", className)} role="status">
+      <p className={cn("font-display font-bold text-xl text-accent", className)} role="status">
         It&rsquo;s live. Refresh to shop.
       </p>
     );
@@ -50,8 +50,8 @@ export function DropCountdown({ target, className }: Props) {
                 Math.floor((i === 0 ? remaining : remaining % units[i - 1][1]) / size),
               ).padStart(2, "0");
         return (
-          <span key={label} className="w-20 border border-accent px-3 py-2 sm:w-24">
-            <span className="block font-display text-2xl tabular-nums">{value}</span>
+          <span key={label} className="w-20 rounded-md border border-accent px-3 py-2 sm:w-24">
+            <span className="block font-display font-bold text-2xl tabular-nums">{value}</span>
             <span className="block text-xs font-bold tracking-widest uppercase">{label}</span>
           </span>
         );

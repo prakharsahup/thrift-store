@@ -130,9 +130,13 @@ export const genderNav: readonly GenderNav[] = [
       {
         title: "Clothing",
         links: categories("unisex", [
-          ["Oversized tees", "oversized-tees"],
-          ["Hoodies & sweatshirts", "hoodies"],
           ["Jackets", "jackets"],
+          ["Jeans", "jeans"],
+          ["Sweaters", "sweaters"],
+          ["Topwear", "topwear"],
+          ["Hoodies & sweatshirts", "hoodies"],
+          ["Oversized tees", "oversized-tees"],
+          ["Pants", "pants"],
           ["Track pants", "track-pants"],
           ["Jerseys", "jerseys"],
         ]),
@@ -140,6 +144,7 @@ export const genderNav: readonly GenderNav[] = [
       {
         title: "Accessories",
         links: categories("unisex", [
+          ["Shoes & bags", "shoes-bags"],
           ["Caps & hats", "caps"],
           ["Bags", "bags"],
           ["Scarves", "scarves"],
@@ -170,8 +175,14 @@ export const accountLinks: readonly NavLink[] = [
   { label: "Wishlist", href: "/wishlist" },
 ];
 
-/** Footer link columns after "Shop", which the footer builds from the category menu. */
 export const footerNav: readonly NavColumn[] = [
+  {
+    title: "Shop",
+    links: [
+      ...genderNav.map(({ label, href }) => ({ label, href })),
+      { label: "Search", href: "/search" },
+    ],
+  },
   {
     title: "Help",
     links: [

@@ -23,7 +23,7 @@ export function WishlistHeart({ productId, title, className }: Props) {
         // 36px to look at, 44px to tap: the invisible ::after widens the touch target.
         className="relative after:absolute after:-inset-1 after:content-['']"
       >
-        <Heart aria-hidden className={cn(saved && "fill-primary text-accent")} />
+        <Heart aria-hidden className={cn(saved && "fill-primary text-primary")} />
         <span className="sr-only">Save {title} to wishlist</span>
       </Button>
       {error ? (

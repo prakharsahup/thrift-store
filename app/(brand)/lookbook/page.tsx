@@ -65,7 +65,7 @@ export default function LookbookPage() {
   return (
     <>
       <header className="site-container py-16 md:py-24">
-        <p className="text-xs font-semibold tracking-widest text-accent uppercase">
+        <p className="text-xs font-semibold tracking-widest text-primary uppercase">
           Lookbook · this season
         </p>
         <RevealText

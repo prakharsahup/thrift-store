@@ -42,12 +42,12 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         {/* Notice at collection (DPDP Act s. 5) and the 18+ rule (Indian Contract Act; DPDP s. 9). */}
         <p className="mt-8 text-xs text-muted">
           By continuing, you confirm you&rsquo;re 18 or older and agree to our{" "}
-          <Link href="/terms" className="underline hover:text-accent">
+          <Link href="/terms" className="underline hover:text-primary">
             Terms of service
           </Link>
           . We use your email or mobile number to sign you in and to handle your orders, as
           explained in our{" "}
-          <Link href="/privacy" className="underline hover:text-accent">
+          <Link href="/privacy" className="underline hover:text-primary">
             Privacy notice
           </Link>
           . You can delete your account at any time.
