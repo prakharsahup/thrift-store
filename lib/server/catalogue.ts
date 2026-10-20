@@ -770,6 +770,8 @@ export async function getRelatedProducts(
 ): Promise<ProductCardData[]> {
   const supabase = client();
   if (!supabase) return [];
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!product.categoryId || !uuidPattern.test(product.categoryId)) return [];
   const tags = product.styleTags.filter((t) => /^[a-z0-9-]+$/.test(t));
   const match = tags.length
     ? `category_id.eq.${product.categoryId},style_tags.ov.{${tags.join(",")}}`
