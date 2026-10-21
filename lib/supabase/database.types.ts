@@ -815,6 +815,62 @@ export type Database = {
       };
     };
     Views: {
+      // Hand-added ahead of `pnpm db:types`: these two views exist in
+      // supabase/migrations/20261020020000_insights_views.sql but the migration hasn't been
+      // pushed yet, so the generator hasn't seen them. Re-running `pnpm db:types` after `db:push`
+      // will regenerate this block for real and this comment can go.
+      insights_orders: {
+        Row: {
+          id: string | null;
+          user_id: string | null;
+          customer_email: string | null;
+          status: Database["public"]["Enums"]["order_status"] | null;
+          subtotal_paise: number | null;
+          shipping_paise: number | null;
+          discount_paise: number | null;
+          total_paise: number | null;
+          coupon_code: string | null;
+          address: Json | null;
+          payment_method: string | null;
+          created_at: string | null;
+          paid_at: string | null;
+          packed_at: string | null;
+          shipped_at: string | null;
+          delivered_at: string | null;
+          demo: boolean | null;
+        };
+        Insert: Record<string, never>;
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      insights_costs: {
+        Row: { product_id: string | null; cost_paise: number | null; demo: boolean | null };
+        Insert: Record<string, never>;
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      insights_items: {
+        Row: {
+          order_id: string | null;
+          product_id: string | null;
+          price_paise: number | null;
+          unavailable: boolean | null;
+          listed_at: string | null;
+          cost_paise: number | null;
+          brand: string | null;
+          condition: Database["public"]["Enums"]["product_condition"] | null;
+          tagged_size: string | null;
+          gender: Database["public"]["Enums"]["gender"] | null;
+          style_tags: string[] | null;
+          drop_id: string | null;
+          category_id: string | null;
+          original_price_paise: number | null;
+          demo: boolean | null;
+        };
+        Insert: Record<string, never>;
+        Update: Record<string, never>;
+        Relationships: [];
+      };
       listed_products: {
         Row: {
           brand: string | null;
