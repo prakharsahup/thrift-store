@@ -21,8 +21,6 @@ export type ProductCardData = {
   condition: ProductCondition;
   pricePaise: number;
   originalPricePaise: number | null;
-  /** INR for everything except Vendoo-imported pieces, still priced in USD pending repricing. */
-  currency: "INR" | "USD";
   /** Expired holds already read as "available". */
   status: "available" | "reserved" | "sold";
   images: { url: string; alt: string }[];
@@ -55,7 +53,7 @@ export type FeaturedDrop = {
 export type ImpactStats = { listed: number; rehomed: number };
 
 const PRODUCT_CARD_COLUMNS =
-  "id, slug, title, brand, tagged_size, condition, price_paise, original_price_paise, currency, status, effective_status, product_images(url, alt, sort_order)";
+  "id, slug, title, brand, tagged_size, condition, price_paise, original_price_paise, status, effective_status, product_images(url, alt, sort_order)";
 
 function client() {
   return hasSupabaseEnv() ? createPublicClient() : null;
@@ -98,8 +96,6 @@ type ProductRow = {
   condition: ProductCondition;
   price_paise: number;
   original_price_paise: number | null;
-  /** Plain `text` with a CHECK constraint in Postgres, not an enum, so it comes back untyped. */
-  currency: string;
   status: string;
   effective_status: string;
   product_images: { url: string; alt: string; sort_order: number }[];
@@ -117,7 +113,6 @@ function toCard(row: ProductRow): ProductCardData | null {
     condition: row.condition,
     pricePaise: row.price_paise,
     originalPricePaise: row.original_price_paise,
-    currency: row.currency === "USD" ? "USD" : "INR",
     status,
     images: row.product_images.map(({ url, alt }) => ({ url, alt })),
   };
@@ -171,25 +166,46 @@ export async function getCategoryTiles(slugs: readonly string[]): Promise<Catego
   const bySlug = new Map((data ?? []).map((c) => [c.slug, c]));
 
   // A real piece beats a placeholder: tiles show the newest photo from anywhere in the category
-  // unless the owner has set a proper category image.
-  const tiles = await Promise.all(
-    slugs.map(async (slug) => {
-      const c = bySlug.get(slug);
-      const row = all.find((r) => r.slug === slug);
-      if (!c || !row) return null;
-      const ownImage = c.image_url && !c.image_url.startsWith("https://placehold.co/");
-      if (ownImage) return { slug, name: c.name, imageUrl: c.image_url };
-      const { data: newest, error: photoError } = await listedProducts(supabase)
-        .in("category_id", withDescendants(all, row.id))
+  // unless the owner has set a proper category image. One query for every slug that needs a
+  // fallback photo (not one query per tile): fetch every candidate product once, newest first,
+  // then pick the first match per slug in memory.
+  const needsPhoto = slugs.filter((slug) => {
+    const c = bySlug.get(slug);
+    return c && !(c.image_url && !c.image_url.startsWith("https://placehold.co/"));
+  });
+  const categoryIds = new Map(needsPhoto.map((slug) => {
+    const row = all.find((r) => r.slug === slug);
+    return [slug, row ? withDescendants(all, row.id) : []];
+  }));
+  const candidateIds = [...new Set([...categoryIds.values()].flat())];
+  const { data: candidates, error: photoError } = candidateIds.length
+    ? await supabase
+        .from("listed_products")
+        .select("category_id, published_at, product_images(url, sort_order)")
+        .in("category_id", candidateIds)
         .in("status", ["available", "reserved"])
         .order("published_at", { ascending: false })
-        .limit(1);
-      logError("getCategoryTiles (photo)", photoError);
-      const photo = toCards(newest)[0]?.images[0]?.url;
-      return { slug, name: c.name, imageUrl: photo ?? null };
-    }),
-  );
-  return tiles.flatMap((t) => (t ? [t] : []));
+        .order("sort_order", { referencedTable: "product_images" })
+    : { data: [] as { category_id: string | null; product_images: { url: string }[] }[], error: null };
+  logError("getCategoryTiles (photo)", photoError);
+  // Newest first, so the first photo seen for a category id is the one to keep.
+  const photoByCategoryId = new Map<string, string>();
+  for (const row of candidates ?? []) {
+    const url = row.product_images[0]?.url;
+    if (row.category_id && url && !photoByCategoryId.has(row.category_id)) {
+      photoByCategoryId.set(row.category_id, url);
+    }
+  }
+
+  return slugs.flatMap((slug) => {
+    const c = bySlug.get(slug);
+    if (!c) return [];
+    const ownImage = c.image_url && !c.image_url.startsWith("https://placehold.co/");
+    if (ownImage) return [{ slug, name: c.name, imageUrl: c.image_url }];
+    const ids = categoryIds.get(slug) ?? [];
+    const photo = ids.map((id) => photoByCategoryId.get(id)).find(Boolean) ?? null;
+    return [{ slug, name: c.name, imageUrl: photo }];
+  });
 }
 
 /** The next upcoming published drop, or else the most recent live one. */
@@ -331,17 +347,34 @@ export async function getArchive(): Promise<{ drops: ArchiveDrop[]; offRack: Pro
   const supabase = client();
   if (!supabase) return { drops: [], offRack: [] };
   const { past } = await getDrops();
-  const drops = await Promise.all(
-    past.map(async (drop) => {
-      const { data, error } = await storefrontProducts(supabase)
-        .eq("drop_id", drop.id)
+
+  // One query for every past drop's pieces, not one query per drop: fetch them all at once
+  // (ordered so each drop's rows are contiguous and already sorted), then take the top 48 per
+  // drop in memory. A drop running into the thousands of pieces would need a real per-group limit
+  // in SQL, but no thrift drop gets anywhere close.
+  const dropIds = past.map((d) => d.id);
+  const { data: dropRows, error: dropError } = dropIds.length
+    ? await supabase
+        .from("storefront_products")
+        .select(`${PRODUCT_CARD_COLUMNS}, drop_id`)
+        .in("drop_id", dropIds)
+        .order("drop_id")
         .order("status", { ascending: false })
         .order("published_at", { ascending: false })
-        .limit(48);
-      logError("getArchive (drop)", error);
-      return { drop, pieces: toCards(data) };
-    }),
-  );
+        .order("sort_order", { referencedTable: "product_images" })
+        .limit(2000)
+    : { data: [] as (ProductRow & { drop_id: string | null })[], error: null };
+  logError("getArchive (drops)", dropError);
+  const piecesByDrop = new Map<string, ProductCardData[]>();
+  for (const row of dropRows ?? []) {
+    const card = toCard(row);
+    if (!row.drop_id || !card) continue;
+    const pieces = piecesByDrop.get(row.drop_id) ?? [];
+    if (pieces.length < 48) pieces.push(card);
+    piecesByDrop.set(row.drop_id, pieces);
+  }
+  const drops = past.map((drop) => ({ drop, pieces: piecesByDrop.get(drop.id) ?? [] }));
+
   const { data, error } = await storefrontProducts(supabase)
     .is("drop_id", null)
     .eq("status", "sold")
@@ -489,18 +522,32 @@ export const getBrandTiles = cache(async function getBrandTiles(limit = 12): Pro
   const supabase = client();
   if (!supabase) return [];
   const top = await getTopBrands(2, limit);
-  return Promise.all(
-    top.map(async (brand) => {
-      const { data, error } = await listedProducts(supabase)
-        .eq("brand", brand.name)
-        .in("status", ["available", "reserved"])
-        .order("published_at", { ascending: false })
-        .limit(1);
-      logError("getBrandTiles (photo)", error);
-      const photo = toCards(data)[0]?.images[0]?.url ?? null;
-      return { name: brand.name, imageUrl: photo, href: brand.href };
-    }),
-  );
+  if (!top.length) return [];
+
+  // One query for every brand's photo, not one query per tile: fetch every candidate once, newest
+  // first, then keep the first (newest) match per brand in memory.
+  const { data: candidates, error } = await supabase
+    .from("listed_products")
+    .select("brand, published_at, product_images(url, sort_order)")
+    .in(
+      "brand",
+      top.map((b) => b.name),
+    )
+    .in("status", ["available", "reserved"])
+    .order("published_at", { ascending: false })
+    .order("sort_order", { referencedTable: "product_images" });
+  logError("getBrandTiles (photo)", error);
+  const photoByBrand = new Map<string, string>();
+  for (const row of candidates ?? []) {
+    const url = row.product_images[0]?.url;
+    if (row.brand && url && !photoByBrand.has(row.brand)) photoByBrand.set(row.brand, url);
+  }
+
+  return top.map((brand) => ({
+    name: brand.name,
+    imageUrl: photoByBrand.get(brand.name) ?? null,
+    href: brand.href,
+  }));
 });
 
 /** Root categories (Men / Women / Unisex) with all their descendant ids — for the search filter. */

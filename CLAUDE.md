@@ -345,6 +345,11 @@ Every schema change goes in `supabase/migrations/` as SQL, and RLS is enabled on
 - **Errors:**
   - Each route segment has a `loading.tsx` and an `error.tsx`.
   - User-facing errors are friendly and say what to do next.
+- **Server action return shapes.** Pick by how the action is called, not by habit:
+  - **Bound to a `<form>` via `useActionState`:** return `FormState` (`lib/admin/form.ts`) — `{ status: "idle" | "saved" | "error", message, fieldErrors? }`. Build it with `invalidForm()`/`failedForm()`, not by hand.
+  - **Called directly from a client component (button click, not a form):** return `ActionResult<T>` (`lib/cart/types.ts`) — `{ ok: true; data: T } | { ok: false; message: string; needsLogin?: boolean }`. Set `needsLogin: true` instead of redirecting from inside the action, so the client can decide (e.g. open the login modal vs. navigate).
+  - **No useful result to hand back (admin delete/duplicate, one-way redirects):** `redirect()` or `throw` is fine — don't invent a result type nobody reads.
+  - Don't introduce a fourth shape. If none of these fit, that's a sign the action is doing two things — split it.
 - **Commits:** small, one feature each, conventional-commit messages (`feat:`, `fix:`, `chore:`).
 
 ---

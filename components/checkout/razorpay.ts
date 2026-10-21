@@ -12,7 +12,7 @@ export type RazorpaySuccess = {
 export type RazorpayOptions = {
   key: string;
   amount: number;
-  currency: "USD";
+  currency: "INR";
   name: string;
   description: string;
   order_id: string;

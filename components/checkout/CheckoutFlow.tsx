@@ -146,8 +146,8 @@ export function CheckoutFlow({
     const checkout = new window.Razorpay({
       key: body.keyId,
       amount: body.amountPaise,
-      // Must match the order's own currency (lib/server/payments.ts) — the order was created in USD.
-      currency: "USD",
+      // Must match the order's own currency (lib/server/payments.ts) — the order was created in INR.
+      currency: "INR",
       name: site.name,
       description: `Order #${body.orderId.slice(0, 8).toUpperCase()}`,
       order_id: body.razorpayOrderId,
