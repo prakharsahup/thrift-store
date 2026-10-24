@@ -10,12 +10,46 @@ import { ConditionBadge } from "@/components/product/ConditionBadge";
 import { Gallery } from "@/components/product/Gallery";
 import { MeasurementsTable } from "@/components/product/MeasurementsTable";
 import { ProductCard } from "@/components/product/ProductCard";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { ChipLink } from "@/components/ui/ChipLink";
 import { business, returnsPolicy, shippingPolicy } from "@/lib/config/legal";
 import { genders, styleTags } from "@/lib/config/navigation";
+import { site } from "@/lib/config/site";
 import { shipping } from "@/lib/config/shipping";
-import { getProductBySlug, getRelatedProducts } from "@/lib/server/catalogue";
+import { getProductBySlug, getRelatedProducts, type ProductDetail } from "@/lib/server/catalogue";
 import { formatMoney } from "@/lib/utils/money";
+
+const AVAILABILITY: Record<ProductDetail["status"], string> = {
+  available: "https://schema.org/InStock",
+  reserved: "https://schema.org/OutOfStock",
+  sold: "https://schema.org/OutOfStock",
+};
+
+function productJsonLd(product: ProductDetail) {
+  const url = `${site.url.replace(/\/$/, "")}/p/${product.slug}`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    description: product.description,
+    image: product.images.map((image) => image.url),
+    brand: product.brand ? { "@type": "Brand", name: product.brand } : undefined,
+    sku: product.id,
+    url,
+    offers: {
+      "@type": "Offer",
+      url,
+      priceCurrency: "INR",
+      price: (product.pricePaise / 100).toFixed(2),
+      availability: AVAILABILITY[product.status],
+      itemCondition:
+        product.condition === "new_with_tags"
+          ? "https://schema.org/NewCondition"
+          : "https://schema.org/UsedCondition",
+      seller: { "@type": "Organization", name: business.legalName },
+    },
+  };
+}
 
 // Cached per product and refreshed at most once a minute. The checkout phase also revalidates a
 // product's page the moment it sells.
@@ -57,6 +91,7 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
 
   return (
     <div className="site-container py-6 md:py-10">
+      <JsonLd data={productJsonLd(product)} />
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },

@@ -838,6 +838,34 @@ export async function getRelatedProducts(
 // Cart
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Sitemap
+// ---------------------------------------------------------------------------
+
+export type SitemapProduct = { slug: string; lastModified: string };
+
+/** Every listed product's slug and last-modified date, for app/sitemap.ts. */
+export async function getSitemapProducts(): Promise<SitemapProduct[]> {
+  const supabase = client();
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("listed_products")
+    .select("slug, updated_at")
+    .not("slug", "is", null);
+  logError("getSitemapProducts", error);
+  return (data ?? []).flatMap((row) =>
+    row.slug ? [{ slug: row.slug, lastModified: row.updated_at ?? new Date().toISOString() }] : [],
+  );
+}
+
+/** Every category's slug, for app/sitemap.ts. */
+export async function getAllCategorySlugs(): Promise<string[]> {
+  const supabase = client();
+  if (!supabase) return [];
+  const all = await allCategories(supabase);
+  return all.map((c) => c.slug);
+}
+
 /**
  * Fresh product data for cart lines, in the order given. Includes sold and held items (the cart
  * shows them as unavailable); drafts and hidden items are dropped by RLS.
