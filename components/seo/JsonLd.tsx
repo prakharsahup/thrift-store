@@ -6,7 +6,5 @@ type Props = { data: object };
  */
 export function JsonLd({ data }: Props) {
   const json = JSON.stringify(data).replace(/<\//g, "<\\/");
-  return (
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: json }} />
-  );
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: json }} />;
 }

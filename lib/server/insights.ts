@@ -67,13 +67,7 @@ export async function getInsightsContext(
 // ---------------------------------------------------------------------------
 
 type OrderStatus =
-  | "pending"
-  | "paid"
-  | "packed"
-  | "shipped"
-  | "delivered"
-  | "cancelled"
-  | "refunded";
+  "pending" | "paid" | "packed" | "shipped" | "delivered" | "cancelled" | "refunded";
 
 type OrderRow = {
   id: string;
@@ -162,7 +156,9 @@ type LiveProductRow = {
 const loadLiveProducts = cache(async (): Promise<LiveProductRow[]> => {
   const { data, error } = await createAdminClient()
     .from("products")
-    .select("id, brand, condition, tagged_size, gender, style_tags, drop_id, category_id, price_paise")
+    .select(
+      "id, brand, condition, tagged_size, gender, style_tags, drop_id, category_id, price_paise",
+    )
     .in("status", ["available", "reserved"]);
   if (error) throw new Error(`products (live): ${error.message}`);
   return data ?? [];
@@ -196,7 +192,13 @@ const loadDropNames = cache(async (): Promise<Map<string, string>> => {
 
 const SALE_STATUSES = new Set<OrderStatus>(["paid", "packed", "shipped", "delivered"]);
 /** Ever paid, refunds included — "lifetime" buyer stats and the funnel's "paid" count use this. */
-const EVER_PAID_STATUSES = new Set<OrderStatus>(["paid", "packed", "shipped", "delivered", "refunded"]);
+const EVER_PAID_STATUSES = new Set<OrderStatus>([
+  "paid",
+  "packed",
+  "shipped",
+  "delivered",
+  "refunded",
+]);
 
 function inRange(iso: string | null, from: Date, to: Date): boolean {
   if (!iso) return false;
@@ -233,7 +235,10 @@ function percentileCont(sortedAsc: number[], p: number): number | null {
 
 const maskEmail = (email: string) => email.replace(/^(.{1,2})[^@]*(@.*)?$/, "$1•••$2");
 
-function placeFromAddress(address: Record<string, unknown> | null, field: "state" | "city"): string {
+function placeFromAddress(
+  address: Record<string, unknown> | null,
+  field: "state" | "city",
+): string {
   const raw = typeof address?.[field] === "string" ? (address[field] as string).trim() : "";
   if (!raw) return "Unknown";
   return raw.replace(/\w\S*/g, (w) => w[0].toUpperCase() + w.slice(1).toLowerCase());
@@ -264,7 +269,11 @@ function truncBucket(ymd: string, bucket: "day" | "week" | "month"): string {
 }
 
 function stepBucket(ymd: string, bucket: "day" | "week" | "month"): string {
-  return bucket === "day" ? addDays(ymd, 1) : bucket === "week" ? addDays(ymd, 7) : stepMonth(ymd, 1);
+  return bucket === "day"
+    ? addDays(ymd, 1)
+    : bucket === "week"
+      ? addDays(ymd, 7)
+      : stepMonth(ymd, 1);
 }
 
 /** Every bucket start in [from, to), India calendar time — mirrors `generate_series` in the old
@@ -354,14 +363,18 @@ export async function getTimeseries(ctx: InsightsContext, { previous = false } =
   const saleItems = items.filter((i) => byId.has(i.order_id));
 
   const points = bucketStarts(from, to, bucket).map((start) => {
-    const bucketSales = sales.filter((s) => truncBucket(istToday(new Date(s.paid_at!)), bucket) === start);
+    const bucketSales = sales.filter(
+      (s) => truncBucket(istToday(new Date(s.paid_at!)), bucket) === start,
+    );
     const bucketSaleIds = new Set(bucketSales.map((s) => s.id));
     const bucketItems = saleItems.filter((i) => bucketSaleIds.has(i.order_id));
     const available = bucketItems.filter((i) => !i.unavailable);
     const unavailable = bucketItems.filter((i) => i.unavailable);
     const grossPaise = sum(bucketSales, (s) => s.total_paise);
     const unavailablePaise = sum(unavailable, (i) => i.price_paise);
-    const profitPaise = sum(available, (i) => (i.cost_paise !== null ? i.price_paise - i.cost_paise : 0));
+    const profitPaise = sum(available, (i) =>
+      i.cost_paise !== null ? i.price_paise - i.cost_paise : 0,
+    );
     return {
       bucket: start,
       orders: bucketSales.length,
@@ -388,7 +401,10 @@ export async function getHeatmap(ctx: InsightsContext) {
   const { from, to } = ctx.range;
   const sales = orders.filter((o) => isSale(o, from, to));
 
-  const cells = new Map<string, { dow: number; hour: number; orders: number; revenue_paise: number }>();
+  const cells = new Map<
+    string,
+    { dow: number; hour: number; orders: number; revenue_paise: number }
+  >();
   for (const s of sales) {
     const paid = new Date(s.paid_at!);
     const dow = new Date(`${istToday(paid)}T00:00:00Z`).getUTCDay() || 7;
@@ -436,7 +452,7 @@ function dimensionKeys(
 ): string[] {
   switch (dimension) {
     case "category":
-      return [p.category_id ? categoryNames.get(p.category_id) ?? "Unknown" : "Unknown"];
+      return [p.category_id ? (categoryNames.get(p.category_id) ?? "Unknown") : "Unknown"];
     case "brand":
       return [p.brand?.trim() || "Unbranded"];
     case "style":
@@ -450,7 +466,7 @@ function dimensionKeys(
     case "price_band":
       return [priceBand(p.productPricePaise)];
     case "drop":
-      return [p.drop_id ? dropNames.get(p.drop_id) ?? "Unknown" : "Not in a drop"];
+      return [p.drop_id ? (dropNames.get(p.drop_id) ?? "Unknown") : "Not in a drop"];
     default:
       return ["Unknown"];
   }
@@ -520,9 +536,12 @@ export async function getBreakdown(ctx: InsightsContext, dimension: Dimension) {
         a.cost_paise += i.cost_paise;
       }
       if (i.listed_at && sale.paid_at && new Date(sale.paid_at) > new Date(i.listed_at)) {
-        a.daysToSell.push((new Date(sale.paid_at).getTime() - new Date(i.listed_at).getTime()) / 86_400_000);
+        a.daysToSell.push(
+          (new Date(sale.paid_at).getTime() - new Date(i.listed_at).getTime()) / 86_400_000,
+        );
       }
-      if (i.original_price_paise !== null) a.retailRatios.push(i.price_paise / i.original_price_paise);
+      if (i.original_price_paise !== null)
+        a.retailRatios.push(i.price_paise / i.original_price_paise);
     }
   }
 
@@ -551,12 +570,14 @@ export async function getBreakdown(ctx: InsightsContext, dimension: Dimension) {
       cost_paise: a?.cost_paise ?? 0,
       avg_days_to_sell: round(avg(a?.daysToSell ?? []), 1),
       avg_retail_ratio: round(avg(a?.retailRatios ?? []), 3),
-      listed_now: isProductDim ? listedNow.get(key) ?? 0 : null,
+      listed_now: isProductDim ? (listedNow.get(key) ?? 0) : null,
     };
   });
   rows.sort(
     (x, y) =>
-      y.revenue_paise - x.revenue_paise || (y.listed_now ?? 0) - (x.listed_now ?? 0) || x.key.localeCompare(y.key),
+      y.revenue_paise - x.revenue_paise ||
+      (y.listed_now ?? 0) - (x.listed_now ?? 0) ||
+      x.key.localeCompare(y.key),
   );
   return breakdownSchema.parse(rows);
 }
@@ -605,17 +626,23 @@ export async function getInventory(ctx: InsightsContext) {
     days <= 14 ? "0_14" : days <= 30 ? "15_30" : days <= 60 ? "31_60" : "61_plus";
 
   let imagesByProduct = new Map<string, string>();
-  const oldestCandidates = [...rows].sort((a, b) => b.days_listed - a.days_listed || a.title.localeCompare(b.title));
+  const oldestCandidates = [...rows].sort(
+    (a, b) => b.days_listed - a.days_listed || a.title.localeCompare(b.title),
+  );
   const oldest25 = oldestCandidates.slice(0, 25);
   if (oldest25.length) {
     const { data: images, error: imageError } = await admin
       .from("product_images")
       .select("product_id, url, sort_order")
-      .in("product_id", oldest25.map((p) => p.id))
+      .in(
+        "product_id",
+        oldest25.map((p) => p.id),
+      )
       .order("sort_order");
     if (imageError) throw new Error(`product_images: ${imageError.message}`);
     imagesByProduct = new Map();
-    for (const img of images ?? []) if (!imagesByProduct.has(img.product_id)) imagesByProduct.set(img.product_id, img.url);
+    for (const img of images ?? [])
+      if (!imagesByProduct.has(img.product_id)) imagesByProduct.set(img.product_id, img.url);
   }
 
   return inventorySchema.parse({
@@ -680,7 +707,11 @@ export async function getCustomers(ctx: InsightsContext) {
   const topBuyers = [...perBuyer.values()]
     .sort((a, b) => b.spent_paise - a.spent_paise)
     .slice(0, 10)
-    .map((b) => ({ email: maskEmail(b.email ?? "unknown"), orders: b.orders, spent_paise: b.spent_paise }));
+    .map((b) => ({
+      email: maskEmail(b.email ?? "unknown"),
+      orders: b.orders,
+      spent_paise: b.spent_paise,
+    }));
 
   const places = sales.map((s) => ({
     state: placeFromAddress(s.address, "state"),
@@ -748,23 +779,33 @@ export async function getMarketing(ctx: InsightsContext) {
   const allSalesById = new Map(allSales.map((s) => [s.id, s]));
 
   const admin = createAdminClient();
-  const [{ data: coupons, error: couponError }, { data: drops, error: dropError }, { data: notifies, error: notifyError }] =
-    await Promise.all([
-      admin.from("coupons").select("code, type, value"),
-      admin
-        .from("drops")
-        .select("id, name, slug, go_live_at")
-        .eq("is_published", true)
-        .gte("go_live_at", from.toISOString())
-        .lt("go_live_at", to.toISOString()),
-      admin.from("notify_requests").select("drop_id").not("confirmed_at", "is", null).not("drop_id", "is", null),
-    ]);
+  const [
+    { data: coupons, error: couponError },
+    { data: drops, error: dropError },
+    { data: notifies, error: notifyError },
+  ] = await Promise.all([
+    admin.from("coupons").select("code, type, value"),
+    admin
+      .from("drops")
+      .select("id, name, slug, go_live_at")
+      .eq("is_published", true)
+      .gte("go_live_at", from.toISOString())
+      .lt("go_live_at", to.toISOString()),
+    admin
+      .from("notify_requests")
+      .select("drop_id")
+      .not("confirmed_at", "is", null)
+      .not("drop_id", "is", null),
+  ]);
   if (couponError) throw new Error(`coupons: ${couponError.message}`);
   if (dropError) throw new Error(`drops: ${dropError.message}`);
   if (notifyError) throw new Error(`notify_requests: ${notifyError.message}`);
 
   const couponsByCode = new Map((coupons ?? []).map((c) => [c.code, c]));
-  const couponUsage = new Map<string, { uses: number; discount_paise: number; revenue_paise: number }>();
+  const couponUsage = new Map<
+    string,
+    { uses: number; discount_paise: number; revenue_paise: number }
+  >();
   for (const s of sales) {
     if (!s.coupon_code) continue;
     const row = couponUsage.get(s.coupon_code) ?? { uses: 0, discount_paise: 0, revenue_paise: 0 };
@@ -782,10 +823,13 @@ export async function getMarketing(ctx: InsightsContext) {
 
   let productCounts: { drop_id: string | null }[] = [];
   if (drops?.length) {
-    const { data, error } = await admin.from("products").select("drop_id").in(
-      "drop_id",
-      drops.map((d) => d.id),
-    );
+    const { data, error } = await admin
+      .from("products")
+      .select("drop_id")
+      .in(
+        "drop_id",
+        drops.map((d) => d.id),
+      );
     if (error) throw new Error(`products (drop counts): ${error.message}`);
     productCounts = data ?? [];
   }
@@ -801,7 +845,9 @@ export async function getMarketing(ctx: InsightsContext) {
     drops: (drops ?? [])
       .map((d) => {
         const goLive = new Date(d.go_live_at).getTime();
-        const dropItems = items.filter((i) => i.drop_id === d.id && allSalesById.has(i.order_id) && !i.unavailable);
+        const dropItems = items.filter(
+          (i) => i.drop_id === d.id && allSalesById.has(i.order_id) && !i.unavailable,
+        );
         const soldWithin = (ms: number) =>
           dropItems.filter((i) => {
             const paidAt = allSalesById.get(i.order_id)?.paid_at;
