@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Bricolage_Grotesque, Instrument_Sans } from "next/font/google";
 import { MotionProvider } from "@/components/motion/MotionProvider";
 import { motionInitScript } from "@/lib/motion/init-script";
@@ -42,6 +43,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-dvh antialiased">
         <MotionProvider>{children}</MotionProvider>
+        {/* No-ops when not deployed on Vercel or when analytics isn't enabled for the project. */}
+        <Analytics />
       </body>
     </html>
   );
