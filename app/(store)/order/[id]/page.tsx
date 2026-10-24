@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Fragment } from "react";
 import { z } from "zod";
 import { PaymentPending } from "@/components/checkout/PaymentPending";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
@@ -9,11 +10,13 @@ import { ImageWithFallback } from "@/components/ui/ImageWithFallback";
 import { returnsPolicy } from "@/lib/config/legal";
 import { formatOrderDate, orderStatuses, shortOrderId } from "@/lib/config/orders";
 import { requireUser } from "@/lib/server/auth";
-import { formatMoney } from "@/lib/utils/money";
+import { addressLines, displayPhone } from "@/lib/utils/address";
+import { formatMoney, formatUsdCharge } from "@/lib/utils/money";
 
 export const metadata: Metadata = { title: "Your order", robots: { index: false } };
 
 const addressSnapshotSchema = z.object({
+  country: z.string().optional(),
   name: z.string(),
   phone: z.string(),
   line1: z.string(),
@@ -34,7 +37,8 @@ export default async function OrderPage({ params }: PageProps<"/order/[id]">) {
     .from("orders")
     .select(
       `id, status, created_at, subtotal_paise, shipping_paise, discount_paise, total_paise,
-       coupon_code, address, payment_method, tracking_url, razorpay_payment_id,
+       coupon_code, address, payment_method, tracking_url, razorpay_payment_id, charge_currency,
+       charge_amount,
        order_items(product_id, title_snapshot, price_paise_snapshot, image_snapshot, unavailable,
                    product:products(slug))`,
     )
@@ -162,6 +166,11 @@ export default async function OrderPage({ params }: PageProps<"/order/[id]">) {
               </dt>
               <dd>{formatMoney(order.total_paise)}</dd>
             </div>
+            {formatUsdCharge(order) ? (
+              <p className="pt-1 text-xs text-muted">
+                Charged in US dollars: {formatUsdCharge(order)}
+              </p>
+            ) : null}
             {order.payment_method ? (
               <p className="pt-1 text-xs text-muted">
                 Paid by {order.payment_method.toUpperCase()}
@@ -177,18 +186,14 @@ export default async function OrderPage({ params }: PageProps<"/order/[id]">) {
             </h2>
             <address className="mt-2 text-sm leading-relaxed text-muted not-italic">
               {address.data.name}
-              <br />
-              {address.data.line1}
-              {address.data.line2 ? (
-                <>
+              {addressLines(address.data).map((line) => (
+                <Fragment key={line}>
                   <br />
-                  {address.data.line2}
-                </>
-              ) : null}
+                  {line}
+                </Fragment>
+              ))}
               <br />
-              {address.data.city}, {address.data.state} {address.data.pincode}
-              <br />
-              +91 {address.data.phone}
+              {displayPhone(address.data)}
             </address>
           </section>
         ) : null}

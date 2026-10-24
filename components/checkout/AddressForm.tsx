@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { Button } from "@/components/ui/Button";
 import { Input, inputVariants } from "@/components/ui/Input";
 import { createAddress, type Address } from "@/lib/actions/addresses";
+import { findCountry, shippingCountries, type CountryCode } from "@/lib/config/countries";
 import { indianStates } from "@/lib/config/india";
 import { addressSchema, type AddressInput } from "@/lib/validators/checkout";
 
@@ -18,31 +20,60 @@ type Props = {
 type Field = keyof AddressInput;
 type FieldErrors = Partial<Record<Field, string>>;
 
-const fields: {
-  name: Exclude<Field, "state">;
+type FieldSpec = {
+  name: Exclude<Field, "state" | "country">;
   label: string;
   autoComplete: string;
   inputMode?: "numeric" | "tel";
   optional?: boolean;
   half?: boolean;
-}[] = [
-  { name: "name", label: "Full name", autoComplete: "name" },
-  { name: "phone", label: "Mobile number", autoComplete: "tel-national", inputMode: "tel" },
-  { name: "line1", label: "House no., building, street", autoComplete: "address-line1" },
-  { name: "line2", label: "Area, landmark", autoComplete: "address-line2", optional: true },
-  { name: "city", label: "City", autoComplete: "address-level2", half: true },
-  {
-    name: "pincode",
-    label: "PIN code",
-    autoComplete: "postal-code",
-    inputMode: "numeric",
-    half: true,
-  },
-];
+  hint?: string;
+};
+
+// Indian addresses take a 10-digit mobile and a PIN code; addresses abroad take a phone number
+// with its country code and an optional postal code (lib/validators/checkout.ts).
+function fieldsFor(india: boolean): FieldSpec[] {
+  return [
+    { name: "name", label: "Full name", autoComplete: "name" },
+    india
+      ? { name: "phone", label: "Mobile number", autoComplete: "tel-national", inputMode: "tel" }
+      : {
+          name: "phone",
+          label: "Phone number",
+          autoComplete: "tel",
+          inputMode: "tel",
+          hint: "With the country code, like +1 415 555 0100.",
+        },
+    { name: "line1", label: "House no., building, street", autoComplete: "address-line1" },
+    { name: "line2", label: "Area, landmark", autoComplete: "address-line2", optional: true },
+    { name: "city", label: "City", autoComplete: "address-level2", half: true },
+    india
+      ? {
+          name: "pincode",
+          label: "PIN code",
+          autoComplete: "postal-code",
+          inputMode: "numeric",
+          half: true,
+        }
+      : {
+          name: "pincode",
+          label: "Postal code",
+          autoComplete: "postal-code",
+          half: true,
+          optional: true,
+        },
+  ];
+}
 
 // New delivery address. Validates in the browser with the same zod schema the server uses, then
-// saves through the createAddress server action.
+// saves through the createAddress server action. The country starts as the visitor's own when we
+// ship there.
 export function AddressForm({ onSaved, onCancel, defaults }: Props) {
+  const { country: visitorCountry } = useCurrency();
+  // Until the shopper picks one; the visitor's country is only known after hydration.
+  const [picked, setPicked] = useState<CountryCode | null>(null);
+  const country = picked ?? findCountry(visitorCountry)?.code ?? "IN";
+  const india = country === "IN";
   const [errors, setErrors] = useState<FieldErrors>({});
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -80,7 +111,36 @@ export function AddressForm({ onSaved, onCancel, defaults }: Props) {
           {message}
         </p>
       ) : null}
-      {fields.map((field) => (
+      <div className="col-span-2">
+        <label htmlFor="address-country" className="mb-1 block text-sm font-semibold">
+          Country
+        </label>
+        <select
+          id="address-country"
+          name="country"
+          autoComplete="country"
+          value={country}
+          onChange={(e) => {
+            setPicked(e.target.value as CountryCode);
+            setErrors({});
+          }}
+          aria-invalid={errors.country ? true : undefined}
+          aria-describedby={errors.country ? "address-country-error" : undefined}
+          className={inputVariants()}
+        >
+          {shippingCountries.map((c) => (
+            <option key={c.code} value={c.code}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+        {errors.country ? (
+          <p id="address-country-error" className="mt-1 text-xs text-sale">
+            {errors.country}
+          </p>
+        ) : null}
+      </div>
+      {fieldsFor(india).map((field) => (
         <div key={field.name} className={field.half ? "col-span-1" : "col-span-2"}>
           <label htmlFor={`address-${field.name}`} className="mb-1 block text-sm font-semibold">
             {field.label}
@@ -92,11 +152,25 @@ export function AddressForm({ onSaved, onCancel, defaults }: Props) {
             autoComplete={field.autoComplete}
             inputMode={field.inputMode}
             defaultValue={
-              field.name === "name" || field.name === "phone" ? defaults?.[field.name] : undefined
+              field.name === "name" || (field.name === "phone" && india)
+                ? defaults?.[field.name]
+                : undefined
             }
             aria-invalid={errors[field.name] ? true : undefined}
-            aria-describedby={errors[field.name] ? `address-${field.name}-error` : undefined}
+            aria-describedby={
+              [
+                field.hint ? `address-${field.name}-hint` : null,
+                errors[field.name] ? `address-${field.name}-error` : null,
+              ]
+                .filter(Boolean)
+                .join(" ") || undefined
+            }
           />
+          {field.hint ? (
+            <p id={`address-${field.name}-hint`} className="mt-1 text-xs text-muted">
+              {field.hint}
+            </p>
+          ) : null}
           {errors[field.name] ? (
             <p id={`address-${field.name}-error`} className="mt-1 text-xs text-sale">
               {errors[field.name]}
@@ -106,26 +180,37 @@ export function AddressForm({ onSaved, onCancel, defaults }: Props) {
       ))}
       <div className="col-span-2">
         <label htmlFor="address-state" className="mb-1 block text-sm font-semibold">
-          State
+          {india ? "State" : "State, province or region"}
+          {india ? null : <span className="font-normal text-muted"> (optional)</span>}
         </label>
-        <select
-          id="address-state"
-          name="state"
-          autoComplete="address-level1"
-          defaultValue=""
-          aria-invalid={errors.state ? true : undefined}
-          aria-describedby={errors.state ? "address-state-error" : undefined}
-          className={inputVariants()}
-        >
-          <option value="" disabled>
-            Choose a state
-          </option>
-          {indianStates.map((state) => (
-            <option key={state} value={state}>
-              {state}
+        {india ? (
+          <select
+            id="address-state"
+            name="state"
+            autoComplete="address-level1"
+            defaultValue=""
+            aria-invalid={errors.state ? true : undefined}
+            aria-describedby={errors.state ? "address-state-error" : undefined}
+            className={inputVariants()}
+          >
+            <option value="" disabled>
+              Choose a state
             </option>
-          ))}
-        </select>
+            {indianStates.map((state) => (
+              <option key={state} value={state}>
+                {state}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <Input
+            id="address-state"
+            name="state"
+            autoComplete="address-level1"
+            aria-invalid={errors.state ? true : undefined}
+            aria-describedby={errors.state ? "address-state-error" : undefined}
+          />
+        )}
         {errors.state ? (
           <p id="address-state-error" className="mt-1 text-xs text-sale">
             {errors.state}

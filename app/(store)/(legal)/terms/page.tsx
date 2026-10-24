@@ -12,7 +12,7 @@ import {
   returnsPolicy,
   shippingPolicy,
 } from "@/lib/config/legal";
-import { shipping } from "@/lib/config/shipping";
+import { internationalShippingLabel, shipping } from "@/lib/config/shipping";
 import { site } from "@/lib/config/site";
 import { formatMoney } from "@/lib/utils/money";
 
@@ -26,10 +26,8 @@ export const metadata: Metadata = {
 // terms & conditions (2026-10-14). Have a lawyer review it before launch; the numbers come from
 // lib/config/legal.ts and lib/config/shipping.ts.
 //
-// NOTE: the "International orders & customs duties" and part of "Shipping & delivery" below
-// describe international shipping, at the owner's request — but the checkout only accepts Indian
-// addresses right now (lib/validators/checkout.ts requires an Indian state and a 6-digit PIN).
-// This section is aspirational until that's actually built; don't launch with it live as-is.
+// International shipping is live (2026-10-24): checkout accepts addresses in the countries listed
+// in lib/config/countries.ts.
 const sections: LegalSection[] = [
   {
     id: "about",
@@ -229,11 +227,8 @@ const sections: LegalSection[] = [
           Domestic dispatch and delivery timelines, and shipping charges, are covered in our{" "}
           <Link href="/shipping">Shipping policy</Link> (currently: dispatch within{" "}
           {shippingPolicy.dispatchDays} business days, delivery {shippingPolicy.deliveryDays}{" "}
-          business days after that,{" "}
-          {shipping.flatPaise > 0
-            ? `free over ${formatMoney(shipping.freeAbovePaise)}, otherwise ${formatMoney(shipping.flatPaise)}`
-            : "free"}
-          ).
+          business days after that, {formatMoney(shipping.domesticPaise)} within India and{" "}
+          {internationalShippingLabel} to other countries).
         </p>
         <p>
           Estimated delivery timelines are provided for guidance and may vary depending on the
@@ -312,9 +307,11 @@ const sections: LegalSection[] = [
     body: (
       <>
         <p>
-          Prices are in Indian rupees and include all applicable taxes. The shipping charge, any
-          coupon discount and the total are shown in your cart and at checkout before you pay. We
-          don&rsquo;t add any other fees.
+          Prices are in Indian rupees and include all applicable Indian taxes. Visitors outside
+          India see prices converted into their local currency as an estimate only; orders are
+          charged in Indian rupees, or in US dollars for some international orders, as shown at
+          checkout before you pay. The shipping charge, any coupon discount and the total are shown
+          in your cart and at checkout before you pay. We don&rsquo;t add any other fees.
         </p>
         <p>
           We reserve the right to correct genuine pricing, listing or technical errors. If a piece

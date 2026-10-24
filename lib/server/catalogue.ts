@@ -173,10 +173,12 @@ export async function getCategoryTiles(slugs: readonly string[]): Promise<Catego
     const c = bySlug.get(slug);
     return c && !(c.image_url && !c.image_url.startsWith("https://placehold.co/"));
   });
-  const categoryIds = new Map(needsPhoto.map((slug) => {
-    const row = all.find((r) => r.slug === slug);
-    return [slug, row ? withDescendants(all, row.id) : []];
-  }));
+  const categoryIds = new Map(
+    needsPhoto.map((slug) => {
+      const row = all.find((r) => r.slug === slug);
+      return [slug, row ? withDescendants(all, row.id) : []];
+    }),
+  );
   const candidateIds = [...new Set([...categoryIds.values()].flat())];
   const { data: candidates, error: photoError } = candidateIds.length
     ? await supabase
@@ -186,7 +188,10 @@ export async function getCategoryTiles(slugs: readonly string[]): Promise<Catego
         .in("status", ["available", "reserved"])
         .order("published_at", { ascending: false })
         .order("sort_order", { referencedTable: "product_images" })
-    : { data: [] as { category_id: string | null; product_images: { url: string }[] }[], error: null };
+    : {
+        data: [] as { category_id: string | null; product_images: { url: string }[] }[],
+        error: null,
+      };
   logError("getCategoryTiles (photo)", photoError);
   // Newest first, so the first photo seen for a category id is the one to keep.
   const photoByCategoryId = new Map<string, string>();

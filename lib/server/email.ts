@@ -1,6 +1,7 @@
 import "server-only";
 import { business, formatAddress, grievanceOfficer, returnsPolicy } from "@/lib/config/legal";
 import { site } from "@/lib/config/site";
+import { addressLines as formatAddressLines, displayPhone } from "@/lib/utils/address";
 import { formatMoney } from "@/lib/utils/money";
 import { supportTopics, type SupportTopic } from "@/lib/validators/support";
 
@@ -105,7 +106,10 @@ export type ConfirmationOrder = {
   shippingPaise: number;
   discountPaise: number;
   totalPaise: number;
+  /** Set when Razorpay charged USD instead of rupees, e.g. "US$52.60". */
+  chargedUsd?: string | null;
   address: {
+    country?: string;
     name: string;
     line1: string;
     line2: string | null;
@@ -122,9 +126,7 @@ export function orderConfirmationEmail(order: ConfirmationOrder): Omit<Email, "t
   const unavailable = order.items.filter((i) => i.unavailable);
   const refundPaise = unavailable.reduce((sum, i) => sum + i.pricePaise, 0);
   const a = order.address;
-  const addressLines = [a.name, a.line1, a.line2, `${a.city}, ${a.state} ${a.pincode}`].filter(
-    (l): l is string => Boolean(l),
-  );
+  const addressLines = [a.name, ...formatAddressLines(a)];
 
   const rows: [string, string][] = [
     ["Subtotal", formatMoney(order.subtotalPaise)],
@@ -132,7 +134,9 @@ export function orderConfirmationEmail(order: ConfirmationOrder): Omit<Email, "t
     ...(order.discountPaise > 0
       ? ([["Discount", `−${formatMoney(order.discountPaise)}`]] as [string, string][])
       : []),
-    ["Paid", formatMoney(order.totalPaise)],
+    order.chargedUsd
+      ? ["Paid", `${order.chargedUsd} (${formatMoney(order.totalPaise)})`]
+      : ["Paid", formatMoney(order.totalPaise)],
   ];
 
   const refundNote = unavailable.length
@@ -272,8 +276,11 @@ export type OrderNotification = {
   shippingPaise: number;
   discountPaise: number;
   totalPaise: number;
+  /** Set when Razorpay charged USD instead of rupees, e.g. "US$52.60". */
+  chargedUsd?: string | null;
   paymentMethod: string | null;
   address: {
+    country?: string;
     name: string;
     phone: string;
     line1: string;
@@ -291,13 +298,7 @@ export type OrderNotification = {
 export function orderNotificationEmail(o: OrderNotification): Omit<Email, "to"> {
   const shortId = o.id.slice(0, 8).toUpperCase();
   const a = o.address;
-  const addressLines = [
-    a.name,
-    a.phone,
-    a.line1,
-    a.line2,
-    `${a.city}, ${a.state} ${a.pincode}`,
-  ].filter((l): l is string => Boolean(l));
+  const addressLines = [a.name, displayPhone(a), ...formatAddressLines(a)];
   const unavailable = o.items.filter((i) => i.unavailable);
   const needsManualRefund = o.status === "cancelled";
 
@@ -315,6 +316,7 @@ export function orderNotificationEmail(o: OrderNotification): Omit<Email, "to"> 
     `Shipping: ${o.shippingPaise === 0 ? "Free" : formatMoney(o.shippingPaise)}`,
     ...(o.discountPaise > 0 ? [`Discount: -${formatMoney(o.discountPaise)}`] : []),
     `Total: ${formatMoney(o.totalPaise)}`,
+    ...(o.chargedUsd ? [`Charged in USD: ${o.chargedUsd} (refund in USD)`] : []),
     `Payment method: ${o.paymentMethod ?? "unknown"}`,
     "",
     `Customer: ${o.customerEmail ?? "no email on file"}`,

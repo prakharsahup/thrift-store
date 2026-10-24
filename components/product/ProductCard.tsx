@@ -1,9 +1,9 @@
 import Link from "next/link";
+import { Price } from "@/components/currency/Price";
 import { conditions } from "@/lib/config/conditions";
 import type { ProductCardData } from "@/lib/server/catalogue";
 import { ImageWithFallback } from "@/components/ui/ImageWithFallback";
 import { cn } from "@/lib/utils/cn";
-import { formatMoney } from "@/lib/utils/money";
 import { conditionTone } from "./conditionTone";
 import { WishlistHeart } from "./WishlistHeart";
 
@@ -59,7 +59,7 @@ export function ProductCard({ product, sizes, className }: Props) {
             {product.brand ?? "Unbranded"}
           </span>
           <span className="mt-0.5 block truncate text-sm font-medium">{product.title}</span>
-          <span className="mt-1 block text-sm font-bold">{formatMoney(product.pricePaise)}</span>
+          <Price amountPaise={product.pricePaise} className="mt-1 block text-sm font-bold" />
           <span className="mt-2 flex items-center gap-2 text-xs">
             <span
               className={cn(

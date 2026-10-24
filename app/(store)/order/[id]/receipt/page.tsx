@@ -4,15 +4,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { PrintButton } from "@/components/checkout/PrintButton";
+import { countryName } from "@/lib/config/countries";
 import { business, formatAddress, tax } from "@/lib/config/legal";
 import { formatOrderDate, shortOrderId } from "@/lib/config/orders";
 import { site } from "@/lib/config/site";
 import { requireUser } from "@/lib/server/auth";
+import { addressLines, displayPhone } from "@/lib/utils/address";
 import { formatMoney } from "@/lib/utils/money";
 
 export const metadata: Metadata = { title: "Order receipt", robots: { index: false } };
 
 const addressSnapshotSchema = z.object({
+  country: z.string().optional(),
   name: z.string(),
   phone: z.string(),
   line1: z.string(),
@@ -127,20 +130,19 @@ export default async function OrderReceiptPage({ params }: PageProps<"/order/[id
             </h2>
             <address className="mt-2 not-italic">
               <span className="block font-semibold">{address.data.name}</span>
-              {[
-                address.data.line1,
-                address.data.line2,
-                `${address.data.city}, ${address.data.state} ${address.data.pincode}`,
-              ]
-                .filter(Boolean)
-                .map((line) => (
-                  <span key={line} className="block">
-                    {line}
-                  </span>
-                ))}
-              <span className="block">+91 {address.data.phone}</span>
+              {addressLines(address.data).map((line) => (
+                <span key={line} className="block">
+                  {line}
+                </span>
+              ))}
+              <span className="block">{displayPhone(address.data)}</span>
             </address>
-            <p className="mt-2 text-muted">Place of supply: {address.data.state}</p>
+            <p className="mt-2 text-muted">
+              Place of supply:{" "}
+              {address.data.country && address.data.country !== "IN"
+                ? `Outside India (${countryName(address.data.country)})`
+                : address.data.state}
+            </p>
           </section>
         ) : null}
 

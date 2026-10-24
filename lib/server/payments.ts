@@ -14,6 +14,20 @@ export function getRazorpayConfig(): RazorpayConfig | null {
   return keyId && keySecret ? { keyId, keySecret } : null;
 }
 
+/** What a Razorpay order is charged in. */
+export type ChargeCurrency = "INR" | "USD";
+
+/**
+ * The currency for orders shipping outside India: "USD" when RAZORPAY_INTERNATIONAL_CURRENCY=USD,
+ * otherwise INR like every other order. Razorpay only shows PayPal (and cards in the buyer's own
+ * currency) for non-INR orders, so turn this on once International payments, and PayPal under
+ * Account & Settings → International payments, are approved for the Razorpay account. Creating a
+ * USD order before that fails, so it stays off by default.
+ */
+export function internationalChargeCurrency(): ChargeCurrency {
+  return process.env.RAZORPAY_INTERNATIONAL_CURRENCY === "USD" ? "USD" : "INR";
+}
+
 /** Constant-time comparison of a hex HMAC-SHA256 against what we compute. */
 function hmacMatches(secret: string, payload: string, signature: string): boolean {
   const expected = createHmac("sha256", secret).update(payload).digest();
@@ -22,16 +36,16 @@ function hmacMatches(secret: string, payload: string, signature: string): boolea
 }
 
 /**
- * Creates the Razorpay order the browser pays against. `amountPaise` must come from our own
- * order row, never from the client. Returns Razorpay's order id ("order_…").
+ * Creates the Razorpay order the browser pays against. `amount` must come from our own order row,
+ * never from the client. Returns Razorpay's order id ("order_…").
  *
- * The store prices everything in INR, and `amountPaise` is a true paise amount (CLAUDE.md §2.7).
- * `currency` must match: Razorpay charges whatever integer we send in the unit of this currency,
- * so sending "USD" against a paise amount would charge roughly 80x the intended price.
+ * `amount` is in the smallest unit of `currency` (CLAUDE.md §2.7): paise for INR, cents for USD.
+ * The two must match: Razorpay charges whatever integer we send in the unit of this currency, so
+ * sending "USD" against a paise amount would charge roughly 80x the intended price.
  */
 export async function createRazorpayOrder(
   config: RazorpayConfig,
-  order: { id: string; amountPaise: number },
+  order: { id: string; amount: number; currency: ChargeCurrency },
 ): Promise<string> {
   const response = await fetch("https://api.razorpay.com/v1/orders", {
     method: "POST",
@@ -40,8 +54,8 @@ export async function createRazorpayOrder(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      amount: order.amountPaise,
-      currency: "INR",
+      amount: order.amount,
+      currency: order.currency,
       receipt: order.id,
       notes: { order_id: order.id },
     }),

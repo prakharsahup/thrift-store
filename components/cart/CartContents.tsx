@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/Button";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { shippingFor } from "@/lib/config/shipping";
 import { useStartCheckout } from "@/components/checkout/useStartCheckout";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { useCartStore } from "@/lib/stores/cart";
 import { cn } from "@/lib/utils/cn";
-import { formatMoney } from "@/lib/utils/money";
 import { CartLine } from "./CartLine";
 
 type Props = {
@@ -17,17 +17,19 @@ type Props = {
 };
 
 // The cart itself, shared by the drawer and /cart: lines, subtotal and the checkout button.
-// Totals here are estimates for display; checkout recomputes on the server.
+// Totals here are estimates for display; checkout recomputes on the server. Shipping is estimated
+// from the visitor's country until they choose an address at checkout.
 export function CartContents({ variant }: Props) {
   const lines = useCartStore((s) => s.lines);
   const error = useCartStore((s) => s.error);
   const closeCart = useCartStore((s) => s.closeCart);
   const ready = useCartStore((s) => s.ready);
   const checkout = useStartCheckout();
+  const { country, currency, rates, format } = useCurrency();
 
   const buyable = lines.filter((l) => l.status === "available");
   const subtotal = buyable.reduce((sum, l) => sum + l.pricePaise, 0);
-  const shippingCost = buyable.length ? shippingFor(subtotal) : 0;
+  const shippingCost = buyable.length ? shippingFor(country ?? "IN", rates.USD) : 0;
   const blocked = lines.length > buyable.length;
 
   if (!ready) {
@@ -83,16 +85,19 @@ export function CartContents({ variant }: Props) {
         <dl className="space-y-1 text-sm">
           <div className="flex justify-between">
             <dt>Subtotal</dt>
-            <dd className="font-semibold">{formatMoney(subtotal)}</dd>
+            <dd className="font-semibold">{format(subtotal)}</dd>
           </div>
           <div className="flex justify-between text-muted">
             <dt>Shipping</dt>
-            <dd>{shippingCost === 0 ? "Free" : formatMoney(shippingCost)}</dd>
+            <dd>{buyable.length ? format(shippingCost) : "—"}</dd>
           </div>
         </dl>
         <p className="mt-2 text-xs text-muted">
-          Prices include all taxes. Items aren&rsquo;t held until you start checkout — then
-          they&rsquo;re yours for 15 minutes.
+          {currency === "INR"
+            ? "Prices include all taxes. "
+            : `Approximate prices in ${currency}. The exact amount is shown at checkout; any import duties are extra. `}
+          Items aren&rsquo;t held until you start checkout — then they&rsquo;re yours for 15
+          minutes.
         </p>
         {checkout.message ? (
           <p role="alert" className="mt-3 text-sm text-sale">

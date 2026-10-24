@@ -30,6 +30,19 @@ cron, and an owner email alert (including the late-payment/manual-refund edge ca
 - [ ] Decide the swap plan from test keys → live keys (who flips it, when, and re-test immediately after)
 - [ ] Watch `ORDER_NOTIFICATION_EMAIL` for the first few real orders to make sure it's landing
 
+### International orders (added 2026-10-24)
+
+Code-complete: ship-to list in `lib/config/countries.ts`, shipping ₹200 India / US$40 abroad
+(`lib/config/shipping.ts`), prices shown in the visitor's currency (geo cookie + daily ECB rates,
+`lib/server/rates.ts`), international addresses, and USD charging for orders abroad behind
+`RAZORPAY_INTERNATIONAL_CURRENCY`.
+
+- [x] Migrations `20261024120000_international_addresses.sql` and `20261024130000_order_charge_currency.sql` pushed to the hosted DB 2026-10-24
+- [ ] Razorpay Dashboard (live mode) → Account & Settings → **International payments**: request activation (needs IEC/export details per Razorpay's form)
+- [ ] Same page → **PayPal → Link Account** with a PayPal Business account (PAN + bank verified). Razorpay only shows PayPal for non-INR orders, so then set `RAZORPAY_INTERNATIONAL_CURRENCY=USD` in Vercel and redeploy
+- [ ] Test one international order end-to-end (address abroad → USD Razorpay order → card or PayPal → order shows "Charged in US dollars")
+- [ ] Confirm the ship-to country list with the courier once one is chosen
+
 ## 3. SEO (CLAUDE.md phase 8)
 
 - [x] `app/sitemap.ts` — added 2026-10-24: static pages, `/men|women|unisex`, every category, every published drop, every listed product (`lib/server/catalogue.ts` `getSitemapProducts`/`getAllCategorySlugs`)
@@ -66,8 +79,9 @@ Cross-reference with `COMPLIANCE.md` §1 for the legal ones. Also still placehol
 - [ ] `site.ts`: `tagline`, `announcements`, and all three `socials` hrefs (Instagram/YouTube/WhatsApp all point at the bare platform homepages)
 - [ ] `lib/config/legal.ts`: every `[BRACKETED]` value — legal name, address, GSTIN, grievance officer, jurisdiction city
 - [ ] `lib/config/legal.ts` `tax.hsn`/`pricesIncludeTax` — flagged in code as needing a CA's confirmation
-- [ ] `lib/config/shipping.ts` flat/free-shipping thresholds — currently placeholder ₹79 / ₹999
-- [ ] Seed data (`supabase/seed.sql`, ~40 placeholder products) needs replacing with real inventory before go-live, or at minimum removing from a production seed run
+- [x] `lib/config/shipping.ts` — owner's rates set 2026-10-24: ₹200 flat in India, US$40 flat abroad, no free-shipping threshold
+- [x] Seed data hidden on the hosted DB 2026-10-24 (`supabase/snippets/launch_hide_seed_data.sql`): 35 placeholder products → draft, 2 placeholder banners off, 2 seed drops unpublished, 3 seed coupons off. Nothing deleted. 3 sold seed products were left as sold (already past the 7-day SOLD window). 46 categories still use placehold.co tile images — need real photos
+- [x] `vendoo-full-2026-10-02.csv` (cost of goods, fees, internal notes) untracked and git-ignored 2026-10-24 — it's still in the public repo's **history**; rewriting history needs the partner (force-push) or making the repo private again
 
 ## 8. Hosting & domain
 

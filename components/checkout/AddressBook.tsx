@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { deleteAddress, makeDefaultAddress, type Address } from "@/lib/actions/addresses";
+import { addressLines, displayPhone } from "@/lib/utils/address";
 import { AddressForm } from "./AddressForm";
 
 type Props = {
@@ -50,12 +51,8 @@ export function AddressBook({ addresses, defaults }: Props) {
                   </span>
                 ) : null}
               </p>
-              <p className="mt-1 text-muted">
-                {[a.line1, a.line2, `${a.city}, ${a.state} ${a.pincode}`]
-                  .filter(Boolean)
-                  .join(", ")}
-              </p>
-              <p className="text-muted">+91 {a.phone}</p>
+              <p className="mt-1 text-muted">{addressLines(a).join(", ")}</p>
+              <p className="text-muted">{displayPhone(a)}</p>
               <div className="mt-3 flex gap-4">
                 {a.isDefault ? null : (
                   <Button

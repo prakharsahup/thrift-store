@@ -12,7 +12,7 @@ type UserClient = Awaited<ReturnType<typeof createClient>>;
 export async function getAddresses(supabase: UserClient): Promise<Address[]> {
   const { data, error } = await supabase
     .from("addresses")
-    .select("id, name, phone, line1, line2, city, state, pincode, is_default")
+    .select("id, country, name, phone, line1, line2, city, state, pincode, is_default")
     .order("is_default", { ascending: false })
     .order("created_at");
   if (error) console.error(`[checkout] addresses: ${error.message}`);

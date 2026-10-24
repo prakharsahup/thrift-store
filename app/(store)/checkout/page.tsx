@@ -4,7 +4,7 @@ import { CheckoutStart } from "@/components/checkout/CheckoutStart";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { requireUser } from "@/lib/server/auth";
 import { getAddresses, getHeldItems } from "@/lib/server/checkout";
-import { getRazorpayConfig } from "@/lib/server/payments";
+import { getRazorpayConfig, internationalChargeCurrency } from "@/lib/server/payments";
 
 export const metadata: Metadata = { title: "Checkout", robots: { index: false } };
 
@@ -47,6 +47,7 @@ export default async function CheckoutPage({ searchParams }: PageProps<"/checkou
           addresses={addresses}
           contact={{ name: profile?.full_name ?? "", phone: profile?.phone ?? "" }}
           paymentsEnabled={getRazorpayConfig() !== null}
+          internationalCurrency={internationalChargeCurrency()}
         />
       ) : (
         <CheckoutStart />

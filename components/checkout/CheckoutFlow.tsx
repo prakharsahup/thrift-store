@@ -5,6 +5,7 @@ import Link from "next/link";
 import Script from "next/script";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import type { Address } from "@/lib/actions/addresses";
@@ -14,7 +15,8 @@ import { returnsPolicy } from "@/lib/config/legal";
 import { shippingFor } from "@/lib/config/shipping";
 import { site } from "@/lib/config/site";
 import { useCartStore } from "@/lib/stores/cart";
-import { formatMoney } from "@/lib/utils/money";
+import { addressLines, displayPhone } from "@/lib/utils/address";
+import { formatConverted, formatMoney } from "@/lib/utils/money";
 import { AddressForm } from "./AddressForm";
 import { HoldCountdown, useSecondsLeft } from "./HoldCountdown";
 import { RAZORPAY_SCRIPT_URL, type RazorpaySuccess } from "./razorpay";
@@ -26,19 +28,24 @@ type Props = {
   /** Prefill for a new address. */
   contact: { name: string; phone: string };
   paymentsEnabled: boolean;
+  /** What orders shipping abroad are charged in (lib/server/payments.ts). */
+  internationalCurrency: "INR" | "USD";
 };
 
 // The checkout page's interactive part: address, coupon, summary and the Razorpay payment.
 // Totals shown here are estimates; /api/checkout recomputes them from the database and Razorpay
-// charges the server's amount.
+// charges the server's amount. Checkout is in rupees (what Razorpay charges); visitors abroad also
+// see the total converted into their currency.
 export function CheckoutFlow({
   items,
   reservedUntil,
   addresses: initialAddresses,
   contact,
   paymentsEnabled,
+  internationalCurrency,
 }: Props) {
   const router = useRouter();
+  const { currency, rates, format } = useCurrency();
   const secondsLeft = useSecondsLeft(reservedUntil);
   const expired = secondsLeft === 0;
 
@@ -59,9 +66,16 @@ export function CheckoutFlow({
 
   const productIds = items.map((i) => i.id);
   const subtotal = items.reduce((sum, i) => sum + i.pricePaise, 0);
-  const shippingCost = shippingFor(subtotal);
+  const selectedAddress = addresses.find((a) => a.id === addressId);
+  const abroad = selectedAddress ? selectedAddress.country !== "IN" : false;
+  const shippingCost = shippingFor(selectedAddress?.country ?? "IN", rates.USD);
   const discount = Math.min(coupon?.discountPaise ?? 0, subtotal);
   const total = subtotal + shippingCost - discount;
+  // Estimate only: /api/checkout converts the server's total at the same daily rate.
+  const chargedInUsd = abroad && internationalCurrency === "USD";
+  const payLabel = chargedInUsd
+    ? `Pay ${formatConverted(total, "USD", rates.USD)}`
+    : `Pay ${formatMoney(total)}`;
 
   async function applyCoupon(event: React.FormEvent) {
     event.preventDefault();
@@ -145,9 +159,10 @@ export function CheckoutFlow({
       .trim();
     const checkout = new window.Razorpay({
       key: body.keyId,
-      amount: body.amountPaise,
-      // Must match the order's own currency (lib/server/payments.ts) — the order was created in INR.
-      currency: "INR",
+      amount: body.amount,
+      // Must match the Razorpay order's currency (lib/server/payments.ts): INR, or USD for
+      // international orders when that's switched on.
+      currency: body.currency,
       name: site.name,
       description: `Order #${body.orderId.slice(0, 8).toUpperCase()}`,
       order_id: body.razorpayOrderId,
@@ -200,12 +215,8 @@ export function CheckoutFlow({
                   />
                   <span className="text-sm">
                     <span className="block font-semibold">{a.name}</span>
-                    <span className="block text-muted">
-                      {[a.line1, a.line2, `${a.city}, ${a.state} ${a.pincode}`]
-                        .filter(Boolean)
-                        .join(", ")}
-                    </span>
-                    <span className="block text-muted">+91 {a.phone}</span>
+                    <span className="block text-muted">{addressLines(a).join(", ")}</span>
+                    <span className="block text-muted">{displayPhone(a)}</span>
                   </span>
                 </label>
               ))}
@@ -326,7 +337,7 @@ export function CheckoutFlow({
             </div>
             <div className="flex justify-between">
               <dt>Shipping</dt>
-              <dd>{shippingCost === 0 ? "Free" : formatMoney(shippingCost)}</dd>
+              <dd>{formatMoney(shippingCost)}</dd>
             </div>
             {discount > 0 ? (
               <div className="flex justify-between text-sale">
@@ -339,7 +350,23 @@ export function CheckoutFlow({
               <dd>{formatMoney(total)}</dd>
             </div>
           </dl>
-          <p className="mt-1 text-xs text-muted">Inclusive of all taxes. No other charges.</p>
+          {chargedInUsd ? (
+            <p className="mt-1 text-right text-sm text-muted">
+              Charged in US dollars: ≈ {formatConverted(total, "USD", rates.USD)}
+            </p>
+          ) : currency !== "INR" ? (
+            <p className="mt-1 text-right text-sm text-muted">≈ {format(total)}</p>
+          ) : null}
+          <p className="mt-1 text-xs text-muted">
+            {abroad
+              ? "Inclusive of Indian taxes. Any import duties or taxes in your country are paid on delivery."
+              : "Inclusive of all taxes. No other charges."}
+            {chargedInUsd
+              ? " You pay in US dollars, converted from the rupee price at today's rate."
+              : currency !== "INR"
+                ? " You pay in Indian rupees; your bank converts at its own rate."
+                : null}
+          </p>
 
           {error ? (
             <p role="alert" className="mt-4 rounded-md bg-surface p-3 text-sm text-sale">
@@ -366,11 +393,15 @@ export function CheckoutFlow({
                 disabled={!paymentsEnabled || paying || !addressId}
                 onClick={() => void pay()}
               >
-                {paying ? "Opening payment…" : `Pay ${formatMoney(total)}`}
+                {paying ? "Opening payment…" : payLabel}
               </Button>
               <p className="mt-2 text-center text-xs text-muted">
                 {paymentsEnabled
-                  ? "UPI, cards and netbanking via Razorpay."
+                  ? abroad
+                    ? chargedInUsd
+                      ? "Cards and PayPal via Razorpay."
+                      : "International cards via Razorpay."
+                    : "UPI, cards and netbanking via Razorpay."
                   : "Online payments aren't switched on yet."}
               </p>
               {!returnsPolicy.changeOfMind ? (

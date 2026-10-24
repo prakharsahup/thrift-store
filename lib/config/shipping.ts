@@ -1,10 +1,18 @@
-// Single source of truth for the shipping rule (placeholder values — owner to confirm).
+// Single source of truth for the shipping rule (owner decision, 2026-10-24). Flat rates, no
+// free-shipping threshold. The courier isn't chosen yet.
 export const shipping = {
-  flatPaise: 7900, // ₹79
-  freeAbovePaise: 99900, // free on orders of ₹999 and above
+  domesticPaise: 20000, // ₹200 anywhere in India
+  internationalUsdCents: 4000, // US$40 to every other country in lib/config/countries.ts
 } as const;
 
-/** Shipping charge in paise for a given subtotal in paise. */
-export function shippingFor(subtotalPaise: number): number {
-  return subtotalPaise >= shipping.freeAbovePaise ? 0 : shipping.flatPaise;
+/**
+ * Shipping charge in paise to a destination country. International shipping is priced in US
+ * dollars but charged in rupees, at `usdPerRupee` (the day's rate), rounded up to a whole rupee.
+ */
+export function shippingFor(country: string, usdPerRupee: number): number {
+  if (country === "IN") return shipping.domesticPaise;
+  return Math.ceil(shipping.internationalUsdCents / usdPerRupee / 100) * 100;
 }
+
+/** "US$40", for policy text. */
+export const internationalShippingLabel = `US$${shipping.internationalUsdCents / 100}`;

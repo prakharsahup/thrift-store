@@ -5,11 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { Search } from "lucide-react";
+import { useCurrency } from "@/components/currency/CurrencyProvider";
 import { ImageWithFallback } from "@/components/ui/ImageWithFallback";
 import { Input } from "@/components/ui/Input";
 import type { SearchSuggestion } from "@/lib/server/catalogue";
 import { cn } from "@/lib/utils/cn";
-import { formatMoney } from "@/lib/utils/money";
 
 type Props = { className?: string };
 
@@ -30,6 +30,7 @@ export function HeaderSearch({ className }: Props) {
   const router = useRouter();
   const id = useId();
   const listId = `${id}-list`;
+  const { format } = useCurrency();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchSuggestion[]>([]);
   const [open, setOpen] = useState(false);
@@ -177,7 +178,7 @@ export function HeaderSearch({ className }: Props) {
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium">{result.title}</span>
                     <span className="block text-xs text-muted">
-                      {[result.brand, formatMoney(result.pricePaise), result.sold ? "Sold" : null]
+                      {[result.brand, format(result.pricePaise), result.sold ? "Sold" : null]
                         .filter(Boolean)
                         .join(" · ")}
                     </span>
