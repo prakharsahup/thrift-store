@@ -129,6 +129,11 @@ html.reveal-pending [data-reveal="load"]:not([data-reveal-ready]) {
   visibility: hidden;
 }
 
+/* Prices stay hidden until they're converted to the visitor's currency (lib/currency/init-script.ts). */
+html.currency-pending [data-price] {
+  visibility: hidden;
+}
+
 /* RevealText line masks clip at the line box, which cuts off descenders (g, y) in tight headings.
    Extend the clip area without changing the layout. */
 .reveal-line-mask {

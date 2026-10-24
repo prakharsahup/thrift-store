@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Info, RotateCcw, Store, Truck } from "lucide-react";
+import { Price } from "@/components/currency/Price";
+import { PriceNote } from "@/components/currency/PriceNote";
 import { ProductRail } from "@/components/home/ProductRail";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { AddToCartButton } from "@/components/product/AddToCartButton";
@@ -15,7 +17,7 @@ import { ChipLink } from "@/components/ui/ChipLink";
 import { business, returnsPolicy, shippingPolicy } from "@/lib/config/legal";
 import { genders, styleTags } from "@/lib/config/navigation";
 import { site } from "@/lib/config/site";
-import { shipping } from "@/lib/config/shipping";
+import { internationalShippingLabel, shipping } from "@/lib/config/shipping";
 import { getProductBySlug, getRelatedProducts, type ProductDetail } from "@/lib/server/catalogue";
 import { formatMoney } from "@/lib/utils/money";
 
@@ -133,9 +135,9 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
           </h1>
 
           <p className="mt-3 font-body text-lg font-bold tabular-nums lg:text-xl">
-            {formatMoney(product.pricePaise)}
+            <Price amountPaise={product.pricePaise} />
           </p>
-          <p className="mt-1 text-xs text-muted">Inclusive of all taxes.</p>
+          <PriceNote amountPaise={product.pricePaise} className="mt-1 text-xs text-muted" />
 
           <dl className="mt-5 grid grid-cols-2 gap-4 border-y border-border py-4 text-sm">
             <div>
@@ -210,10 +212,9 @@ export default async function ProductPage({ params }: PageProps<"/p/[slug]">) {
               <Truck aria-hidden className="mt-0.5 size-4 shrink-0 text-primary" />
               <span>
                 Ships within {shippingPolicy.dispatchDays} business days; usually delivered{" "}
-                {shippingPolicy.deliveryDays} business days later.{" "}
-                {shipping.flatPaise > 0
-                  ? `Free shipping over ${formatMoney(shipping.freeAbovePaise)}, otherwise ${formatMoney(shipping.flatPaise)}.`
-                  : null}{" "}
+                {shippingPolicy.deliveryDays} business days later. Delivery is{" "}
+                {formatMoney(shipping.domesticPaise)} within India and {internationalShippingLabel}{" "}
+                to other countries.{" "}
                 <Link href="/shipping" className="underline hover:text-primary">
                   Shipping
                 </Link>

@@ -1,10 +1,9 @@
 import "server-only";
 import { z } from "zod";
 import { site } from "@/lib/config/site";
-import { shipping } from "@/lib/config/shipping";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Json } from "@/lib/supabase/types";
-import { formatMoney } from "@/lib/utils/money";
+import { formatMoney, formatUsdCharge } from "@/lib/utils/money";
 import type { AddressInput } from "@/lib/validators/checkout";
 import {
   orderConfirmationEmail,
@@ -45,18 +44,25 @@ export type StartedCheckout =
       reservedUntil: string;
     };
 
-/** Holds the items and creates the pending order (prices from the database, never the client). */
+/** No free-shipping threshold (lib/config/shipping.ts): start_checkout's cut-off is never reached. */
+const NO_FREE_SHIPPING = 2_147_483_647;
+
+/**
+ * Holds the items and creates the pending order (prices from the database, never the client).
+ * `shippingPaise` is the flat charge for the address's country, worked out by the caller.
+ */
 export async function startCheckout(input: {
   userId: string;
   productIds: string[];
   address: AddressInput;
+  shippingPaise: number;
 }): Promise<StartedCheckout> {
   const { data, error } = await createAdminClient().rpc("start_checkout", {
     user_id: input.userId,
     product_ids: input.productIds,
     address: input.address satisfies Record<string, Json>,
-    shipping_flat_paise: shipping.flatPaise,
-    free_shipping_above_paise: shipping.freeAbovePaise,
+    shipping_flat_paise: input.shippingPaise,
+    free_shipping_above_paise: NO_FREE_SHIPPING,
   });
   if (error) throw new Error(`start_checkout: ${error.message}`);
   const result = startCheckoutSchema.parse(data);
@@ -72,10 +78,18 @@ export async function startCheckout(input: {
     : { ok: false, unavailableProductIds: result.unavailable_product_ids };
 }
 
-export async function setRazorpayOrderId(orderId: string, razorpayOrderId: string): Promise<void> {
+/** Links the Razorpay order and records what it charges (currency + smallest-unit amount). */
+export async function setRazorpayOrder(
+  orderId: string,
+  razorpay: { orderId: string; currency: "INR" | "USD"; amount: number },
+): Promise<void> {
   const { error } = await createAdminClient()
     .from("orders")
-    .update({ razorpay_order_id: razorpayOrderId })
+    .update({
+      razorpay_order_id: razorpay.orderId,
+      charge_currency: razorpay.currency,
+      charge_amount: razorpay.amount,
+    })
     .eq("id", orderId);
   if (error) throw new Error(`set razorpay_order_id: ${error.message}`);
 }
@@ -164,6 +178,7 @@ const markPaidSchema = z.object({
 });
 
 const addressSnapshotSchema = z.object({
+  country: z.string().optional(),
   name: z.string(),
   phone: z.string(),
   line1: z.string(),
@@ -190,7 +205,7 @@ async function notifyLatePayment(
   const { data: order, error } = await admin
     .from("orders")
     .select(
-      "id, user_id, subtotal_paise, shipping_paise, discount_paise, total_paise, payment_method, address, order_items(title_snapshot, price_paise_snapshot, unavailable)",
+      "id, user_id, subtotal_paise, shipping_paise, discount_paise, total_paise, charge_currency, charge_amount, payment_method, address, order_items(title_snapshot, price_paise_snapshot, unavailable)",
     )
     .eq("id", orderId)
     .single();
@@ -222,6 +237,7 @@ async function notifyLatePayment(
       shippingPaise: order.shipping_paise,
       discountPaise: order.discount_paise,
       totalPaise: order.total_paise,
+      chargedUsd: formatUsdCharge(order),
       paymentMethod: order.payment_method,
       address: address.data,
       adminUrl: `${site.url}/admin/orders/${order.id}`,
@@ -269,7 +285,7 @@ export async function finalisePaidOrder(
   const { data: order, error: orderError } = await admin
     .from("orders")
     .select(
-      "id, user_id, subtotal_paise, shipping_paise, discount_paise, total_paise, payment_method, address, order_items(product_id, title_snapshot, price_paise_snapshot, unavailable, product:products(slug))",
+      "id, user_id, subtotal_paise, shipping_paise, discount_paise, total_paise, charge_currency, charge_amount, payment_method, address, order_items(product_id, title_snapshot, price_paise_snapshot, unavailable, product:products(slug))",
     )
     .eq("id", orderId)
     .single();
@@ -310,6 +326,7 @@ export async function finalisePaidOrder(
         shippingPaise: order.shipping_paise,
         discountPaise: order.discount_paise,
         totalPaise: order.total_paise,
+        chargedUsd: formatUsdCharge(order),
         address: address.data,
       }),
     });
@@ -330,6 +347,7 @@ export async function finalisePaidOrder(
         shippingPaise: order.shipping_paise,
         discountPaise: order.discount_paise,
         totalPaise: order.total_paise,
+        chargedUsd: formatUsdCharge(order),
         paymentMethod: order.payment_method,
         address: address.data,
         adminUrl: `${site.url}/admin/orders/${order.id}`,

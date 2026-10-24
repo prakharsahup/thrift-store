@@ -74,6 +74,11 @@ const storage: [string, string, string][] = [
   ["cart (local storage)", "Remembers your cart while you're signed out.", "Essential"],
   ["motion (local storage)", "Remembers if you turned animations off.", "Preference"],
   [
+    "geo_country (cookie)",
+    "Your country, worked out from your IP address by our host, so prices show in your currency. Kept for 30 days.",
+    "Essential",
+  ],
+  [
     "Razorpay cookies",
     "Set by Razorpay inside its payment window to process and secure payments.",
     "Essential",

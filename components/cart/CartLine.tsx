@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { X } from "lucide-react";
+import { Price } from "@/components/currency/Price";
 import { Button } from "@/components/ui/Button";
 import { ImageWithFallback } from "@/components/ui/ImageWithFallback";
 import type { CartLine as CartLineData } from "@/lib/cart/types";
 import { useCartStore } from "@/lib/stores/cart";
 import { cn } from "@/lib/utils/cn";
-import { formatMoney } from "@/lib/utils/money";
 
 type Props = { line: CartLineData };
 
@@ -43,7 +43,7 @@ export function CartLine({ line }: Props) {
           {[line.brand, line.taggedSize && `Size ${line.taggedSize}`].filter(Boolean).join(" · ")}
         </p>
         <p className={cn("mt-1 text-sm font-bold", unavailable && "text-muted line-through")}>
-          {formatMoney(line.pricePaise)}
+          <Price amountPaise={line.pricePaise} />
         </p>
         {unavailable ? (
           <p className="mt-1 text-xs font-semibold text-sale">

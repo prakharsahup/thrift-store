@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Price } from "@/components/currency/Price";
 import type { ProductCardData } from "@/lib/server/catalogue";
 import { cn } from "@/lib/utils/cn";
-import { formatMoney } from "@/lib/utils/money";
 
 type Props = {
   id: string;
@@ -87,7 +87,7 @@ export function ClaimedGrid({
                       {piece.taggedSize ? ` · ${piece.taggedSize}` : ""}
                     </span>
                     {claimed ? null : (
-                      <span className="shrink-0 font-bold">{formatMoney(piece.pricePaise)}</span>
+                      <Price amountPaise={piece.pricePaise} className="shrink-0 font-bold" />
                     )}
                   </span>
                 </Link>

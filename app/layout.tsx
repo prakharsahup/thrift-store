@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { Bricolage_Grotesque, Instrument_Sans } from "next/font/google";
 import { MotionProvider } from "@/components/motion/MotionProvider";
+import { currencyInitScript } from "@/lib/currency/init-script";
 import { motionInitScript } from "@/lib/motion/init-script";
 import { site } from "@/lib/config/site";
 import "./globals.css";
@@ -36,10 +37,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    // suppressHydrationWarning: the inline script may add `no-motion` to <html> before React hydrates.
+    // suppressHydrationWarning: the inline scripts may add classes to <html> before React hydrates.
     <html lang="en-IN" className={`${display.variable} ${body.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: motionInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: currencyInitScript }} />
       </head>
       <body className="min-h-dvh antialiased">
         <MotionProvider>{children}</MotionProvider>

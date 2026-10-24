@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Fragment } from "react";
 import { z } from "zod";
 import { OrderForm } from "@/components/admin/OrderForm";
 import { PageHeader } from "@/components/admin/PageHeader";
@@ -10,11 +11,13 @@ import { shortOrderId } from "@/lib/config/orders";
 import { requireAdmin } from "@/lib/server/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatIstDateTime } from "@/lib/utils/datetime";
-import { formatMoney } from "@/lib/utils/money";
+import { addressLines, displayPhone } from "@/lib/utils/address";
+import { formatMoney, formatUsdCharge } from "@/lib/utils/money";
 
 export const metadata: Metadata = { title: "Order" };
 
 const addressSchema = z.object({
+  country: z.string().optional(),
   name: z.string(),
   phone: z.string(),
   line1: z.string(),
@@ -34,7 +37,7 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
     .select(
       `id, user_id, status, created_at, paid_at, subtotal_paise, shipping_paise, discount_paise,
        total_paise, coupon_code, address, razorpay_order_id, razorpay_payment_id, payment_method,
-       tracking_url, order_items(product_id, title_snapshot, price_paise_snapshot, image_snapshot, unavailable)`,
+       tracking_url, charge_currency, charge_amount, order_items(product_id, title_snapshot, price_paise_snapshot, image_snapshot, unavailable)`,
     )
     .eq("id", id)
     .maybeSingle();
@@ -130,6 +133,12 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
                 <dt>Total</dt>
                 <dd>{formatMoney(order.total_paise)}</dd>
               </div>
+              {formatUsdCharge(order) ? (
+                <div className="flex justify-between text-muted">
+                  <dt>Charged in USD (refund in this currency)</dt>
+                  <dd>{formatUsdCharge(order)}</dd>
+                </div>
+              ) : null}
             </dl>
           </section>
 
@@ -141,18 +150,14 @@ export default async function AdminOrderPage({ params }: PageProps<"/admin/order
               {address.success ? (
                 <address className="text-sm leading-relaxed not-italic">
                   {address.data.name}
-                  <br />
-                  {address.data.line1}
-                  {address.data.line2 ? (
-                    <>
+                  {addressLines(address.data).map((line) => (
+                    <Fragment key={line}>
                       <br />
-                      {address.data.line2}
-                    </>
-                  ) : null}
+                      {line}
+                    </Fragment>
+                  ))}
                   <br />
-                  {address.data.city}, {address.data.state} {address.data.pincode}
-                  <br />
-                  +91 {address.data.phone}
+                  {displayPhone(address.data)}
                 </address>
               ) : (
                 <p className="text-sm text-muted">No address on record.</p>

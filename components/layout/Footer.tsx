@@ -87,9 +87,10 @@ export function Footer() {
             · {business.phone}.
           </p>
           <p>
-            All prices are in Indian rupees and include all taxes. Every item is pre-owned unless
-            marked &ldquo;New with tags&rdquo;. Brand names and trademarks belong to their owners;
-            we resell genuine pieces and aren&rsquo;t affiliated with or endorsed by any brand.
+            Prices are set in Indian rupees and include all Indian taxes; from abroad they&rsquo;re
+            shown converted into your currency as an estimate. Every item is pre-owned unless marked
+            &ldquo;New with tags&rdquo;. Brand names and trademarks belong to their owners; we
+            resell genuine pieces and aren&rsquo;t affiliated with or endorsed by any brand.
           </p>
         </div>
       </div>

@@ -46,10 +46,21 @@ function csv(header: string[], rows: string[][]): string {
   return `﻿${[header.join(","), ...rows.map((r) => r.join(","))].join("\r\n")}\r\n`;
 }
 
-function address(value: unknown): { city: string; state: string; pincode: string } {
+function address(value: unknown): {
+  city: string;
+  state: string;
+  pincode: string;
+  country: string;
+} {
   const a = (value ?? {}) as Record<string, unknown>;
   const text = (key: string) => (typeof a[key] === "string" ? (a[key] as string) : "");
-  return { city: text("city"), state: text("state"), pincode: text("pincode") };
+  // Snapshots from before international shipping have no country: they're Indian.
+  return {
+    city: text("city"),
+    state: text("state"),
+    pincode: text("pincode"),
+    country: text("country") || "IN",
+  };
 }
 
 export async function GET(request: NextRequest) {
@@ -98,6 +109,7 @@ export async function GET(request: NextRequest) {
           cell(a.city, true),
           cell(a.state, true),
           cell(a.pincode, true),
+          cell(a.country),
         ]);
       }
       if (data.length < PAGE) break;
@@ -117,6 +129,7 @@ export async function GET(request: NextRequest) {
         "City",
         "State",
         "Pincode",
+        "Country",
       ],
       rows,
     );

@@ -1,8 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { CheckoutFailed, CheckoutStarted } from "@/lib/checkout/types";
+import { shippingFor } from "@/lib/config/shipping";
 import { getUser } from "@/lib/server/auth";
-import { applyCoupon, setRazorpayOrderId, startCheckout } from "@/lib/server/orders";
-import { createRazorpayOrder, getRazorpayConfig } from "@/lib/server/payments";
+import { applyCoupon, setRazorpayOrder, startCheckout } from "@/lib/server/orders";
+import {
+  createRazorpayOrder,
+  getRazorpayConfig,
+  internationalChargeCurrency,
+} from "@/lib/server/payments";
+import { getExchangeRates } from "@/lib/server/rates";
 import { addressSchema, checkoutRequestSchema } from "@/lib/validators/checkout";
 
 // Step 2–3 of CLAUDE.md §9: hold the cart, create the pending order from database prices, apply
@@ -37,7 +43,7 @@ export async function POST(request: NextRequest) {
   const [{ data: addressRow }, { data: profile }] = await Promise.all([
     supabase
       .from("addresses")
-      .select("name, phone, line1, line2, city, state, pincode")
+      .select("country, name, phone, line1, line2, city, state, pincode")
       .eq("id", addressId)
       .maybeSingle(),
     supabase.from("profiles").select("full_name, phone").eq("id", user.id).maybeSingle(),
@@ -47,7 +53,15 @@ export async function POST(request: NextRequest) {
     return fail(400, { message: "Choose a delivery address." });
   }
 
-  const started = await startCheckout({ userId: user.id, productIds, address: address.data });
+  // ₹200 in India; US$40 abroad, converted to rupees at today's rate (lib/config/shipping.ts).
+  const rates = await getExchangeRates();
+  const shippingPaise = shippingFor(address.data.country, rates.USD);
+  const started = await startCheckout({
+    userId: user.id,
+    productIds,
+    address: address.data,
+    shippingPaise,
+  });
   if (!started.ok) {
     return fail(409, {
       message:
@@ -71,13 +85,19 @@ export async function POST(request: NextRequest) {
     return fail(422, { message: "This order's total is too low to pay online." });
   }
 
+  // Orders abroad may be charged in USD (so Razorpay offers PayPal), converted from the rupee
+  // total at the same rate as the shipping above. The order row keeps its rupee amounts.
+  const currency = address.data.country === "IN" ? "INR" : internationalChargeCurrency();
+  const amount = currency === "USD" ? Math.ceil(amountPaise * rates.USD) : amountPaise;
+
   let razorpayOrderId: string;
   try {
     razorpayOrderId = await createRazorpayOrder(razorpay, {
       id: started.orderId,
-      amountPaise,
+      amount,
+      currency,
     });
-    await setRazorpayOrderId(started.orderId, razorpayOrderId);
+    await setRazorpayOrder(started.orderId, { orderId: razorpayOrderId, currency, amount });
   } catch (error) {
     console.error("[checkout] Razorpay order:", error);
     return fail(502, {
@@ -90,12 +110,15 @@ export async function POST(request: NextRequest) {
     orderId: started.orderId,
     razorpayOrderId,
     keyId: razorpay.keyId,
-    amountPaise,
+    amount,
+    currency,
     reservedUntil: started.reservedUntil,
     prefill: {
       name: profile?.full_name ?? address.data.name,
       email: user.email ?? "",
-      contact: profile?.phone ?? `+91${address.data.phone}`,
+      contact:
+        profile?.phone ??
+        (address.data.country === "IN" ? `+91${address.data.phone}` : address.data.phone),
     },
   });
 }

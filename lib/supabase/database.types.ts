@@ -6,11 +6,37 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.18";
   };
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
   public: {
     Tables: {
       addresses: {
         Row: {
           city: string;
+          country: string;
           created_at: string;
           id: string;
           is_default: boolean;
@@ -24,6 +50,7 @@ export type Database = {
         };
         Insert: {
           city: string;
+          country?: string;
           created_at?: string;
           id?: string;
           is_default?: boolean;
@@ -37,6 +64,7 @@ export type Database = {
         };
         Update: {
           city?: string;
+          country?: string;
           created_at?: string;
           id?: string;
           is_default?: boolean;
@@ -47,6 +75,21 @@ export type Database = {
           pincode?: string;
           state?: string;
           user_id?: string;
+        };
+        Relationships: [];
+      };
+      auth_account_status_checks: {
+        Row: {
+          client_key: string;
+          created_at: string;
+        };
+        Insert: {
+          client_key: string;
+          created_at?: string;
+        };
+        Update: {
+          client_key?: string;
+          created_at?: string;
         };
         Relationships: [];
       };
@@ -440,6 +483,8 @@ export type Database = {
       orders: {
         Row: {
           address: Json;
+          charge_amount: number | null;
+          charge_currency: string;
           coupon_code: string | null;
           created_at: string;
           discount_paise: number;
@@ -459,6 +504,8 @@ export type Database = {
         };
         Insert: {
           address: Json;
+          charge_amount?: number | null;
+          charge_currency?: string;
           coupon_code?: string | null;
           created_at?: string;
           discount_paise?: number;
@@ -478,6 +525,8 @@ export type Database = {
         };
         Update: {
           address?: Json;
+          charge_amount?: number | null;
+          charge_currency?: string;
           coupon_code?: string | null;
           created_at?: string;
           discount_paise?: number;
@@ -532,7 +581,21 @@ export type Database = {
             foreignKeyName: "product_costs_product_id_fkey";
             columns: ["product_id"];
             isOneToOne: true;
+            referencedRelation: "listed_products";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "product_costs_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: true;
             referencedRelation: "products";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "product_costs_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: true;
+            referencedRelation: "storefront_products";
             referencedColumns: ["id"];
           },
         ];
@@ -590,7 +653,6 @@ export type Database = {
           condition: Database["public"]["Enums"]["product_condition"];
           country_of_origin: string | null;
           created_at: string;
-          currency: string;
           description: string;
           drop_id: string | null;
           flaws: string | null;
@@ -618,7 +680,6 @@ export type Database = {
           condition: Database["public"]["Enums"]["product_condition"];
           country_of_origin?: string | null;
           created_at?: string;
-          currency?: string;
           description?: string;
           drop_id?: string | null;
           flaws?: string | null;
@@ -646,7 +707,6 @@ export type Database = {
           condition?: Database["public"]["Enums"]["product_condition"];
           country_of_origin?: string | null;
           created_at?: string;
-          currency?: string;
           description?: string;
           drop_id?: string | null;
           flaws?: string | null;
@@ -815,60 +875,55 @@ export type Database = {
       };
     };
     Views: {
-      // Hand-added ahead of `pnpm db:types`: these two views exist in
-      // supabase/migrations/20261020020000_insights_views.sql but the migration hasn't been
-      // pushed yet, so the generator hasn't seen them. Re-running `pnpm db:types` after `db:push`
-      // will regenerate this block for real and this comment can go.
-      insights_orders: {
-        Row: {
-          id: string | null;
-          user_id: string | null;
-          customer_email: string | null;
-          status: Database["public"]["Enums"]["order_status"] | null;
-          subtotal_paise: number | null;
-          shipping_paise: number | null;
-          discount_paise: number | null;
-          total_paise: number | null;
-          coupon_code: string | null;
-          address: Json | null;
-          payment_method: string | null;
-          created_at: string | null;
-          paid_at: string | null;
-          packed_at: string | null;
-          shipped_at: string | null;
-          delivered_at: string | null;
-          demo: boolean | null;
-        };
-        Insert: Record<string, never>;
-        Update: Record<string, never>;
-        Relationships: [];
-      };
       insights_costs: {
-        Row: { product_id: string | null; cost_paise: number | null; demo: boolean | null };
-        Insert: Record<string, never>;
-        Update: Record<string, never>;
+        Row: {
+          cost_paise: number | null;
+          demo: boolean | null;
+          product_id: string | null;
+        };
         Relationships: [];
       };
       insights_items: {
         Row: {
-          order_id: string | null;
-          product_id: string | null;
-          price_paise: number | null;
-          unavailable: boolean | null;
-          listed_at: string | null;
-          cost_paise: number | null;
           brand: string | null;
-          condition: Database["public"]["Enums"]["product_condition"] | null;
-          tagged_size: string | null;
-          gender: Database["public"]["Enums"]["gender"] | null;
-          style_tags: string[] | null;
-          drop_id: string | null;
           category_id: string | null;
-          original_price_paise: number | null;
+          condition: Database["public"]["Enums"]["product_condition"] | null;
+          cost_paise: number | null;
           demo: boolean | null;
+          drop_id: string | null;
+          gender: Database["public"]["Enums"]["gender"] | null;
+          listed_at: string | null;
+          order_id: string | null;
+          original_price_paise: number | null;
+          price_paise: number | null;
+          product_id: string | null;
+          product_price_paise: number | null;
+          style_tags: string[] | null;
+          tagged_size: string | null;
+          unavailable: boolean | null;
         };
-        Insert: Record<string, never>;
-        Update: Record<string, never>;
+        Relationships: [];
+      };
+      insights_orders: {
+        Row: {
+          address: Json | null;
+          coupon_code: string | null;
+          created_at: string | null;
+          customer_email: string | null;
+          delivered_at: string | null;
+          demo: boolean | null;
+          discount_paise: number | null;
+          id: string | null;
+          packed_at: string | null;
+          paid_at: string | null;
+          payment_method: string | null;
+          shipped_at: string | null;
+          shipping_paise: number | null;
+          status: Database["public"]["Enums"]["order_status"] | null;
+          subtotal_paise: number | null;
+          total_paise: number | null;
+          user_id: string | null;
+        };
         Relationships: [];
       };
       listed_products: {
@@ -878,7 +933,6 @@ export type Database = {
           condition: Database["public"]["Enums"]["product_condition"] | null;
           country_of_origin: string | null;
           created_at: string | null;
-          currency: string | null;
           description: string | null;
           drop_id: string | null;
           effective_status: Database["public"]["Enums"]["product_status"] | null;
@@ -905,7 +959,6 @@ export type Database = {
           condition?: Database["public"]["Enums"]["product_condition"] | null;
           country_of_origin?: string | null;
           created_at?: string | null;
-          currency?: string | null;
           description?: string | null;
           drop_id?: string | null;
           effective_status?: never;
@@ -932,7 +985,6 @@ export type Database = {
           condition?: Database["public"]["Enums"]["product_condition"] | null;
           country_of_origin?: string | null;
           created_at?: string | null;
-          currency?: string | null;
           description?: string | null;
           drop_id?: string | null;
           effective_status?: never;
@@ -977,7 +1029,6 @@ export type Database = {
           condition: Database["public"]["Enums"]["product_condition"] | null;
           country_of_origin: string | null;
           created_at: string | null;
-          currency: string | null;
           description: string | null;
           drop_id: string | null;
           effective_status: Database["public"]["Enums"]["product_status"] | null;
@@ -1004,7 +1055,6 @@ export type Database = {
           condition?: Database["public"]["Enums"]["product_condition"] | null;
           country_of_origin?: string | null;
           created_at?: string | null;
-          currency?: string | null;
           description?: string | null;
           drop_id?: string | null;
           effective_status?: never;
@@ -1031,7 +1081,6 @@ export type Database = {
           condition?: Database["public"]["Enums"]["product_condition"] | null;
           country_of_origin?: string | null;
           created_at?: string | null;
-          currency?: string | null;
           description?: string | null;
           drop_id?: string | null;
           effective_status?: never;
@@ -1097,6 +1146,9 @@ export type Database = {
       };
       apply_coupon: { Args: { code: string; order_id: string }; Returns: Json };
       attach_reservations: { Args: { order_id: string }; Returns: string[] };
+      auth_account_status:
+        | { Args: { p_email: string }; Returns: string }
+        | { Args: { p_client_key?: string; p_email: string }; Returns: string };
       cancel_stale_orders: { Args: never; Returns: number };
       confirm_notify: { Args: { token: string }; Returns: number };
       coupon_quote: {
@@ -1105,7 +1157,12 @@ export type Database = {
       };
       drop_is_live: { Args: { drop_id: string }; Returns: boolean };
       insights_breakdown: {
-        Args: { p_demo?: boolean; p_dimension: string; p_from: string; p_to: string };
+        Args: {
+          p_demo?: boolean;
+          p_dimension: string;
+          p_from: string;
+          p_to: string;
+        };
         Returns: Json;
       };
       insights_customers: {
@@ -1135,7 +1192,12 @@ export type Database = {
         Returns: Json;
       };
       insights_timeseries: {
-        Args: { p_bucket: string; p_demo?: boolean; p_from: string; p_to: string };
+        Args: {
+          p_bucket: string;
+          p_demo?: boolean;
+          p_from: string;
+          p_to: string;
+        };
         Returns: Json;
       };
       is_admin: { Args: never; Returns: boolean };
@@ -1146,6 +1208,13 @@ export type Database = {
         Returns: Json;
       };
       measurements_are_valid: { Args: { m: Json }; Returns: boolean };
+      product_effective_status: {
+        Args: {
+          p_reserved_until: string;
+          p_status: Database["public"]["Enums"]["product_status"];
+        };
+        Returns: Database["public"]["Enums"]["product_status"];
+      };
       product_facets: {
         Args: { category_ids?: string[]; query?: string };
         Returns: Json;
@@ -1187,7 +1256,6 @@ export type Database = {
           condition: Database["public"]["Enums"]["product_condition"] | null;
           country_of_origin: string | null;
           created_at: string | null;
-          currency: string | null;
           description: string | null;
           drop_id: string | null;
           effective_status: Database["public"]["Enums"]["product_status"] | null;
@@ -1369,6 +1437,9 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       coupon_type: ["percent", "flat"],

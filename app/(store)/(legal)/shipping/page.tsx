@@ -2,16 +2,21 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage, type LegalSection } from "@/components/legal/LegalPage";
 import { policyUpdated, returnsPolicy, shippingPolicy as s } from "@/lib/config/legal";
-import { shipping } from "@/lib/config/shipping";
+import { shippingCountries } from "@/lib/config/countries";
+import { internationalShippingLabel, shipping } from "@/lib/config/shipping";
 import { site } from "@/lib/config/site";
 import { formatMoney } from "@/lib/utils/money";
 
-const flat = formatMoney(shipping.flatPaise);
-const freeAbove = formatMoney(shipping.freeAbovePaise);
+const domestic = formatMoney(shipping.domesticPaise);
+const international = internationalShippingLabel;
+const abroad = shippingCountries
+  .filter((c) => c.code !== "IN")
+  .map((c) => c.name)
+  .sort();
 
 export const metadata: Metadata = {
   title: "Shipping policy",
-  description: `Where ${site.name} delivers, what it costs (${flat}, free over ${freeAbove}), dispatch times and tracking.`,
+  description: `Where ${site.name} delivers, what it costs (${domestic} in India, ${international} abroad), dispatch times and tracking.`,
   alternates: { canonical: "/shipping" },
 };
 
@@ -22,11 +27,16 @@ const sections: LegalSection[] = [
     id: "where",
     title: "Where we deliver",
     body: (
-      <p>
-        We deliver anywhere in India that our courier partners serve. If your pincode can&rsquo;t be
-        reached, we&rsquo;ll tell you before dispatch and refund you in full. We don&rsquo;t ship
-        outside India.
-      </p>
+      <>
+        <p>
+          We deliver anywhere in India that our courier partners serve. If your pincode can&rsquo;t
+          be reached, we&rsquo;ll tell you before dispatch and refund you in full.
+        </p>
+        <p>
+          We also ship to these countries, where personal imports of pre-owned clothing are allowed:{" "}
+          {abroad.join(", ")}. If your country isn&rsquo;t listed, we can&rsquo;t ship there yet.
+        </p>
+      </>
     ),
   },
   {
@@ -36,16 +46,24 @@ const sections: LegalSection[] = [
       <>
         <ul>
           <li>
-            Orders of {freeAbove} or more: <strong>free shipping</strong>.
+            Within India: a flat <strong>{domestic}</strong> per order, wherever you are.
           </li>
           <li>
-            Orders under {freeAbove}: a flat <strong>{flat}</strong>, wherever you are in India.
+            Everywhere else: a flat <strong>{international}</strong> per order.
           </li>
         </ul>
         <p>
           The shipping charge is shown in your cart and at checkout before you pay. There are no
-          other delivery fees, and prices already include all taxes. Cash on delivery isn&rsquo;t
-          available at the moment.
+          other delivery fees from us, and prices already include Indian taxes. Cash on delivery
+          isn&rsquo;t available at the moment.
+        </p>
+        <p>
+          If you browse from outside India, prices are shown in your local currency as an estimate.
+          Checkout shows the exact amount and currency before you pay: Indian rupees, or US dollars
+          for some international orders. If your card is in another currency, your bank converts it
+          at its own rate. International orders may also attract import duties, taxes or customs
+          fees in your country; these are set by your country&rsquo;s customs authority,
+          aren&rsquo;t included in our prices, and are paid by you on delivery.
         </p>
       </>
     ),
@@ -124,7 +142,7 @@ export default function ShippingPage() {
       summary={
         <ul>
           <li>
-            Free shipping on orders of {freeAbove} or more; {flat} below that, anywhere in India.
+            {domestic} anywhere in India; {international} to the other countries we ship to.
           </li>
           <li>Dispatched within {s.dispatchDays} business days of payment.</li>
           <li>Delivered in about {s.deliveryDays} business days after that, with tracking.</li>

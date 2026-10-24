@@ -18,7 +18,9 @@ export type CheckoutStarted = {
   orderId: string;
   razorpayOrderId: string;
   keyId: string;
-  amountPaise: number;
+  /** What Razorpay charges, in the smallest unit of `currency` (paise or cents). */
+  amount: number;
+  currency: "INR" | "USD";
   reservedUntil: string;
   prefill: { name: string; email: string; contact: string };
 };
