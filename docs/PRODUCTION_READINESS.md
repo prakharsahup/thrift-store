@@ -15,7 +15,7 @@ Legend: ✅ done · 🔧 code exists, needs a real value/config from the owner �
 - [ ] 🔧 `business.email` (`lib/config/legal.ts`) or `SUPPORT_INBOX`/`ORDER_NOTIFICATION_EMAIL` set to a real inbox — right now `business.email` is still the `[support@yourdomain.in]` placeholder, so support alerts and order-notification emails are silently skipped
 - [ ] 🔧 `NEXT_PUBLIC_SITE_URL` set to the real domain (defaults to `http://localhost:3000`) — this feeds metadata, emails, sitemap links, JSON-LD
 - [x] ✅ Production Supabase project — hosted project "xyz-thrift" (ap-south-1) is live and is the only database; local Docker/CLI dev stack was removed 2026-10-15
-- [ ] 🔧 `SENTRY_DSN` is in `.env.example` but **`@sentry/nextjs` isn't installed and there's no Sentry init code anywhere** — error tracking isn't actually wired up despite the env var existing
+- [ ] 🔧 `@sentry/nextjs` installed and wired 2026-10-24 (`instrumentation.ts`, `instrumentation-client.ts`, `next.config.ts`'s `withSentryConfig`) — inert until `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` are set in `.env.local`/Vercel; events tunnel through `/monitoring` (same-origin) so nothing needed in the CSP
 - [ ] 🔧 Decide on `NEXT_PUBLIC_AUTH_GOOGLE_ENABLED` / `NEXT_PUBLIC_AUTH_PHONE_ENABLED` for launch (both `false` by default — phone sign-in needs a real SMS provider configured in Supabase, Google needs OAuth credentials)
 
 ## 2. Payments (Razorpay)
@@ -30,34 +30,34 @@ cron, and an owner email alert (including the late-payment/manual-refund edge ca
 - [ ] Decide the swap plan from test keys → live keys (who flips it, when, and re-test immediately after)
 - [ ] Watch `ORDER_NOTIFICATION_EMAIL` for the first few real orders to make sure it's landing
 
-## 3. SEO (CLAUDE.md phase 8 — not started)
+## 3. SEO (CLAUDE.md phase 8)
 
-- [ ] ❌ `app/sitemap.ts` — doesn't exist yet
-- [ ] ❌ `app/robots.ts` — doesn't exist yet
-- [ ] ❌ Product + Offer JSON-LD on PDPs — no structured data anywhere in `app/` yet
-- [x] `generateMetadata`/`metadata` exports — actually already present on all 40 `page.tsx` files, including noindex on admin/account pages
-- [ ] OG images (metadata has titles/descriptions everywhere; no image generation confirmed)
+- [x] `app/sitemap.ts` — added 2026-10-24: static pages, `/men|women|unisex`, every category, every published drop, every listed product (`lib/server/catalogue.ts` `getSitemapProducts`/`getAllCategorySlugs`)
+- [x] `app/robots.ts` — added 2026-10-24: blocks `/admin`, `/account`, `/checkout`, `/cart`, `/order`, `/notify/confirm`, `/dev`; disallows everything when `VERCEL_ENV` isn't `production` (so preview deployments never get indexed)
+- [x] Product + Offer JSON-LD — added 2026-10-24 on the PDP only (`components/seo/JsonLd.tsx`, wired into `app/(store)/p/[slug]/page.tsx`); category/listing pages have no structured data yet
+- [x] `generateMetadata`/`metadata` exports — present on all `page.tsx` files, including noindex on admin/account pages
+- [x] OG images — `app/opengraph-image.png`/`twitter-image.png`/`icon.png`/`apple-icon.png` already exist as static site-wide defaults; no per-product dynamic OG image yet (lower priority — a generic brand image is fine for launch)
 
 ## 4. Analytics & observability
 
-- [ ] ❌ No analytics wired in at all yet (Plausible or Vercel Analytics — CLAUDE.md leaves the choice to you)
-- [ ] ❌ Sentry not installed (see §1)
-- [ ] Decide what "it's broken" alerting looks like before launch — right now failures mostly surface as `console.error` (e.g. the late-payment case, webhook failures), which nobody's watching in production
+- [x] `@vercel/analytics` added 2026-10-24 (`<Analytics />` in `app/layout.tsx`) — owner picked Vercel Analytics over Plausible. No-ops unless deployed on Vercel with Analytics enabled for the project (Vercel dashboard → project → Analytics tab)
+- [x] Sentry installed, see §1 — still needs a real DSN to actually report anything
+- [ ] Decide what "it's broken" alerting looks like before launch — Sentry will now catch unhandled errors once a DSN is set, but webhook/late-payment failures still only reach `console.error`, not an alert
 
 ## 5. Security
 
 - [x] Baseline security headers set (`next.config.ts`): HSTS, `X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy`
-- [ ] 🔧 No CSP yet — deliberately deferred per the code comment (Razorpay's checkout script/frames need a tested allow-list first); don't forget to come back to this
+- [x] 🔧 CSP added 2026-10-24 (`next.config.ts`), allow-listing `checkout.razorpay.com`/`api.razorpay.com`/`*.razorpay.com`, the Supabase origin (storage images + REST/Realtime), and `placehold.co`/`images.vendoo.co`. Built from Razorpay's documented domains, **never exercised against a real Checkout modal** — re-test with real test-mode keys and watch the browser console for new violations before relying on it
 - [x] Admin is gated three ways (`proxy.ts`, `requireAdmin()` in the admin layout, RLS via `is_admin()`) — no separate action needed, just noting it's actually solid
 - [x] RLS covers the reviewed tables (per `supabase/tests/database/rls.test.sql`)
 - [ ] Re-run `get_advisors` (Supabase security/performance advisors) once there's a real hosted project
 
 ## 6. Testing & CI
 
-- [x] DB-level tests exist (`supabase/tests/database/{checkout,compliance,rls}.test.sql` — pgTAP), covering the atomic checkout/payment logic specifically
-- [ ] ❌ No CI pipeline at all (no `.github/workflows`) — `pnpm build`/`lint`/`typecheck`/the pgTAP suite aren't run automatically anywhere; right now the only check is whoever remembers to run them locally
+- [x] DB-level tests exist (`supabase/tests/database/{checkout,compliance,rls}.test.sql` — pgTAP), covering the atomic checkout/payment logic specifically; still not run by CI (needs a Postgres/pgTAP service container — dropped along with Docker, see project memory)
+- [x] CI pipeline added 2026-10-24 (`.github/workflows/ci.yml`): runs `format:check`/`lint`/`typecheck`/`build` on push to `main` and on every PR, with placeholder Supabase env vars (real secrets aren't needed for a plain build — `lib/env.ts` degrades catalogue reads to empty results without them)
 - [ ] ❌ No component or end-to-end tests (no Vitest/Playwright) — the checkout race condition ("two browsers, one item") that CLAUDE.md phase 5 calls out is untested beyond manual/DB-level checks
-- [ ] Lighthouse mobile run (CLAUDE.md's ≥90 target) — not done yet, needs a deployed or production-built instance
+- [x] Lighthouse mobile run, 2026-10-24, against a real `pnpm build` + `next start` on `/`: **performance 81** (target ≥90), accessibility 96, best-practices 96, **SEO 100**. Gaps found: LCP 4.7s, apparently driven by hotlinked `images.vendoo.co` photos occasionally 504ing; two pre-existing `color-contrast` failures on the lavender `#8855d9` accent against both light and dark backgrounds (4.21:1 and 3.98:1, need 4.5:1) — a brand-color decision, not touched here. Re-run per page before launch, not just `/`
 
 ## 7. Content & brand placeholders
 
