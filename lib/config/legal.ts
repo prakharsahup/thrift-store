@@ -9,25 +9,27 @@ import { site } from "./site";
 
 export const business = {
   /** Registered legal name (proprietor's name for a sole proprietorship, else the company/LLP). */
-  legalName: "[LEGAL BUSINESS NAME]",
+  // Per the GST registration certificate (REG-06, 2026-10-24 copy): legal name Karmanyu Mehta,
+  // trade name BELLION, proprietorship.
+  legalName: "Bellion (Karmanyu Mehta, proprietor)",
   /** e.g. "Sole proprietorship", "Limited liability partnership", "Private limited company". */
-  entityType: "[ENTITY TYPE]",
+  entityType: "Sole proprietorship",
   tradeName: site.name,
   /** Principal place of business (Consumer Protection (E-Commerce) Rules 2020, r. 4(2)). */
   address: {
-    line1: "[ADDRESS LINE 1]",
-    line2: "[ADDRESS LINE 2]",
-    city: "[CITY]",
-    state: "[STATE]",
-    pincode: "[PINCODE]",
+    line1: "2137, Jawahar Colony",
+    line2: "",
+    city: "Faridabad",
+    state: "Haryana",
+    pincode: "121001",
   },
   /** GSTIN, once registered. null hides the line. */
-  gstin: "[GSTIN]" as string | null,
+  gstin: "06HEHPM0508F1ZQ" as string | null,
   /** CIN (companies) or LLPIN. null hides the line. */
   cin: null as string | null,
   /** Customer care (r. 4(2) asks for email plus landline and mobile numbers). */
   email: "[support@yourdomain.in]",
-  phone: "[+91 XXXXX XXXXX]",
+  phone: "+91 92177 66696",
   /** Hours customer care answers the phone, IST. */
   hours: "Monday to Saturday, 10 AM to 6 PM IST (closed on public holidays)",
 } as const;
@@ -37,16 +39,16 @@ export const business = {
  * Complaints are acknowledged within 48 hours and resolved within one month.
  */
 export const grievanceOfficer = {
-  name: "[GRIEVANCE OFFICER NAME]",
+  name: "Karmanyu Mehta",
   designation: "Grievance Officer",
   email: "[grievance@yourdomain.in]",
-  phone: "[+91 XXXXX XXXXX]",
+  phone: "+91 92177 66696",
   acknowledgeWithinHours: 48,
   resolveWithinDays: 30,
 } as const;
 
 /** Courts with jurisdiction over disputes under the terms (consumer forums are unaffected). */
-export const jurisdictionCity = "[CITY]";
+export const jurisdictionCity = "Faridabad";
 
 /** The Returns, Refunds & Cancellation policy, as numbers the copy is built from. */
 export const returnsPolicy = {
@@ -79,10 +81,10 @@ export const shippingPolicy = {
 
 /** Date each policy was last changed (ISO). Bump it whenever its wording changes. */
 export const policyUpdated = {
-  terms: "2026-10-06",
-  privacy: "2026-10-06",
+  terms: "2026-10-24",
+  privacy: "2026-10-24",
   returns: "2026-10-06",
-  shipping: "2026-10-06",
+  shipping: "2026-10-24",
 } as const;
 
 /** Customer-facing goods description for receipts. HSN 6309 = "worn clothing and other worn articles". */
