@@ -28,7 +28,7 @@ export const business = {
   /** CIN (companies) or LLPIN. null hides the line. */
   cin: null as string | null,
   /** Customer care (r. 4(2) asks for email plus landline and mobile numbers). */
-  email: "[support@yourdomain.in]",
+  email: "bellion.vk@gmail.com",
   phone: "+91 92177 66696",
   /** Hours customer care answers the phone, IST. */
   hours: "Monday to Saturday, 10 AM to 6 PM IST (closed on public holidays)",
@@ -41,7 +41,7 @@ export const business = {
 export const grievanceOfficer = {
   name: "Karmanyu Mehta",
   designation: "Grievance Officer",
-  email: "[grievance@yourdomain.in]",
+  email: "bellion.vk@gmail.com",
   phone: "+91 92177 66696",
   acknowledgeWithinHours: 48,
   resolveWithinDays: 30,

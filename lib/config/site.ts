@@ -6,9 +6,9 @@ export const site = {
   locale: "en-IN",
   // Shown after the free-shipping message in the announcement bar. Placeholder copy.
   announcements: ["New drop every Friday, 8 PM", "Every piece graded & measured"],
-  // Placeholder profile URLs — swap for the store's real handles.
+  // Profile URLs. YouTube and WhatsApp are still placeholders (bare platform homepages).
   socials: [
-    { label: "Instagram", href: "https://www.instagram.com/" },
+    { label: "Instagram", href: "https://www.instagram.com/baaki.store/" },
     { label: "YouTube", href: "https://www.youtube.com/" },
     { label: "WhatsApp", href: "https://www.whatsapp.com/" },
   ],

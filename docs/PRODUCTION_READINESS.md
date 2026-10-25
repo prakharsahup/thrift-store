@@ -12,7 +12,7 @@ Legend: ✅ done · 🔧 code exists, needs a real value/config from the owner �
 - [ ] 🔧 Real Razorpay **test** keys in `.env.local` (`NEXT_PUBLIC_RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`) — unconfirmed whether these are set yet
 - [ ] 🔧 Razorpay webhook registered in their Dashboard (Settings → Webhooks) pointing at `/api/razorpay/webhook`, subscribed to `payment.captured` + `payment.failed`, secret copied into `RAZORPAY_WEBHOOK_SECRET` — dashboard-only, nothing in code does this for you
 - [ ] 🔧 `RESEND_API_KEY` + verified sending domain in Resend (without it, prod silently skips every email — order confirmations, status updates, support tickets, the new owner order-alert)
-- [ ] 🔧 `business.email` (`lib/config/legal.ts`) or `SUPPORT_INBOX`/`ORDER_NOTIFICATION_EMAIL` set to a real inbox — right now `business.email` is still the `[support@yourdomain.in]` placeholder, so support alerts and order-notification emails are silently skipped
+- [x] ✅ `business.email` and the grievance officer's email (`lib/config/legal.ts`) set to bellion.vk@gmail.com on 2026-10-24, so support alerts and order notifications have an inbox (`SUPPORT_INBOX`/`ORDER_NOTIFICATION_EMAIL` still override it)
 - [ ] 🔧 `NEXT_PUBLIC_SITE_URL` set to the real domain (defaults to `http://localhost:3000`) — this feeds metadata, emails, sitemap links, JSON-LD
 - [x] ✅ Production Supabase project — hosted project "xyz-thrift" (ap-south-1) is live and is the only database; local Docker/CLI dev stack was removed 2026-10-15
 - [ ] 🔧 `@sentry/nextjs` installed and wired 2026-10-24 (`instrumentation.ts`, `instrumentation-client.ts`, `next.config.ts`'s `withSentryConfig`) — inert until `SENTRY_DSN`/`NEXT_PUBLIC_SENTRY_DSN` are set in `.env.local`/Vercel; events tunnel through `/monitoring` (same-origin) so nothing needed in the CSP
@@ -76,7 +76,7 @@ Code-complete: ship-to list in `lib/config/countries.ts`, shipping ₹200 India 
 
 Cross-reference with `COMPLIANCE.md` §1 for the legal ones. Also still placeholder:
 
-- [ ] `site.ts`: `tagline`, `announcements`, and all three `socials` hrefs (Instagram/YouTube/WhatsApp all point at the bare platform homepages)
+- [ ] `site.ts`: `tagline`, `announcements`, and the YouTube/WhatsApp `socials` hrefs (still the bare platform homepages; Instagram is @baaki.store)
 - [ ] `lib/config/legal.ts`: every `[BRACKETED]` value — legal name, address, GSTIN, grievance officer, jurisdiction city
 - [ ] `lib/config/legal.ts` `tax.hsn`/`pricesIncludeTax` — flagged in code as needing a CA's confirmation
 - [x] `lib/config/shipping.ts` — owner's rates set 2026-10-24: ₹200 flat in India, US$40 flat abroad, no free-shipping threshold
