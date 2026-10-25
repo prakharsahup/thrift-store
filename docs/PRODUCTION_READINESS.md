@@ -76,7 +76,7 @@ Code-complete: ship-to list in `lib/config/countries.ts`, shipping ₹200 India 
 
 Cross-reference with `COMPLIANCE.md` §1 for the legal ones. Also still placeholder:
 
-- [ ] `site.ts`: `tagline`, `announcements`, and the YouTube/WhatsApp `socials` hrefs (still the bare platform homepages; Instagram is @baaki.store)
+- [x] `site.ts`: announcement bar is just "Every piece graded & measured" (Friday-drop line removed 2026-10-26); socials: Instagram @baaki.store only
 - [ ] `lib/config/legal.ts`: every `[BRACKETED]` value — legal name, address, GSTIN, grievance officer, jurisdiction city
 - [ ] `lib/config/legal.ts` `tax.hsn`/`pricesIncludeTax` — flagged in code as needing a CA's confirmation
 - [x] `lib/config/shipping.ts` — owner's rates set 2026-10-24: ₹200 flat in India, US$40 flat abroad, no free-shipping threshold
